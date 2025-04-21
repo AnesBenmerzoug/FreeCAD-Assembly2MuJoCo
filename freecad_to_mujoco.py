@@ -1,9 +1,9 @@
-import bisect
 import os
 import xml.etree.ElementTree as ET
+from enum import Enum, unique
 from pathlib import Path
 from queue import SimpleQueue
-from typing import Any
+from typing import Any, Literal
 
 import FreeCAD as App
 import FreeCADGui as Gui
@@ -12,57 +12,55 @@ import UtilsAssembly
 
 MACRO_NAME = "ExportToMujoco"
 
+MUJOCO_JOINT_TYPE = Literal["hinge", "slide", "ball", "free"] | None
 
-class AssemblyGraphNode:
+
+####################################################################
+# Assembly Graph Classes
+####################################################################
+
+
+class GraphNode:
     def __init__(
         self,
         part: App.DocumentObject,
-        *,
-        is_dummy: bool = False,
-        is_root: bool = False,
-        mass: float = 1.0,
     ) -> None:
         self.part = part
-        self.is_dummy = is_dummy
-        self.is_root = is_root
-        self.mass = mass
 
     def __repr__(self) -> str:
-        return f"<AssemblyGraphNode part={self.part.Name} mass={self.mass} is_dummy={self.is_dummy} is_root={self.is_root}>"
+        return f"<AssemblyGraphNode part={self.part.Name}>"
+
+    def __hash__(self):
+        return hash(repr(self))
+
+    def __eq__(self, other: "GraphNode") -> bool:
+        return self.part.Name == other.part.Name
 
 
-class AssemblyGraphEdge:
-    def __init__(
-        self, joint, *, node1: AssemblyGraphNode, node2: AssemblyGraphNode
-    ) -> None:
+class GraphEdge:
+    def __init__(self, joint: App.DocumentObject) -> None:
         self.joint = joint
-        self.node1 = node1
-        self.node2 = node2
         self.weight = self.compute_weight(self.joint)
-        self.mujoco_joint_type = self.determine_mujoco_joint_type(joint)
 
     @staticmethod
     def compute_weight(joint) -> float:
         # Assign weights to prioritize which joints to keep in the tree
         # Higher weight are more likely to be excluded from tree
-        if joint.JointType == "Revolute":
-            weight = 1.0
-        elif joint.JointType == "Prismatic":
-            weight = 2.0
-        elif joint.JointType == "Ball":
-            weight = 3.0
-        elif joint.JointType == "Cylindrical":
-            weight = 4.0
-        elif joint.JointType == "Planar":
-            weight = 5.0
-        elif joint.JointType == "Fixed":
-            weight = 10.0
-        else:
-            weight = 20.0
+        # Base weight by joint type
+        type_weights = {
+            "Fixed": 10.0,
+            "Revolute": 1.0,
+            "Prismatic": 2.0,
+            "Cylindrical": 3.0,
+            "Ball": 5.0,
+            "Planar": 8.0,
+        }
+
+        weight = type_weights.get(joint.JointType, 20.0)
         return weight
 
     @staticmethod
-    def determine_mujoco_joint_type(joint) -> str | None:
+    def determine_mujoco_joint_type(joint) -> MUJOCO_JOINT_TYPE:
         mujoco_joint_type: str | None = None
         if joint.JointType == "Revolute":
             mujoco_joint_type = "hinge"
@@ -78,64 +76,195 @@ class AssemblyGraphEdge:
             mujoco_joint_type = None
         return mujoco_joint_type
 
-    def __eq__(self, other: "AssemblyGraphEdge") -> bool:
+    def __eq__(self, other: "GraphEdge") -> bool:
         return self.joint == other.joint
 
+    def __repr__(self) -> str:
+        return f"<AssemblyGraphEdge joint={self.joint.JointType} weight={self.weight}>"
 
-class AssemblyGraph:
-    def __init__(self, assembly) -> None:
-        self.nodes: dict[str, AssemblyGraphNode] = {}
-        self.list_of_edges = []
-        self.build_graph(assembly)
+    def __hash__(self):
+        return hash((self.joint.Name, self.joint.JointType))
 
-    def build_graph(self, assembly) -> None:
+
+class Graph:
+    def __init__(self, *, is_directed: bool = False) -> None:
+        self.is_directed = is_directed
+        self.adjacency_list: dict[GraphNode, dict[GraphNode, GraphEdge]] = {}
+
+    @classmethod
+    def from_assembly(cls, assembly: App.DocumentObject) -> None:
         """Construct graph from FreeCAD assembly"""
+        graph = cls()
         joint_group = UtilsAssembly.getJointGroup(assembly)
         for joint in joint_group.Group:
             # Grounded Joint will be set as the root of the graph
             if hasattr(joint, "ObjectToGround"):
-                self.add_node(joint.ObjectToGround)
+                graph.add_node(joint.ObjectToGround)
             else:
                 part1 = UtilsAssembly.getMovingPart(assembly, joint.Reference1)
                 part2 = UtilsAssembly.getMovingPart(assembly, joint.Reference2)
-                self.add_edge(part1, part2, joint)
+                graph.add_edge(part1, part2, joint)
+        return graph
 
-    def get_nodes(self) -> list[AssemblyGraphNode]:
-        return list(self.nodes.values())
-
-    def add_node(
-        self,
-        part: App.DocumentObject,
-        *,
-        density: float = 0.001,  # g/cm³ to kg/mm³
-    ) -> AssemblyGraphNode:
-        if (node := self.nodes.get(part.Name)) is not None:
-            return node
-        # Store additional metadata useful for processing
-        mass = 1.0
-        volume = 1.0
-        if hasattr(part.Shape, "Volume"):
-            volume = part.Shape.Volume
-            if volume > 1e-9:  # Valid volume
-                # Basic estimate - can be improved with material properties
-                mass = volume * density
-        node = AssemblyGraphNode(part, mass=mass)
-        self.nodes[part.Name] = node
+    def add_node(self, part: App.DocumentObject) -> GraphNode:
+        node = GraphNode(part)
+        if node not in self.adjacency_list:
+            self.adjacency_list[node] = {}
         return node
 
-    def add_edge(self, part1, part2, joint) -> None:
+    def add_edge(
+        self,
+        part1: App.DocumentObject,
+        part2: App.DocumentObject,
+        joint: App.DocumentObject,
+    ) -> None:
         node1 = self.add_node(part1)
         node2 = self.add_node(part2)
-        edge1 = AssemblyGraphEdge(joint, node1=node1, node2=node2)
-        edge2 = AssemblyGraphEdge(joint, node1=node2, node2=node1)
-        bisect.insort(self.list_of_edges, edge1, key=lambda x: x.weight)
-        bisect.insort(self.list_of_edges, edge2, key=lambda x: x.weight)
+        edge = GraphEdge(joint)
+        self.adjacency_list[node1][node2] = edge
+        if not self.is_directed:
+            # Since undirected, add both directions
+            self.adjacency_list[node2][node1] = edge
 
-    def simplify_graph(self) -> None:
-        return
+    def get_nodes(self) -> list[GraphNode]:
+        """Return a list of all unique nodes."""
+        return list(self.adjacency_list.keys())
+
+    def get_neighbors(self, node: GraphNode) -> list[GraphNode]:
+        return list(self.adjacency_list.get(node, []))
+
+    def get_edge(self, u: GraphNode, v: GraphNode) -> GraphEdge | None:
+        return self.adjacency_list.get(u, {}).get(v, None)
+
+    def get_edges(
+        self,
+    ) -> list[tuple[GraphNode, GraphNode, dict[str, GraphEdge | Any]]]:
+        """Return a list of all unique edges as (u, v, edge)."""
+        seen: set[tuple[GraphNode, GraphNode]] = set()
+        edge_list = []
+        for u in self.adjacency_list:
+            for v in self.adjacency_list[u]:
+                if self.is_directed:
+                    edge_key = (u, v)
+                else:
+                    edge_key = tuple(sorted((u, v), key=lambda x: x.part.Name))
+                if edge_key not in seen:
+                    edge = self.get_edge(edge_key[0], edge_key[1])
+                    if edge is not None:
+                        edge_list.append((edge_key[0], edge_key[1], edge))
+                        seen.add(edge_key)
+        return edge_list
 
 
-class MujocoExporter:
+####################################################################
+# Minimum Spanning Tree
+####################################################################
+
+
+class UnionFind:
+    def __init__(self, graph: Graph) -> None:
+        # Initialize disjoint set for Kruskal's algorithm
+        self.parent: dict[GraphNode, GraphNode] = {
+            node: node for node in graph.get_nodes()
+        }
+        self.rank: dict[GraphNode, int] = {node: 0 for node in graph.get_nodes()}
+
+    def find_root(self, node: GraphNode) -> GraphNode:
+        if self.parent[node] != node:
+            # Path compression
+            self.parent[node] = self.find_root(self.parent[node])
+        return self.parent[node]
+
+    def union(self, node1: GraphNode, node2: GraphNode) -> None:
+        """Union the sets containing node1 and node2 using union by rank."""
+
+        root1 = self.find_root(node1)
+        root2 = self.find_root(node2)
+
+        if root1 == root2:
+            # Cycle detected
+            return False
+
+        # Union by rank
+        # Attach smaller rank tree under root of
+        # high rank tree (Union by Rank)
+        if self.rank[root1] < self.rank[root2]:
+            self.parent[root1] = root2
+        elif self.rank[root1] > self.rank[root2]:
+            self.parent[root2] = root1
+        # If ranks are same, then mark first one as root
+        # and increment its rank by one
+        else:
+            self.parent[root2] = root1
+            self.rank[root1] += 1
+
+        return True
+
+
+def convert_to_directed_tree(graph: Graph) -> Graph:
+    # Find root(s)
+    root_nodes = [
+        node for node in graph.get_nodes() if len(graph.get_neighbors(node)) == 1
+    ]
+    if not root_nodes:
+        raise RuntimeError(f"{MACRO_NAME}: Could not find root node for assembly")
+    # Select first one as main root node
+    root_node = root_nodes[0]
+
+    visited: set[GraphNode] = set()
+    directed_tree = Graph(is_directed=True)
+
+    def dfs(node: GraphNode) -> None:
+        visited.add(node)
+        for neighbor in graph.get_neighbors(node):
+            if neighbor not in visited:
+                # Get edge from undirected graph
+                edge = graph.get_edge(node, neighbor)
+                # Add only one direction
+                directed_tree.add_edge(node.part, neighbor.part, edge.joint)
+                dfs(neighbor)
+
+    dfs(root_node)
+    return directed_tree
+
+
+def find_minimum_spanning_tree(
+    graph: Graph,
+) -> tuple[Graph, list[tuple[GraphNode, GraphNode, GraphEdge]]]:
+    """Builds minimum spanning tree using Kruskal's algorithm.
+
+    Returns:
+        tree_edges: List of edges representing the minimum spanning tree.
+        unused_edges: List of unused edges that would form loops.
+    """
+    uf = UnionFind(graph)
+
+    # sort edges in non-decreasing order of weights
+    sorted_edges = sorted(graph.get_edges(), key=lambda e: e[2].weight)
+
+    # Track which edges are used in the tree
+    # and which ones are not
+    tree = Graph()
+    unused_edges: list[tuple[GraphNode, GraphNode, GraphEdge]] = []
+    for u, v, edge in sorted_edges:
+        if uf.union(u, v):
+            tree.add_edge(u.part, v.part, edge.joint)
+        else:
+            unused_edges.append((u, v, edge))
+
+    # Build tree
+    tree = convert_to_directed_tree(tree)
+    return tree, unused_edges
+
+
+####################################################################
+# MuJuCo Exporter Class
+####################################################################
+
+
+class MuJuCoExporter:
+    """Class for exporting a kinematic tree as a MuJoCo MJCF (XML) file and STL files."""
+
     def __init__(self) -> None:
         self.mujoco = ET.Element("mujoco")
         self.compiler = ET.SubElement(
@@ -183,25 +312,31 @@ class MujocoExporter:
         ET.SubElement(
             self.worldbody, "light", diffuse=".6 .6 .6", pos="4 4 4", dir="-1 -1 -1"
         )
+        self.part_bodies: dict[str, Any] = {}
         # Placeholder for elements that will be added when exporting
         self.equality = ET.SubElement(self.mujoco, "equality")
         self.sensor = ET.SubElement(self.mujoco, "sensor")
         self.actuator = ET.SubElement(self.mujoco, "actuator")
 
     def export_assembly(
-        self, assembly_graph: AssemblyGraph, output_dir: str | os.PathLike
+        self, assembly: App.DocumentObject, output_dir: str | os.PathLike
     ) -> None:
         """Main export method"""
+
+        # Create graph connecting parts with joints
+        assembly_graph = Graph.from_assembly(assembly)
+
         # Export assembly parts as binary stl meshes
         meshes_dir = Path(output_dir).joinpath("meshes")
         meshes_dir.mkdir(exist_ok=True, parents=True)
         self.export_parts_as_meshes_and_add_to_assets(assembly_graph, meshes_dir)
 
-        # Add parts
-        self.add_parts_as_independent_bodies(assembly_graph)
-
         # Add floorplane (cosmetic)
         self.add_floorplane(assembly_graph)
+
+        # Find minimum spanning tree representing kinematic tree
+        # As well as unused edges (joints) that will be converted to equality constraints
+        tree, unused_edges = find_minimum_spanning_tree(assembly_graph)
 
         # Save MJCF file
         xml_file = (
@@ -210,7 +345,7 @@ class MujocoExporter:
         self.write_xml(xml_file)
 
     def export_parts_as_meshes_and_add_to_assets(
-        self, assembly_graph: AssemblyGraph, meshes_dir: str | os.PathLike
+        self, assembly_graph: Graph, meshes_dir: str | os.PathLike
     ) -> None:
         for node in assembly_graph.get_nodes():
             part = node.part
@@ -233,29 +368,7 @@ class MujocoExporter:
                 scale="0.001 0.001 0.001",
             )
 
-    def add_parts_as_independent_bodies(self, assembly_graph: AssemblyGraph) -> None:
-        for node in assembly_graph.get_nodes():
-            part = node.part
-            part_body = ET.SubElement(
-                self.worldbody,
-                "body",
-                attrib={
-                    "name": part.Name,
-                    "pos": "0.0 0.0 0.0",
-                    "quat": "1.0 0.0 0.0 0.0",
-                },
-            )
-            ET.SubElement(
-                part_body,
-                "geom",
-                attrib={
-                    "type": "mesh",
-                    "name": f"{part.Name} geom",
-                    "mesh": part.Name,
-                },
-            )
-
-    def add_floorplane(self, assembly_graph: AssemblyGraph) -> None:
+    def add_floorplane(self, assembly_graph: Graph) -> None:
         minimum_z_placement: float | None = None
         for node in assembly_graph.get_nodes():
             part = node.part
@@ -280,14 +393,88 @@ class MujocoExporter:
             material="groundplane",
         )
 
+    def process_kinematic_tree(
+        self,
+        node: GraphNode,
+        tree: dict[
+            GraphNode,
+            None | dict[str, GraphNode | GraphEdge],
+        ],
+        parent_element: ET.Element,
+    ):
+        """Recursively process a part and its children in the hierarchy"""
+        # Create body element for this part
+        body = ET.SubElement(
+            parent_element,
+            "body",
+            name=node.part.Name,
+            pos="0.0 0.0 0.0",
+            quat="1.0 0.0 0.0 0.0",
+        )
+        # Add mesh for visualization
+        ET.SubElement(
+            body,
+            "geom",
+            type="mesh",
+            name=f"{node.part.Name} geom",
+            mesh=node.part.Name,
+            contype="1",
+            conaffinity="1",
+        )
+        # Process all child parts
+        for child in tree[node]["children"]:
+            print(f"{child=}")
+            # Find joint connecting this part to child
+            connecting_joint = None
+            child_node = child["node"]
+            edge = child["edge"]
+            if isinstance(edge, dict):
+                joint_parent = edge["parent"]
+                joint_child = edge["child"]
+            else:
+                joint_parent = edge.node1
+                joint_child = edge.node2
+            if joint_parent == node and joint_child == child_node:
+                connecting_joint = edge
+            if connecting_joint:
+                # Process child with joint
+                self.add_joint_to_body(body, connecting_joint)
+            self.process_kinematic_tree(child_node, tree, body)
+
+    def add_joint_to_body(
+        self, body_element: ET.Element, joint: GraphEdge | dict
+    ) -> None:
+        """Add a joint to a body element"""
+        if isinstance(joint, dict):
+            joint_type = joint["type"]
+        else:
+            joint_type = joint.mujoco_joint_type
+
+        if joint_type is None or joint_type == "fixed":
+            return
+
+        # Create the joint element
+        joint_element = ET.SubElement(body_element, "joint", type=joint_type)
+
     def write_xml(self, xml_file: str | os.PathLike) -> None:
+        """Writes final XML structure to a file.
+
+        Args:
+            xml_file: Output path to XML file.
+        """
         ET.indent(self.mujoco)
         tree = ET.ElementTree(self.mujoco)
         tree.write(xml_file, encoding="utf-8", xml_declaration=True)
         App.Console.PrintMessage(f"{MACRO_NAME}: Successfully exported to {xml_file}\n")
 
 
+####################################################################
+# Main Macro Function
+####################################################################
+
+
 def main() -> None:
+    """Macro entrypoint."""
     doc = App.activeDocument()
     if not doc:
         App.Console.PrintError(f"{MACRO_NAME}: No active document\n")
@@ -315,19 +502,24 @@ def main() -> None:
     doc_file = Path(doc.FileName)
     doc_dir = doc_file.parent
     mujoco_export_dir = doc_dir / "mujoco"
-    exporter = MujocoExporter()
 
-    # Create graph connecting parts with joints
-    assembly_graph = AssemblyGraph(assembly)
-
-    # Simplify graph and convert it to an acyclic one by adding dummy nodes
-    assembly_graph.simplify_graph()
-
-    exporter.export_assembly(assembly_graph, output_dir=mujoco_export_dir)
+    # Export to MuJoCo Format
+    exporter = MuJuCoExporter()
+    exporter.export_assembly(assembly, output_dir=mujoco_export_dir)
 
 
-try:
-    main()
-except Exception as e:
-    App.Console.PrintError("ExportToMujoco: ERROR: {}\n".format(e))
-    raise
+if __name__ == "__main__":
+    import PySide
+    from PySide import QtGui
+
+    mw = Gui.getMainWindow()
+    try:
+        r = mw.findChild(QtGui.QTextEdit, "Report view")
+        r.clear()
+    except Exception:
+        None
+    try:
+        main()
+    except Exception as e:
+        App.Console.PrintError(f"{MACRO_NAME}: Error: {e}\n")
+        raise
