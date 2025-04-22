@@ -400,39 +400,44 @@ class MuJuCoExporter:
         current_node: GraphNode,
         tree: Graph,
         *,
-        previous_parent_body: ET.Element | None = None,
+        parent_body: ET.Element | None = None,
         body_elements: dict | None = None,
     ) -> None:
-        if previous_parent_body is None:
-            previous_parent_body = self.worldbody
+        if parent_body is None:
+            parent_body = self.worldbody
         if body_elements is None:
             body_elements = {}
 
         if (body := body_elements.get(current_node)) is None:
-            # Create body element for this part
-            body = ET.SubElement(
-                previous_parent_body,
-                "body",
-                name=current_node.part.Name,
-                pos="0.0 0.0 0.0",
-                quat="1.0 0.0 0.0 0.0",
-            )
+            body = self.add_body(current_node, parent_body)
             body_elements[current_node.part.Name] = body
-            # Add mesh for visualization
-            ET.SubElement(
-                body,
-                "geom",
-                type="mesh",
-                name=f"{current_node.part.Name} geom",
-                mesh=current_node.part.Name,
-                contype="1",
-                conaffinity="1",
-            )
+
         for child_node in tree.get_neighbors(current_node):
             edge = tree.get_edge(current_node, child_node)
             self.process_tree(
                 child_node, tree, previous_parent_body=body, body_elements=body_elements
             )
+
+    def add_body(self, node: GraphNode, parent_body: ET.Element) -> ET.Element:
+        # Create body element for this part
+        body = ET.SubElement(
+            parent_body,
+            "body",
+            name=node.part.Name,
+            pos="0.0 0.0 0.0",
+            quat="1.0 0.0 0.0 0.0",
+        )
+        # Add mesh for visualization
+        ET.SubElement(
+            body,
+            "geom",
+            type="mesh",
+            name=f"{node.part.Name} geom",
+            mesh=node.part.Name,
+            contype="1",
+            conaffinity="1",
+        )
+        return body
 
     def process_kinematic_tree(
         self,
