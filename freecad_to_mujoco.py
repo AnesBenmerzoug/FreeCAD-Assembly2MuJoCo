@@ -12,7 +12,7 @@ import UtilsAssembly
 
 MACRO_NAME = "ExportToMujoco"
 
-MUJOCO_JOINT_TYPE = Literal["hinge", "slide", "ball", "free"] | None
+MUJOCO_JOINT_TYPE = Literal["hinge", "slide", "ball", "free"]
 
 
 ####################################################################
@@ -60,8 +60,8 @@ class GraphEdge:
         return weight
 
     @staticmethod
-    def determine_mujoco_joint_type(joint) -> MUJOCO_JOINT_TYPE:
-        mujoco_joint_type: str | None = None
+    def determine_mujoco_joint_type(joint) -> MUJOCO_JOINT_TYPE | None:
+        mujoco_joint_type: MUJOCO_JOINT_TYPE | None = None
         if joint.JointType == "Revolute":
             mujoco_joint_type = "hinge"
         elif joint.JointType == "Prismatic":
@@ -337,6 +337,8 @@ class MuJuCoExporter:
         # Find minimum spanning tree representing kinematic tree
         # As well as unused edges (joints) that will be converted to equality constraints
         tree, unused_edges = find_minimum_spanning_tree(assembly_graph)
+        root_node = tree.get_nodes()[0]
+        self.process_tree(root_node, tree)
 
         # Save MJCF file
         xml_file = (
@@ -392,6 +394,45 @@ class MuJuCoExporter:
             type="plane",
             material="groundplane",
         )
+
+    def process_tree(
+        self,
+        current_node: GraphNode,
+        tree: Graph,
+        *,
+        previous_parent_body: ET.Element | None = None,
+        body_elements: dict | None = None,
+    ) -> None:
+        if previous_parent_body is None:
+            previous_parent_body = self.worldbody
+        if body_elements is None:
+            body_elements = {}
+
+        if (body := body_elements.get(current_node)) is None:
+            # Create body element for this part
+            body = ET.SubElement(
+                previous_parent_body,
+                "body",
+                name=current_node.part.Name,
+                pos="0.0 0.0 0.0",
+                quat="1.0 0.0 0.0 0.0",
+            )
+            body_elements[current_node.part.Name] = body
+            # Add mesh for visualization
+            ET.SubElement(
+                body,
+                "geom",
+                type="mesh",
+                name=f"{current_node.part.Name} geom",
+                mesh=current_node.part.Name,
+                contype="1",
+                conaffinity="1",
+            )
+        for child_node in tree.get_neighbors(current_node):
+            edge = tree.get_edge(current_node, child_node)
+            self.process_tree(
+                child_node, tree, previous_parent_body=body, body_elements=body_elements
+            )
 
     def process_kinematic_tree(
         self,
