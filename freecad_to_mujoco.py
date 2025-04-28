@@ -1,9 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
-from enum import Enum, unique
 from pathlib import Path
-from queue import SimpleQueue
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
 import FreeCAD as App
 import FreeCADGui as Gui
@@ -27,6 +25,29 @@ class GraphNode:
     ) -> None:
         self.part = part
 
+    def get_body_position_and_orientation(
+        self, parent: Optional["GraphNode"] = None
+    ) -> tuple[str, str]:
+        """Extract position and orientation from FreeCAD part."""
+        if parent is not None:
+            # plc is self.placement relative to parent.placement
+            plc = parent.part.Placement.inverse() * self.part.Placement
+            pos = plc.Base
+            quat = plc.Rotation.Q
+        else:
+            # No parent, use global position and orientation
+            pos = self.part.Placement.Base
+            quat = self.part.Placement.Rotation.Q
+
+        # Convert mm to m
+        pos = f"{pos.x / 1000} {pos.y / 1000} {pos.z / 1000}"
+        quat = f"{quat[0]} {quat[1]} {quat[2]} {quat[3]}"
+        print(f"Name = {self.part.Name}")
+        print(f"{pos=}")
+        print(f"{quat=}")
+        print()
+        return pos, quat
+
     def __repr__(self) -> str:
         return f"<AssemblyGraphNode part={self.part.Name}>"
 
@@ -38,8 +59,16 @@ class GraphNode:
 
 
 class GraphEdge:
-    def __init__(self, joint: App.DocumentObject) -> None:
+    def __init__(
+        self,
+        joint: App.DocumentObject,
+        *,
+        parent_node: GraphNode,
+        child_node: GraphNode,
+    ) -> None:
         self.joint = joint
+        self.parent_node = parent_node
+        self.child_node = child_node
         self.weight = self.compute_weight(self.joint)
 
     @staticmethod
@@ -59,22 +88,60 @@ class GraphEdge:
         weight = type_weights.get(joint.JointType, 20.0)
         return weight
 
-    @staticmethod
-    def determine_mujoco_joint_type(joint) -> MUJOCO_JOINT_TYPE | None:
-        mujoco_joint_type: MUJOCO_JOINT_TYPE | None = None
-        if joint.JointType == "Revolute":
-            mujoco_joint_type = "hinge"
-        elif joint.JointType == "Prismatic":
-            mujoco_joint_type = "slide"
-        elif joint.JointType == "Ball":
-            mujoco_joint_type = "ball"
-        elif joint.JointType == "Cylindrical":
-            mujoco_joint_type = "hinge"
-        elif joint.JointType == "Planar":
-            mujoco_joint_type = "free"
-        elif joint.JointType == "Fixed":
-            mujoco_joint_type = None
+    def get_mujoco_joint_type(self) -> MUJOCO_JOINT_TYPE | None:
+        joint_type_mapping: dict[str, MUJOCO_JOINT_TYPE] = {
+            "Revolute": "hinge",
+            "Prismatic": "slide",
+            "Cylindrical": "hinge",
+            "Ball": "ball",
+            "Planar": "free",
+        }
+        mujoco_joint_type = joint_type_mapping.get(self.joint.JointType)
         return mujoco_joint_type
+
+    def get_joint_position_and_axis(
+        self,
+    ) -> tuple[str, str]:
+        """Extract joint position and axis from FreeCAD joint"""
+        assembly = self.parent_node.part.Parents[0][0]
+        if assembly.Type != "Assembly":
+            raise RuntimeError(
+                f"{MACRO_NAME}: Unexpected error trying to get root assembly from part"
+            )
+
+        # Get global placement of joint
+        global_plc = UtilsAssembly.getJcsGlobalPlc(
+            self.joint.Placement1, self.joint.Reference1
+        )
+
+        # Determine which joint reference is this edge's actual parent
+        if (
+            UtilsAssembly.getMovingPart(assembly, self.joint.Reference1)
+            == self.parent_node.part
+        ):
+            parent_part = self.parent_node.part
+        else:
+            parent_part = self.child_node.part
+
+        if self.joint.JointType == "Revolute":
+            # relative_plc is joint_placement relative to parent_part.placement
+            relative_plc = parent_part.Placement.inverse() * global_plc
+
+            pos_vector = relative_plc.Base
+            # For a Revolute joint, the Z-axis of the placement is the rotation axis
+            # Transform the Z-axis (0,0,1) by the rotation part of the placement
+            axis_vector = relative_plc.Rotation.multVec(App.Vector(0, 0, 1))
+            # axis_vector = UtilsAssembly.round_vector(axis_vector)
+
+        else:
+            raise NotImplementedError(
+                f"Getting joint axis not implemented for joint type: {self.joint.JointType}"
+            )
+
+        # Convert mm to m
+        pos = f"{pos_vector[0] / 1000} {pos_vector[1] / 1000} {pos_vector[2] / 1000}"
+        axis = f"{axis_vector[0]} {axis_vector[1]} {axis_vector[2]}"
+        return pos, axis
 
     def __eq__(self, other: "GraphEdge") -> bool:
         return self.joint == other.joint
@@ -120,7 +187,7 @@ class Graph:
     ) -> None:
         node1 = self.add_node(part1)
         node2 = self.add_node(part2)
-        edge = GraphEdge(joint)
+        edge = GraphEdge(joint, parent_node=node1, child_node=node2)
         self.adjacency_list[node1][node2] = edge
         if not self.is_directed:
             # Since undirected, add both directions
@@ -201,15 +268,34 @@ class UnionFind:
         return True
 
 
-def convert_to_directed_tree(graph: Graph) -> Graph:
-    # Find root(s)
-    root_nodes = [
-        node for node in graph.get_nodes() if len(graph.get_neighbors(node)) == 1
-    ]
-    if not root_nodes:
-        raise RuntimeError(f"{MACRO_NAME}: Could not find root node for assembly")
-    # Select first one as main root node
-    root_node = root_nodes[0]
+def convert_to_directed_tree(graph: Graph, root_node: GraphNode | None = None) -> Graph:
+    """Converts an undirected graph to a directed graph.
+
+    If root_node is provided, the directed graph will start from that node.
+    Otherwise, it will attempt to select as root_node the first node it finds with a single neighbor.
+
+    Args:
+        graph: Undirected graph.
+        root_node: Optional starting node for directed graph.
+
+    Returns:
+        Directed graph.
+    """
+    if root_node is None:
+        # Find root(s)
+        root_nodes = [
+            node for node in graph.get_nodes() if len(graph.get_neighbors(node)) == 1
+        ]
+        if not root_nodes:
+            raise RuntimeError(f"{MACRO_NAME}: Could not find root node for assembly")
+
+        # Select first one as main root node
+        root_node = root_nodes[0]
+    else:
+        if root_node not in graph.get_nodes():
+            raise RuntimeError(
+                f"{MACRO_NAME}: Provided root_node, {root_node.part.Name}, is not part of graph"
+            )
 
     visited: set[GraphNode] = set()
     directed_tree = Graph(is_directed=True)
@@ -252,8 +338,6 @@ def find_minimum_spanning_tree(
         else:
             unused_edges.append((u, v, edge))
 
-    # Build tree
-    tree = convert_to_directed_tree(tree)
     return tree, unused_edges
 
 
@@ -263,10 +347,27 @@ def find_minimum_spanning_tree(
 
 
 class MuJuCoExporter:
-    """Class for exporting a kinematic tree as a MuJoCo MJCF (XML) file and STL files."""
+    """Class for exporting a kinematic tree as a MuJoCo MJCF (XML) file and STL files.
 
-    def __init__(self) -> None:
+    Args:
+        integrator: The numerical integrator to be used in MuJoCo.
+            The available integrators are the semi-implicit Euler method,
+            the fixed-step 4-th order Runge Kutta method,
+            the Implicit-in-velocity Euler method, and implicitfast.
+        time_step: Simulation time step in seconds.
+    """
+
+    def __init__(
+        self,
+        integrator: Literal[
+            "Euler", "implicit", "implicitfast", "RK4"
+        ] = "implicitfast",
+        timestep: float = 0.0001,
+    ) -> None:
         self.mujoco = ET.Element("mujoco")
+        self.option = ET.SubElement(
+            self.mujoco, "option", integrator=integrator, timestep=str(timestep)
+        )
         self.compiler = ET.SubElement(
             self.mujoco, "compiler", meshdir="meshes", autolimits="true"
         )
@@ -337,7 +438,26 @@ class MuJuCoExporter:
         # Find minimum spanning tree representing kinematic tree
         # As well as unused edges (joints) that will be converted to equality constraints
         tree, unused_edges = find_minimum_spanning_tree(assembly_graph)
-        root_node = tree.get_nodes()[0]
+
+        # Use grounded part as root node
+        root_node: GraphNode | None = None
+        grounded_joints = [
+            joint
+            for joint in UtilsAssembly.getJointGroup(assembly).Group
+            if hasattr(joint, "ObjectToGround")
+        ]
+        if grounded_joints:
+            grounded_joint = grounded_joints[0]
+            grounded_part = grounded_joint.ObjectToGround
+            # Find corresponding node
+            root_node = [
+                node for node in tree.get_nodes() if node.part == grounded_part
+            ][0]
+
+        # Build tree
+        tree = convert_to_directed_tree(tree, root_node)
+        if root_node is None:
+            root_node = tree.get_nodes()[0]
         self.process_tree(root_node, tree)
 
         # Save MJCF file
@@ -352,6 +472,14 @@ class MuJuCoExporter:
         for node in assembly_graph.get_nodes():
             part = node.part
             shape = part.Shape.copy(False)
+            # Reset position by creating a temporary placement at origin
+            reset_placement = App.Placement()
+            reset_placement.Base = App.Vector(0, 0, 0)
+            reset_placement.Rotation = App.Rotation(
+                0, 0, 0, 1
+            )  # Identity rotation (w=1)
+            shape.Placement = reset_placement
+
             mesh = MeshPart.meshFromShape(
                 Shape=shape,
                 LinearDeflection=0.1,
@@ -400,32 +528,43 @@ class MuJuCoExporter:
         current_node: GraphNode,
         tree: Graph,
         *,
-        parent_body: ET.Element | None = None,
-        body_elements: dict | None = None,
-    ) -> None:
-        if parent_body is None:
-            parent_body = self.worldbody
+        parent_node: ET.Element | None = None,
+        body_elements: dict[GraphNode, ET.Element] | None = None,
+        added_joint: int = 0,
+    ) -> ET.Element:
         if body_elements is None:
             body_elements = {}
+        parent_body = body_elements.get(parent_node, self.worldbody)
 
         if (body := body_elements.get(current_node)) is None:
-            body = self.add_body(current_node, parent_body)
-            body_elements[current_node.part.Name] = body
+            body = self.add_body(current_node, parent_node, parent_body)
+            body_elements[current_node] = body
 
         for child_node in tree.get_neighbors(current_node):
-            edge = tree.get_edge(current_node, child_node)
-            self.process_tree(
-                child_node, tree, previous_parent_body=body, body_elements=body_elements
+            child_body = self.process_tree(
+                child_node,
+                tree,
+                parent_node=current_node,
+                body_elements=body_elements,
+                added_joint=added_joint,
             )
+            edge = tree.get_edge(current_node, child_node)
+            if added_joint < 1:
+                if self.add_joint_to_body(child_body, edge):
+                    added_joint += 1
+        return body
 
-    def add_body(self, node: GraphNode, parent_body: ET.Element) -> ET.Element:
+    def add_body(
+        self, node: GraphNode, parent_node: GraphNode, parent_body: ET.Element
+    ) -> ET.Element:
         # Create body element for this part
+        pos, quat = node.get_body_position_and_orientation(parent_node)
         body = ET.SubElement(
             parent_body,
             "body",
             name=node.part.Name,
-            pos="0.0 0.0 0.0",
-            quat="1.0 0.0 0.0 0.0",
+            pos=pos,
+            quat=quat,
         )
         # Add mesh for visualization
         ET.SubElement(
@@ -439,68 +578,39 @@ class MuJuCoExporter:
         )
         return body
 
-    def process_kinematic_tree(
-        self,
-        node: GraphNode,
-        tree: dict[
-            GraphNode,
-            None | dict[str, GraphNode | GraphEdge],
-        ],
-        parent_element: ET.Element,
-    ):
-        """Recursively process a part and its children in the hierarchy"""
-        # Create body element for this part
-        body = ET.SubElement(
-            parent_element,
-            "body",
-            name=node.part.Name,
-            pos="0.0 0.0 0.0",
-            quat="1.0 0.0 0.0 0.0",
-        )
-        # Add mesh for visualization
-        ET.SubElement(
-            body,
-            "geom",
-            type="mesh",
-            name=f"{node.part.Name} geom",
-            mesh=node.part.Name,
-            contype="1",
-            conaffinity="1",
-        )
-        # Process all child parts
-        for child in tree[node]["children"]:
-            print(f"{child=}")
-            # Find joint connecting this part to child
-            connecting_joint = None
-            child_node = child["node"]
-            edge = child["edge"]
-            if isinstance(edge, dict):
-                joint_parent = edge["parent"]
-                joint_child = edge["child"]
-            else:
-                joint_parent = edge.node1
-                joint_child = edge.node2
-            if joint_parent == node and joint_child == child_node:
-                connecting_joint = edge
-            if connecting_joint:
-                # Process child with joint
-                self.add_joint_to_body(body, connecting_joint)
-            self.process_kinematic_tree(child_node, tree, body)
-
     def add_joint_to_body(
-        self, body_element: ET.Element, joint: GraphEdge | dict
+        self,
+        body: ET.Element,
+        edge: GraphEdge,
     ) -> None:
         """Add a joint to a body element"""
-        if isinstance(joint, dict):
-            joint_type = joint["type"]
-        else:
-            joint_type = joint.mujoco_joint_type
+        joint_type = edge.get_mujoco_joint_type()
 
         if joint_type is None or joint_type == "fixed":
-            return
+            return False
+
+        joint_pos, joint_axis = edge.get_joint_position_and_axis()
 
         # Create the joint element
-        joint_element = ET.SubElement(body_element, "joint", type=joint_type)
+        joint_element = ET.SubElement(
+            body,
+            "joint",
+            type=joint_type,
+            name=edge.joint.Label,
+            pos=joint_pos,
+            axis=joint_axis,
+            damping="0.1",
+        )
+
+        # Create actuator element
+        actuator_element = ET.SubElement(
+            self.actuator,
+            "position",
+            name=f"position_{joint_element.get('name')}",
+            joint=joint_element.get("name"),
+            kp="100",
+        )
+        return True
 
     def write_xml(self, xml_file: str | os.PathLike) -> None:
         """Writes final XML structure to a file.
