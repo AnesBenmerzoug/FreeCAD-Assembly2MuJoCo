@@ -666,7 +666,7 @@ class MuJuCoExporter:
         ET.indent(self.mujoco)
         tree = ET.ElementTree(self.mujoco)
         tree.write(xml_file, encoding="utf-8", xml_declaration=True)
-        App.Console.PrintMessage(f"{MACRO_NAME}: Successfully exported to {xml_file}\n")
+        log_message(f"Successfully exported to {xml_file}")
 
 
 ####################################################################
@@ -678,23 +678,25 @@ def main() -> None:
     """Macro entrypoint."""
     doc = App.activeDocument()
     if not doc:
-        App.Console.PrintError(f"{MACRO_NAME}: No active document\n")
+        log_message("No active document", level="error")
         return
 
     selection = Gui.Selection.getSelectionEx()
     if not selection:
-        App.Console.PrintError("Please select an assembly\n")
+        log_message("Please select an assembly", level="error")
         return
 
     if len(selection) != 1:
-        App.Console.PrintError(
-            f"{MACRO_NAME}: Expected selection to contain 1 object instead of {len(selection)}. Please only select an assembly\n"
+        log_message(
+            "Expected selection to contain 1 object instead of {len(selection)}. Please only select an assembly",
+            level="error",
         )
         return
 
     if selection[0].Object.Type != "Assembly":
-        App.Console.PrintError(
-            f"{MACRO_NAME}: Expected selection to be an object of type Assembly instead of {selection[0].Object.Type}\n"
+        log_message(
+            f"Expected selection to be an object of type Assembly instead of {selection[0].Object.Type}",
+            level="error",
         )
         return
 
@@ -722,5 +724,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        App.Console.PrintError(f"{MACRO_NAME}: Error: {e}\n")
+        log_message(f"Error: {e}", level="error")
         raise
