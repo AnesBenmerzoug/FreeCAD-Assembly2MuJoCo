@@ -8,9 +8,30 @@ import FreeCADGui as Gui
 import MeshPart
 import UtilsAssembly
 
+
 MACRO_NAME = "ExportToMujoco"
 
 MUJOCO_JOINT_TYPE = Literal["hinge", "slide", "ball", "free"]
+
+####################################################################
+# Utilities
+####################################################################
+
+
+def log_message(
+    message: str,
+    *,
+    level: Literal["info", "warning", "error"] = "info",
+) -> None:
+    formatted_message = MACRO_NAME + ": " + message + "\n"
+    if level == "info":
+        App.Console.PrintMessage(formatted_message)
+    elif level == "warning":
+        App.Console.PrintWarning(formatted_message)
+    elif level == "error":
+        App.Console.PrintError(formatted_message)
+    else:
+        raise ValueError(f"Unrecognized log level '{level}'")
 
 
 ####################################################################
