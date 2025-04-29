@@ -47,26 +47,39 @@ class GraphNode:
         self.part = part
 
     def get_body_position_and_orientation(
-        self, parent: Optional["GraphNode"] = None
+        self, parent: Optional["GraphNode"] = None, *, is_reset: bool = False
     ) -> tuple[str, str]:
-        """Extract position and orientation from FreeCAD part."""
-        if parent is not None:
-            # plc is self.placement relative to parent.placement
-            plc = parent.part.Placement.inverse() * self.part.Placement
-            pos = plc.Base
-            quat = plc.Rotation.Q
-        else:
-            # No parent, use global position and orientation
-            pos = self.part.Placement.Base
-            quat = self.part.Placement.Rotation.Q
+        """Extract position and orientation from FreeCAD part.
 
-        # Convert mm to m
-        pos = f"{pos.x / 1000} {pos.y / 1000} {pos.z / 1000}"
-        quat = f"{quat[0]} {quat[1]} {quat[2]} {quat[3]}"
-        print(f"Name = {self.part.Name}")
-        print(f"{pos=}")
-        print(f"{quat=}")
-        print()
+        Args:
+            parent: Optional parent node. It is expected to be None for the root node.
+            is_reset: If True, considers that we have reset the position of the parts
+                when we exported them as STL meshes.
+                Therefore we must compute the actual relative position of the part with respect
+                to its parent in order to set it in the MJCF file.
+
+        """
+        if is_reset:
+            # TODO: Fix this because this doesn't work with rotation for some reason.
+            #   It could be because the center of the frame of reference is different in FreeCAD
+            #   and in the exported mesh.
+            if parent is not None:
+                # plc is self.placement relative to parent.placement
+                plc = parent.part.Placement.inverse() * self.part.Placement
+                pos = plc.Base
+                quat = plc.Rotation.Q
+            else:
+                # No parent, use global position and orientation
+                pos = self.part.Placement.Base
+                quat = self.part.Placement.Rotation.Q
+            # Convert mm to m
+            pos = f"{pos.x / 1000} {pos.y / 1000} {pos.z / 1000}"
+            quat = f"{quat[0]} {quat[1]} {quat[2]} {quat[3]}"
+        else:
+            pos = "0 0 0"
+            quat = "1.0 0.0 0.0 0.0"
+
+        log_message(f"Part: Name={self.part.Name}, Pos={pos}, Quat={quat}")
         return pos, quat
 
     def __repr__(self) -> str:
@@ -120,9 +133,7 @@ class GraphEdge:
         mujoco_joint_type = joint_type_mapping.get(self.joint.JointType)
         return mujoco_joint_type
 
-    def get_joint_position_and_axis(
-        self,
-    ) -> tuple[str, str]:
+    def get_joint_position_and_axis(self, *, is_reset: bool = False) -> tuple[str, str]:
         """Extract joint position and axis from FreeCAD joint"""
         assembly = self.parent_node.part.Parents[0][0]
         if assembly.Type != "Assembly":
@@ -145,8 +156,11 @@ class GraphEdge:
             parent_part = self.child_node.part
 
         if self.joint.JointType == "Revolute":
-            # relative_plc is joint_placement relative to parent_part.placement
-            relative_plc = parent_part.Placement.inverse() * global_plc
+            if is_reset:
+                # relative_plc is joint_placement relative to parent_part.placement
+                relative_plc = parent_part.Placement.inverse() * global_plc
+            else:
+                relative_plc = global_plc
 
             pos_vector = relative_plc.Base
             # For a Revolute joint, the Z-axis of the placement is the rotation axis
@@ -162,6 +176,8 @@ class GraphEdge:
         # Convert mm to m
         pos = f"{pos_vector[0] / 1000} {pos_vector[1] / 1000} {pos_vector[2] / 1000}"
         axis = f"{axis_vector[0]} {axis_vector[1]} {axis_vector[2]}"
+
+        log_message(f"Joint: Name={self.joint.Name}, Pos={pos}, Axis={axis}")
         return pos, axis
 
     def __eq__(self, other: "GraphEdge") -> bool:
@@ -488,18 +504,26 @@ class MuJuCoExporter:
         self.write_xml(xml_file)
 
     def export_parts_as_meshes_and_add_to_assets(
-        self, assembly_graph: Graph, meshes_dir: str | os.PathLike
+        self,
+        assembly_graph: Graph,
+        meshes_dir: str | os.PathLike,
+        *,
+        reset_placement: bool = False,
     ) -> None:
         for node in assembly_graph.get_nodes():
             part = node.part
             shape = part.Shape.copy(False)
-            # Reset position by creating a temporary placement at origin
-            reset_placement = App.Placement()
-            reset_placement.Base = App.Vector(0, 0, 0)
-            reset_placement.Rotation = App.Rotation(
-                0, 0, 0, 1
-            )  # Identity rotation (w=1)
-            shape.Placement = reset_placement
+
+            if reset_placement:
+                # Reset position by creating a temporary placement at origin
+                reset_placement = App.Placement(
+                    App.Vector(0, 0, 0),
+                    App.Rotation(App.Vector(0, 0, 1), 0),
+                    App.Vector(0, 0, 0),
+                )
+                shape.Placement = reset_placement
+
+            log_message(f"Shape: Name={part.Name}, Placement={shape.Placement}")
 
             mesh = MeshPart.meshFromShape(
                 Shape=shape,
