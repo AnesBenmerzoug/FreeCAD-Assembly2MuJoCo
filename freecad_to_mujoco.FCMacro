@@ -399,11 +399,15 @@ class MuJuCoExporter:
         integrator: Literal[
             "Euler", "implicit", "implicitfast", "RK4"
         ] = "implicitfast",
-        timestep: float = 0.0001,
+        timestep: float = 0.002,
     ) -> None:
         self.mujoco = ET.Element("mujoco")
         self.option = ET.SubElement(
-            self.mujoco, "option", integrator=integrator, timestep=str(timestep)
+            self.mujoco,
+            "option",
+            integrator=integrator,
+            timestep=str(timestep),
+            solver="Newton",
         )
         self.compiler = ET.SubElement(
             self.mujoco, "compiler", meshdir="meshes", autolimits="true"
@@ -450,11 +454,15 @@ class MuJuCoExporter:
         ET.SubElement(
             self.worldbody, "light", diffuse=".6 .6 .6", pos="4 4 4", dir="-1 -1 -1"
         )
-        self.part_bodies: dict[str, Any] = {}
         # Placeholder for elements that will be added when exporting
+        self.contact = ET.SubElement(self.mujoco, "contact")
         self.equality = ET.SubElement(self.mujoco, "equality")
-        self.sensor = ET.SubElement(self.mujoco, "sensor")
+        self.tendon = ET.SubElement(self.mujoco, "tendon")
         self.actuator = ET.SubElement(self.mujoco, "actuator")
+        self.sensor = ET.SubElement(self.mujoco, "sensor")
+        # Add defaults
+        self.default = ET.SubElement(self.mujoco, "default")
+        ET.SubElement(self.default, "joint", damping="1.0")
 
     def export_assembly(
         self, assembly: App.DocumentObject, output_dir: str | os.PathLike
@@ -527,8 +535,8 @@ class MuJuCoExporter:
 
             mesh = MeshPart.meshFromShape(
                 Shape=shape,
-                LinearDeflection=0.1,
-                AngularDeflection=5.0,
+                LinearDeflection=1.0,
+                AngularDeflection=10.0,
                 Relative=False,
             )
             mesh_file = Path(meshes_dir).joinpath(part.Name).with_suffix(".stl")
@@ -575,15 +583,14 @@ class MuJuCoExporter:
         *,
         parent_node: ET.Element | None = None,
         body_elements: dict[GraphNode, ET.Element] | None = None,
-        added_joint: int = 0,
     ) -> ET.Element:
         if body_elements is None:
             body_elements = {}
         parent_body = body_elements.get(parent_node, self.worldbody)
 
-        if (body := body_elements.get(current_node)) is None:
-            body = self.add_body(current_node, parent_node, parent_body)
-            body_elements[current_node] = body
+        if (current_body := body_elements.get(current_node)) is None:
+            current_body = self.add_body(current_node, parent_node, parent_body)
+            body_elements[current_node] = current_body
 
         for child_node in tree.get_neighbors(current_node):
             child_body = self.process_tree(
@@ -591,13 +598,10 @@ class MuJuCoExporter:
                 tree,
                 parent_node=current_node,
                 body_elements=body_elements,
-                added_joint=added_joint,
             )
             edge = tree.get_edge(current_node, child_node)
-            if added_joint < 1:
-                if self.add_joint_to_body(child_body, edge):
-                    added_joint += 1
-        return body
+            self.add_joint_to_body(child_body, edge)
+        return current_body
 
     def add_body(
         self, node: GraphNode, parent_node: GraphNode, parent_body: ET.Element
@@ -618,8 +622,8 @@ class MuJuCoExporter:
             type="mesh",
             name=f"{node.part.Name} geom",
             mesh=node.part.Name,
-            contype="1",
-            conaffinity="1",
+            contype="0",
+            conaffinity="0",
         )
         return body
 
@@ -627,12 +631,12 @@ class MuJuCoExporter:
         self,
         body: ET.Element,
         edge: GraphEdge,
-    ) -> None:
+    ) -> ET.Element:
         """Add a joint to a body element"""
         joint_type = edge.get_mujoco_joint_type()
 
         if joint_type is None or joint_type == "fixed":
-            return False
+            return None
 
         joint_pos, joint_axis = edge.get_joint_position_and_axis()
 
@@ -644,18 +648,17 @@ class MuJuCoExporter:
             name=edge.joint.Label,
             pos=joint_pos,
             axis=joint_axis,
-            damping="0.1",
         )
 
         # Create actuator element
-        actuator_element = ET.SubElement(
+        ET.SubElement(
             self.actuator,
             "position",
             name=f"position_{joint_element.get('name')}",
             joint=joint_element.get("name"),
             kp="100",
         )
-        return True
+        return joint_element
 
     def write_xml(self, xml_file: str | os.PathLike) -> None:
         """Writes final XML structure to a file.
