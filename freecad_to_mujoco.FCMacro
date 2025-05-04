@@ -410,8 +410,29 @@ class MuJuCoExporter:
             solver="Newton",
         )
         self.compiler = ET.SubElement(
-            self.mujoco, "compiler", meshdir="meshes", autolimits="true"
+            self.mujoco,
+            "compiler",
+            meshdir="meshes",
+            autolimits="true",
+            inertiafromgeom="true",
         )
+        # Add defaults
+        self.default = ET.SubElement(self.mujoco, "default")
+        ET.SubElement(
+            self.default,
+            "joint",
+            damping="1.0",
+            armature="1.0",
+        )
+        ET.SubElement(
+            self.default,
+            "geom",
+            conaffinity="0",
+            condim="3",
+            friction="1 0.5 0.5",
+            margin="0.01",
+        )
+        # Add assets
         self.asset = ET.SubElement(self.mujoco, "asset")
         ET.SubElement(
             self.asset,
@@ -448,6 +469,7 @@ class MuJuCoExporter:
 
         self.worldbody = ET.SubElement(self.mujoco, "worldbody")
         # Add multiple light sources for better visualization
+        self.worldbody.append(ET.Comment("Lighting and floor"))
         ET.SubElement(
             self.worldbody, "light", diffuse=".8 .8 .8", pos="0 0 4", dir="0 0 -1"
         )
@@ -460,9 +482,6 @@ class MuJuCoExporter:
         self.tendon = ET.SubElement(self.mujoco, "tendon")
         self.actuator = ET.SubElement(self.mujoco, "actuator")
         self.sensor = ET.SubElement(self.mujoco, "sensor")
-        # Add defaults
-        self.default = ET.SubElement(self.mujoco, "default")
-        ET.SubElement(self.default, "joint", damping="1.0")
 
     def export_assembly(
         self, assembly: App.DocumentObject, output_dir: str | os.PathLike
@@ -475,10 +494,12 @@ class MuJuCoExporter:
         # Export assembly parts as binary stl meshes
         meshes_dir = Path(output_dir).joinpath("meshes")
         meshes_dir.mkdir(exist_ok=True, parents=True)
+        self.worldbody.append(ET.Comment("Part Meshes"))
         self.export_parts_as_meshes_and_add_to_assets(assembly_graph, meshes_dir)
 
         # Add floorplane (cosmetic)
         self.add_floorplane(assembly_graph)
+        self.worldbody.append(ET.Comment("Assembly"))
 
         # Find minimum spanning tree representing kinematic tree
         # As well as unused edges (joints) that will be converted to equality constraints
@@ -504,6 +525,10 @@ class MuJuCoExporter:
         if root_node is None:
             root_node = tree.get_nodes()[0]
         self.process_tree(root_node, tree)
+
+        # Handle kinematic loops
+        if unused_edges:
+            self.process_kinematic_loops(unused_edges)
 
         # Save MJCF file
         xml_file = (
@@ -535,8 +560,8 @@ class MuJuCoExporter:
 
             mesh = MeshPart.meshFromShape(
                 Shape=shape,
-                LinearDeflection=1.0,
-                AngularDeflection=10.0,
+                LinearDeflection=0.5,
+                AngularDeflection=5.0,
                 Relative=False,
             )
             mesh_file = Path(meshes_dir).joinpath(part.Name).with_suffix(".stl")
@@ -654,11 +679,41 @@ class MuJuCoExporter:
         ET.SubElement(
             self.actuator,
             "position",
-            name=f"position_{joint_element.get('name')}",
+            name=joint_element.get("name"),
             joint=joint_element.get("name"),
             kp="100",
         )
+
+        # Create sensor element
+        ET.SubElement(
+            self.sensor,
+            "jointpos",
+            name=joint_element.get("name") + "_pos",
+            joint=joint_element.get("name"),
+        )
         return joint_element
+
+    def process_kinematic_loops(
+        self, unused_edges: list[tuple[GraphNode, GraphNode, GraphEdge]]
+    ) -> None:
+        log_message(f"Found {len(unused_edges)} kinematic loops in the assembly")
+        for u, v, edge in unused_edges:
+            joint_type = edge.get_mujoco_joint_type()
+            if joint_type is None:
+                # For fixed joints, use weld constraint
+                ET.SubElement(
+                    self.equality,
+                    "weld",
+                    name=f"loop_weld_{edge.joint.Label}",
+                    body1=u.part.Name,
+                    body2=v.part.Name,
+                    solref="0.01 1",
+                    solimp="0.9 0.95 0.001",
+                )
+            else:
+                raise NotImplementedError(
+                    f"Processing kinematic loop not implemented for joint type '{joint_type}'"
+                )
 
     def write_xml(self, xml_file: str | os.PathLike) -> None:
         """Writes final XML structure to a file.
