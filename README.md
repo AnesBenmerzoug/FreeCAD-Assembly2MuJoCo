@@ -41,9 +41,12 @@ This repository contains a [FreeCAD](https://www.freecad.org/) macro to export a
 
 ## Collision Issues
 
-MuJoCo by default excludes collisions between parent and child bodies
-However, this exclusion is not applied if the parent is a static body
-i.e. the world body, or a descendant of the world body without any degrees of freedom
+- MuJoCo by default excludes collisions between parent and child bodies
+  However, this exclusion is not applied if the parent is a static body
+  i.e. the world body, or a descendant of the world body without any degrees of freedom
+
+- A common issue in MuJoCo typically happens when using STL files because MuJoCo handles
+  collision geometry differently from visual geometry by default.
 
 # Development
 
