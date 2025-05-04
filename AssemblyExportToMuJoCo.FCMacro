@@ -452,7 +452,7 @@ class MuJuCoExporter:
             conaffinity="0",
             condim="3",
             friction="1 0.5 0.5",
-            margin="0.01",
+            margin="0",
         )
         # Add assets
         self.asset = ET.SubElement(self.mujoco, "asset")
