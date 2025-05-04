@@ -19,20 +19,45 @@ __Communication__ = (
 )
 __Files__ = "AssemblyExportToMuJoCo.svg"
 
+import math
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, TypedDict
 
 import FreeCAD as App
 import FreeCADGui as Gui
 import MeshPart
 import UtilsAssembly
 
+####################################################################
+# Constants
+####################################################################
 
-MACRO_NAME = "ExportToMujoco"
+MACRO_NAME = "AssemblyExportToMuJoCo"
 
 MUJOCO_JOINT_TYPE = Literal["hinge", "slide", "ball", "free"]
+
+JOINT_TYPE_MAPPING: dict[str, MUJOCO_JOINT_TYPE] = {
+    "Revolute": "hinge",
+    "Prismatic": "slide",
+    "Cylindrical": "hinge",
+    "Ball": "ball",
+    "Planar": "free",
+}
+
+# Assign weights to prioritize which joints to keep in the tree
+# Higher weight are more likely to be excluded from tree
+# Base weight by joint type
+JOINT_TYPE_WEIGHTS = {
+    "Fixed": 10.0,
+    "Revolute": 1.0,
+    "Prismatic": 2.0,
+    "Cylindrical": 3.0,
+    "Ball": 5.0,
+    "Planar": 8.0,
+}
+
 
 ####################################################################
 # Utilities
@@ -55,6 +80,10 @@ def log_message(
         raise ValueError(f"Unrecognized log level '{level}'")
 
 
+class JointAttributes(TypedDict):
+    type: MUJOCO_JOINT_TYPE
+
+
 ####################################################################
 # Assembly Graph Classes
 ####################################################################
@@ -68,37 +97,17 @@ class GraphNode:
         self.part = part
 
     def get_body_position_and_orientation(
-        self, parent: Optional["GraphNode"] = None, *, is_reset: bool = False
+        self,
+        parent: Optional["GraphNode"] = None,
     ) -> tuple[str, str]:
         """Extract position and orientation from FreeCAD part.
 
         Args:
             parent: Optional parent node. It is expected to be None for the root node.
-            is_reset: If True, considers that we have reset the position of the parts
-                when we exported them as STL meshes.
-                Therefore we must compute the actual relative position of the part with respect
-                to its parent in order to set it in the MJCF file.
 
         """
-        if is_reset:
-            # TODO: Fix this because this doesn't work with rotation for some reason.
-            #   It could be because the center of the frame of reference is different in FreeCAD
-            #   and in the exported mesh.
-            if parent is not None:
-                # plc is self.placement relative to parent.placement
-                plc = parent.part.Placement.inverse() * self.part.Placement
-                pos = plc.Base
-                quat = plc.Rotation.Q
-            else:
-                # No parent, use global position and orientation
-                pos = self.part.Placement.Base
-                quat = self.part.Placement.Rotation.Q
-            # Convert mm to m
-            pos = f"{pos.x / 1000} {pos.y / 1000} {pos.z / 1000}"
-            quat = f"{quat[0]} {quat[1]} {quat[2]} {quat[3]}"
-        else:
-            pos = "0 0 0"
-            quat = "1.0 0.0 0.0 0.0"
+        pos = "0 0 0"
+        quat = "1.0 0.0 0.0 0.0"
 
         log_message(f"Part: Name={self.part.Name}, Pos={pos}, Quat={quat}")
         return pos, quat
@@ -130,31 +139,14 @@ class GraphEdge:
     def compute_weight(joint) -> float:
         # Assign weights to prioritize which joints to keep in the tree
         # Higher weight are more likely to be excluded from tree
-        # Base weight by joint type
-        type_weights = {
-            "Fixed": 10.0,
-            "Revolute": 1.0,
-            "Prismatic": 2.0,
-            "Cylindrical": 3.0,
-            "Ball": 5.0,
-            "Planar": 8.0,
-        }
-
-        weight = type_weights.get(joint.JointType, 20.0)
+        weight = JOINT_TYPE_WEIGHTS.get(joint.JointType, 20.0)
         return weight
 
     def get_mujoco_joint_type(self) -> MUJOCO_JOINT_TYPE | None:
-        joint_type_mapping: dict[str, MUJOCO_JOINT_TYPE] = {
-            "Revolute": "hinge",
-            "Prismatic": "slide",
-            "Cylindrical": "hinge",
-            "Ball": "ball",
-            "Planar": "free",
-        }
-        mujoco_joint_type = joint_type_mapping.get(self.joint.JointType)
+        mujoco_joint_type = JOINT_TYPE_MAPPING.get(self.joint.JointType)
         return mujoco_joint_type
 
-    def get_joint_position_and_axis(self, *, is_reset: bool = False) -> tuple[str, str]:
+    def get_joint_position_and_axis(self) -> tuple[str, str]:
         """Extract joint position and axis from FreeCAD joint"""
         assembly = self.parent_node.part.Parents[0][0]
         if assembly.Type != "Assembly":
@@ -167,26 +159,11 @@ class GraphEdge:
             self.joint.Placement1, self.joint.Reference1
         )
 
-        # Determine which joint reference is this edge's actual parent
-        if (
-            UtilsAssembly.getMovingPart(assembly, self.joint.Reference1)
-            == self.parent_node.part
-        ):
-            parent_part = self.parent_node.part
-        else:
-            parent_part = self.child_node.part
-
         if self.joint.JointType == "Revolute":
-            if is_reset:
-                # relative_plc is joint_placement relative to parent_part.placement
-                relative_plc = parent_part.Placement.inverse() * global_plc
-            else:
-                relative_plc = global_plc
-
-            pos_vector = relative_plc.Base
+            pos_vector = global_plc.Base
             # For a Revolute joint, the Z-axis of the placement is the rotation axis
             # Transform the Z-axis (0,0,1) by the rotation part of the placement
-            axis_vector = relative_plc.Rotation.multVec(App.Vector(0, 0, 1))
+            axis_vector = global_plc.Rotation.multVec(App.Vector(0, 0, 1))
             # axis_vector = UtilsAssembly.round_vector(axis_vector)
 
         else:
@@ -200,6 +177,29 @@ class GraphEdge:
 
         log_message(f"Joint: Name={self.joint.Name}, Pos={pos}, Axis={axis}")
         return pos, axis
+
+    def get_joint_range(self) -> str | None:
+        """Extract joint range from a FreeCAD joint limits, if there are any."""
+        limits = {"lower": None, "upper": None}
+
+        # Try to get limits from joint
+        if self.joint.EnableAngleMin:
+            # Convert degrees to radian
+            limits["lower"] = self.joint.AngleMin * math.pi / 180
+        elif self.joint.EnableLengthMin:
+            limits["lower"] = self.joint.LengthMin
+
+        if self.joint.EnableAngleMax:
+            limits["upper"] = self.joint.AngleMax * math.pi / 180
+        elif self.joint.EnableLengthMax:
+            limits["upper"] = self.joint.LengthMax
+
+        # Calculate range if both limits are defined
+        range: str | None = None
+        if limits["lower"] is not None and limits["upper"] is not None:
+            range = f"{limits['lower']} {limits['upper']}"
+
+        return range
 
     def __eq__(self, other: "GraphEdge") -> bool:
         return self.joint == other.joint
@@ -436,6 +436,7 @@ class MuJuCoExporter:
             meshdir="meshes",
             autolimits="true",
             inertiafromgeom="true",
+            angle="radian",
         )
         # Add defaults
         self.default = ET.SubElement(self.mujoco, "default")
@@ -685,6 +686,7 @@ class MuJuCoExporter:
             return None
 
         joint_pos, joint_axis = edge.get_joint_position_and_axis()
+        joint_range = edge.get_joint_range()
 
         # Create the joint element
         joint_element = ET.SubElement(
@@ -695,15 +697,19 @@ class MuJuCoExporter:
             pos=joint_pos,
             axis=joint_axis,
         )
+        if joint_range is not None:
+            joint_element.set("range", joint_range)
 
         # Create actuator element
-        ET.SubElement(
+        actuator_element = ET.SubElement(
             self.actuator,
             "position",
             name=joint_element.get("name"),
             joint=joint_element.get("name"),
             kp="100",
         )
+        if joint_range is not None:
+            actuator_element.set("ctrlrange", joint_range)
 
         # Create sensor element
         ET.SubElement(
