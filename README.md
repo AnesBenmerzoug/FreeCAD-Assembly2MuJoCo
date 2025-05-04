@@ -53,8 +53,8 @@ having to manually copy it there or change FreeCAD's Macro directory.
 For that, an easy solution is to create a symbolic link to the Macro (and related files) in FreeCAD's Macro directory:
 
 ```shell
-ln -s $(pwd)/AssemblyExportToMuJoCo.FCMacro <Path to FreeCAD Macro Directory)
-ln -s $(pwd)/AssemblyExportToMuJoCo.svg <Path to FreeCAD Macro Directory) 
+ln -s $(pwd)/AssemblyExportToMuJoCo.FCMacro <Path to FreeCAD Macro Directory>
+ln -s $(pwd)/AssemblyExportToMuJoCo.svg <Path to FreeCAD Macro Directory>
 ```
 
 # License
