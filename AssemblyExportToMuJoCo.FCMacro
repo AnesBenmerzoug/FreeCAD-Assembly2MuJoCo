@@ -1,3 +1,24 @@
+""" """
+
+__Name__ = "Assembly Export To MuJoCo"
+__Comment__ = (
+    "Export selected assembly to STL and creates an MJCF (XML) for use in MuJoCo"
+)
+__Author__ = "Anes Benmerzoug"
+__Version__ = "0.1.0"
+__Date__ = "2025-05-04"
+__License__ = "LGPL-2.1-only"
+__Web__ = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-Assembly-Export-to-MuJoCo"
+__Wiki__ = ""
+__Icon__ = "AssemblyExportToMuJoCo.svg"
+__Help__ = "Create your assembly using the builtin Assembly Workbench. Then select and run the macro to export its parts as meshes and create an MJCF file for MuJoCo."
+__Status__ = "Beta"
+__Requires__ = "FreeCAD >= 1.0"
+__Communication__ = (
+    "https://github.com/AnesBenmerzoug/FreeCAD-Macro-Assembly-Export-to-MuJoCo/issues"
+)
+__Files__ = "AssemblyExportToMuJoCo.svg"
+
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
