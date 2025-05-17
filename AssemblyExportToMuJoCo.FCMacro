@@ -23,7 +23,7 @@ import math
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Any, Literal, Optional, TypedDict
+from typing import Any, Literal, TypedDict
 
 import FreeCAD as App
 import FreeCADGui as Gui
@@ -84,6 +84,29 @@ class JointAttributes(TypedDict):
     type: MUJOCO_JOINT_TYPE
 
 
+class MaterialProperties(TypedDict):
+    CardName: str
+    AuthorAndLicense: str
+    Author: str
+    License: str
+    Name: str
+    Description: str
+    ReferenceSource: str
+    SourceURL: str
+    AmbientColor: str  # e.g. '(0.8984, 0.7305, 0.3906, 1.0)'
+    DiffuseColor: str  # e.g. '(0.8984, 0.7305, 0.3906, 1.0)'
+    EmissiveColor: str  # e.g. '(0.8984, 0.7305, 0.3906, 1.0)'
+    Shininess: str  # e.g. '0.95'
+    SpecularColor: str  # e.g. '(0.8984, 0.7305, 0.3906, 1.0)'
+    Transparency: str  # e.g. '0'
+
+
+class AppearanceDict(TypedDict):
+    name: str
+    rgba: str
+    shininess: str
+
+
 ####################################################################
 # Assembly Graph Classes
 ####################################################################
@@ -96,21 +119,30 @@ class GraphNode:
     ) -> None:
         self.part = part
 
-    def get_body_position_and_orientation(
-        self,
-        parent: Optional["GraphNode"] = None,
-    ) -> tuple[str, str]:
-        """Extract position and orientation from FreeCAD part.
-
-        Args:
-            parent: Optional parent node. It is expected to be None for the root node.
-
-        """
+    def get_body_position_and_orientation(self) -> tuple[str, str]:
+        """Get position and orientation for FreeCAD part in MuJoCo."""
         pos = "0 0 0"
         quat = "1.0 0.0 0.0 0.0"
 
         log_message(f"Part: Name={self.part.Name}, Pos={pos}, Quat={quat}")
         return pos, quat
+
+    def get_body_material(
+        self,
+    ) -> MaterialProperties:
+        material_properties: MaterialProperties = self.part.ShapeMaterial.Properties
+        return material_properties
+
+    def get_body_appearance(
+        self,
+    ) -> AppearanceDict:
+        name = self.part.Name
+        rgb = self.part.ViewObject.ShapeAppearance[0].DiffuseColor[:3]
+        rgba = rgb + (1.0,)
+        rgba = " ".join(str(x) for x in rgba)
+        shininess = str(self.part.ViewObject.ShapeAppearance[0].Shininess)
+        appearance_dict = AppearanceDict(name=name, rgba=rgba, shininess=shininess)
+        return appearance_dict
 
     def __repr__(self) -> str:
         return f"<AssemblyGraphNode part={self.part.Name}>"
@@ -443,7 +475,7 @@ class MuJuCoExporter:
         ET.SubElement(
             self.default,
             "joint",
-            damping="1.0",
+            damping="10.0",
             armature="1.0",
         )
         ET.SubElement(
@@ -563,32 +595,24 @@ class MuJuCoExporter:
         assembly_graph: Graph,
         meshes_dir: str | os.PathLike,
         *,
-        reset_placement: bool = False,
+        linear_deflection: float = 0.5,
+        angular_deflection: float = 5.0,
     ) -> None:
         for node in assembly_graph.get_nodes():
             part = node.part
             shape = part.Shape.copy(False)
 
-            if reset_placement:
-                # Reset position by creating a temporary placement at origin
-                reset_placement = App.Placement(
-                    App.Vector(0, 0, 0),
-                    App.Rotation(App.Vector(0, 0, 1), 0),
-                    App.Vector(0, 0, 0),
-                )
-                shape.Placement = reset_placement
-
             log_message(f"Shape: Name={part.Name}, Placement={shape.Placement}")
 
             mesh = MeshPart.meshFromShape(
                 Shape=shape,
-                LinearDeflection=0.5,
-                AngularDeflection=5.0,
+                LinearDeflection=linear_deflection,
+                AngularDeflection=angular_deflection,
                 Relative=False,
             )
             mesh_file = Path(meshes_dir).joinpath(part.Name).with_suffix(".stl")
             mesh.write(os.fspath(mesh_file))
-            # Add new mesh
+            # Add new mesh to assets
             ET.SubElement(
                 self.asset,
                 "mesh",
@@ -597,6 +621,16 @@ class MuJuCoExporter:
                 # Convert mm to m
                 scale="0.001 0.001 0.001",
             )
+            # Add material for appearance to assets
+            appearance_dict = node.get_body_appearance()
+            found_existing_materials = self.asset.findall(
+                f"./material[@name='{appearance_dict['name']}']"
+            )
+            # Add material only if it wasn't added already
+            # We do the check by name
+            # TODO: Consider using a dictionary to keep track of added materials
+            if len(found_existing_materials) == 0:
+                ET.SubElement(self.asset, "material", **appearance_dict)
 
     def add_floorplane(self, assembly_graph: Graph) -> None:
         minimum_z_placement: float | None = None
@@ -636,7 +670,7 @@ class MuJuCoExporter:
         parent_body = body_elements.get(parent_node, self.worldbody)
 
         if (current_body := body_elements.get(current_node)) is None:
-            current_body = self.add_body(current_node, parent_node, parent_body)
+            current_body = self.add_body(current_node, parent_body)
             body_elements[current_node] = current_body
 
         for child_node in tree.get_neighbors(current_node):
@@ -650,11 +684,9 @@ class MuJuCoExporter:
             self.add_joint_to_body(child_body, edge)
         return current_body
 
-    def add_body(
-        self, node: GraphNode, parent_node: GraphNode, parent_body: ET.Element
-    ) -> ET.Element:
+    def add_body(self, node: GraphNode, parent_body: ET.Element) -> ET.Element:
         # Create body element for this part
-        pos, quat = node.get_body_position_and_orientation(parent_node)
+        pos, quat = node.get_body_position_and_orientation()
         body = ET.SubElement(
             parent_body,
             "body",
@@ -663,12 +695,14 @@ class MuJuCoExporter:
             quat=quat,
         )
         # Add mesh for visualization
+        appearance_dict = node.get_body_appearance()
         ET.SubElement(
             body,
             "geom",
             type="mesh",
             name=f"{node.part.Name} geom",
             mesh=node.part.Name,
+            material=appearance_dict["name"],
             contype="0",
             conaffinity="0",
         )
