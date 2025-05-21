@@ -7,7 +7,7 @@
 This repository contains a [FreeCAD](https://www.freecad.org/) macro to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) to [MuJoCo](https://mujoco.org/).
 
 
-# Getting Started
+## Getting Started
 
 - [Install the Macro](https://wiki.freecad.org/How_to_install_macros) manually in FreeCAD by copying
   the [AssemblyExportToMuJoCo.FCMacro](./AssemblyExportToMuJoCo.FCMacro) and [AssemblyExportToMuJoCo.svg](./AssemblyExportToMuJoCo.svg) files into FreeCAD's Macro directory.
@@ -37,9 +37,13 @@ This repository contains a [FreeCAD](https://www.freecad.org/) macro to export a
   In both cases, this will open a new window with a MuJoCo
   visualization session containing the exported model.
 
-# Troubleshooting
+## Examples
 
-## Collision Issues
+Please refer to the [examples](examples/) directory for some examples showcasing this macro.
+
+## Troubleshooting
+
+### Collision Issues
 
 - MuJoCo by default excludes collisions between parent and child bodies
   However, this exclusion is not applied if the parent is a static body
@@ -48,7 +52,7 @@ This repository contains a [FreeCAD](https://www.freecad.org/) macro to export a
 - A common issue in MuJoCo typically happens when using STL files because MuJoCo handles
   collision geometry differently from visual geometry by default.
 
-# Development
+## Development
 
 To make life easier, we would like to keep the Macro here in the repository and at the same time use it in FreeCAD without
 having to manually copy it there or change FreeCAD's Macro directory.
@@ -60,6 +64,6 @@ ln -s $(pwd)/AssemblyExportToMuJoCo.FCMacro <Path to FreeCAD Macro Directory>
 ln -s $(pwd)/AssemblyExportToMuJoCo.svg <Path to FreeCAD Macro Directory>
 ```
 
-# License
+## License
 
 This code is licensed under the [LGPL-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html) license.
