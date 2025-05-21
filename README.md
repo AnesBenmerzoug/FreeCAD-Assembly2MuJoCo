@@ -6,6 +6,10 @@
 
 This repository contains a [FreeCAD](https://www.freecad.org/) macro to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) to [MuJoCo](https://mujoco.org/).
 
+## Prerequisites
+
+- Python >= 3.10
+- FreeCAD >= 1.0
 
 ## Getting Started
 
@@ -41,6 +45,7 @@ This repository contains a [FreeCAD](https://www.freecad.org/) macro to export a
 
 Please refer to the [examples](examples/) directory for some examples showcasing this macro.
 
+
 ## Troubleshooting
 
 ### Collision Issues
@@ -51,6 +56,31 @@ Please refer to the [examples](examples/) directory for some examples showcasing
 
 - A common issue in MuJoCo typically happens when using STL files because MuJoCo handles
   collision geometry differently from visual geometry by default.
+
+## Roadmap
+
+Here are some of the planned developments for this Macro:
+
+- [ ] Support, if possible, all assembly joint types:
+  - [X] Grounded
+  - [X] Fixed
+  - [X] Revolute
+  - [ ] Cylindrical
+  - [ ] Slider
+  - [ ] Ball
+  - [ ] Distance
+  - [ ] Parallel
+  - [ ] Perpendicular
+  - [ ] Angle
+  - [ ] Rack and Pinion
+  - [ ] Screw
+  - [ ] Gear
+  - [ ] Bolt
+- [ ] Add, if possible, all examples from the Assembly Workbench [wiki page](https://wiki.freecad.org/Assembly_Workbench):
+  - [ ] Crank and Slider
+  - [X] Universal Joint
+  - [ ] Vise
+  - [ ] Shock Absorber
 
 ## Development
 
