@@ -10,9 +10,11 @@ are inclined to each other and is commonly used in shafts that transmit rotary m
 Part of this example is taken from the universal joint example found in
 the [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) page of the FreeCAD Wiki.
 
-<figure align="center">
-    <img src="universal_joint/output.gif"/>
-    <figcaption>
-        Export of universal joint assembly to MuJoCo
-    </figcaption>
-</figure>
+<div align="center">
+    <figure>
+        <img src="universal_joint/output.gif"/>
+        <figcaption>
+            Export of universal joint assembly to MuJoCo
+        </figcaption>
+    </figure>
+</div>
