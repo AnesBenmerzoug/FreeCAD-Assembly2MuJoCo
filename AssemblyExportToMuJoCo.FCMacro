@@ -964,6 +964,7 @@ class ExportTaskPanel:
         """
         # Get all parameters from UI
         export_dir = Path(self.dir_edit.text())
+        export_dir.mkdir(exist_ok=True)
 
         # Validate export directory
         if not os.path.isdir(export_dir):
