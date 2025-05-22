@@ -81,6 +81,8 @@ Here are some of the planned developments for this Macro:
   - [X] Universal Joint
   - [ ] Vise
   - [ ] Shock Absorber
+- [ ] Extract properties from part material (e.g. density).
+- [ ] Handle nested assemblies.
 
 ## Development
 
@@ -93,6 +95,19 @@ For that, an easy solution is to create a symbolic link to the Macro (and relate
 ln -s $(pwd)/AssemblyExportToMuJoCo.FCMacro <Path to FreeCAD Macro Directory>
 ln -s $(pwd)/AssemblyExportToMuJoCo.svg <Path to FreeCAD Macro Directory>
 ```
+
+## Logo
+
+The project's logo combines the FreeCAD Assembly Workbench icon with the MuJoCo logo.
+
+**FreeCAD Component**: Assembly Workbench icon from FreeCAD Artwork, licensed under LGPL-2.1+
+
+**MuJoCo Component**: MuJoCo logo owned by DeepMind, used to indicate compatibility with MuJoCo.
+
+This project is independent and not affiliated with FreeCAD or MuJoCo/DeepMind. Logo elements are used solely to indicate integration between these platforms.
+
+The project logo, including the arrangement and connecting elements, is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Any derivative works must maintain proper attribution to both FreeCAD and MuJoCo as outlined above.
+
 
 ## License
 
