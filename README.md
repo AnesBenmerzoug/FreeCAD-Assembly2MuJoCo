@@ -4,23 +4,42 @@
 <img src="AssemblyExportToMuJoCo.svg" width="200px"/>
 </div>
 
-This repository contains a [FreeCAD](https://www.freecad.org/) macro to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) to [MuJoCo](https://mujoco.org/).
+This is a [FreeCAD](https://www.freecad.org/) macro to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) to [MuJoCo](https://mujoco.org/).
+
+<p align="center">
+    <img src="examples/universal_joint/output.gif"/>
+    <br>
+    <em>Export of universal joint assembly to MuJoCo</em>
+</p>
+
+If you find any bugs while using the macro, please feel free to open an [issue](https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues).
+
+## Changelog
+
+A log of all notables changes made to the macro can be found [here.](CHANGELOG.md)
 
 ## Prerequisites
 
-- Python >= 3.10
-- FreeCAD >= 1.0
+- Python >= 3.10.0
+- FreeCAD >= 1.0.0
 
-## Getting Started
+## Installation
+
+### Manual Installation
 
 - [Install the Macro](https://wiki.freecad.org/How_to_install_macros) manually in FreeCAD by copying
-  the [AssemblyExportToMuJoCo.FCMacro](./AssemblyExportToMuJoCo.FCMacro) and [AssemblyExportToMuJoCo.svg](./AssemblyExportToMuJoCo.svg) files into FreeCAD's Macro directory.
+  the following files into FreeCAD's Macro directory:
+  
+  - [AssemblyExportToMuJoCo.FCMacro](./AssemblyExportToMuJoCo.FCMacro) 
+  - [AssemblyExportToMuJoCo.svg](./AssemblyExportToMuJoCo.svg) 
 
 - (Optional) Add the Macro to the toolbar for easier execution.
 
 - Open the assembly you want to export into MuJoCo.
 
 - Select it and execute the Macro.
+
+## Simulating the export with MuJoCo
 
 - [Install MuJoCo](https://mujoco.readthedocs.io/en/latest/programming/#getting-started)
 
@@ -43,8 +62,7 @@ This repository contains a [FreeCAD](https://www.freecad.org/) macro to export a
 
 ## Examples
 
-Please refer to the [examples](examples/) directory for some examples showcasing this macro.
-
+Please refer to the [examples](examples/) directory for some examples showcasing the use of this macro.
 
 ## Troubleshooting
 
