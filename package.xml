@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
+
+    <name>Assembly Export to MuJoCo</name>
+    <description>An addon that contains a macro for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
+    <icon>resources/icons/AssemblyExportToMuJoCo.svg</icon>
+    <version>0.1.0</version>
+    <date>2025-05-31</date>
+    
+    <author email="anes.benmerzoug@gmail.com">Anes Benmerzoug</author>
+    <maintainer email="anes.benmerzoug@gmail.com">Anes Benmerzoug</maintainer>
+    <license file="LICENSE">LGPL-2.1-or-later</license>
+
+    <url branch="main" type="repository">https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo</url>
+    <url type="bugtracker">https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues</url>
+    <url type="readme">https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/blob/main/README.md</url>
+
+    <content>
+        <macro>
+            <description>A macro for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
+            <freecadmin>1.0.0</freecadmin>
+            <python_min>3.10.0</python_min>
+            <icon>../resources/icons/AssemblyExportToMuJoCo.svg</icon>
+            <subdirectory>./src</subdirectory>
+            <file>AssemblyExportToMuJoCo.FCMacro</file>
+            <tag>Assembly</tag>
+            <tag>MuJoCo</tag>
+            <tag>export</tag>
+            <tag>simulation</tag>
+        </macro>
+    </content>
+
+</package>
