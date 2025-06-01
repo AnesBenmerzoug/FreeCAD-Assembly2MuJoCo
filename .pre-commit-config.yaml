@@ -1,0 +1,19 @@
+fail_fast: false
+
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: check-xml
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.11.12
+  hooks:
+    - id: ruff-check
+      args: [ --fix ]
+      types_or: [file, python]
+      files: .*\.FCMacro$
+    - id: ruff-format
+      types_or: [file, python]
+      files: .*\.FCMacro$

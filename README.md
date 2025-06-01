@@ -1,6 +1,16 @@
 # FreeCAD Macro - Assembly Export to MuJoCo
 
 <div align="center">
+
+[![GitHub Release][release-badge]][releases]
+[![Changelog][cc-badge]][cc]
+[![GitHub Issues][issues-badge]][issues]
+[![Github CI Workflow][ci-workflow-badge]][ci-workflow]
+[![License][license-badge]][license-file]
+
+</div>
+
+<div align="center">
 <img src="AssemblyExportToMuJoCo.svg" width="200px"/>
 </div>
 
@@ -29,9 +39,9 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
 
 - [Install the Macro](https://wiki.freecad.org/How_to_install_macros) manually in FreeCAD by copying
   the following files into FreeCAD's Macro directory:
-  
-  - [AssemblyExportToMuJoCo.FCMacro](./AssemblyExportToMuJoCo.FCMacro) 
-  - [AssemblyExportToMuJoCo.svg](./AssemblyExportToMuJoCo.svg) 
+
+  - [AssemblyExportToMuJoCo.FCMacro](./AssemblyExportToMuJoCo.FCMacro)
+  - [AssemblyExportToMuJoCo.svg](./AssemblyExportToMuJoCo.svg)
 
 - (Optional) Add the Macro to the toolbar for easier execution.
 
@@ -48,7 +58,7 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
   - The `simulate` executable:
 
   ```shell
-  simulate <Path to MJCF (XML) file> 
+  simulate <Path to MJCF (XML) file>
   ```
 
   - The MuJoCO Python package:
@@ -104,6 +114,29 @@ Here are some of the planned developments for this Macro:
 
 ## Development
 
+### Setup
+
+- Create and activate a virtual environment:
+
+  ```shell
+  python -m venv .venv
+  source .venv/bin/activate
+  ```
+
+- Install development dependencies:
+
+  ```shelll
+  pip install .[dev]
+  ```
+
+- Install pre-commit hooks:
+
+  ```shell
+  pre-commit install
+  ```
+
+### Testing in FreeCAD
+
 To make life easier, we would like to keep the Macro here in the repository and at the same time use it in FreeCAD without
 having to manually copy it there or change FreeCAD's Macro directory.
 
@@ -129,4 +162,19 @@ The project logo, including the arrangement and connecting elements, is licensed
 
 ## License
 
-This code is licensed under the [LGPL-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html) license.
+This code is licensed under the [LGPL-2.1][license-file] license.
+
+[releases]: https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/releases
+[release-badge]: https://img.shields.io/github/v/release/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo?label=version
+
+[license-file]: ./LICENSE
+[license-badge]: https://img.shields.io/github/license/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo
+
+[issues]: https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues
+[issues-badge]: https://img.shields.io/github/issues/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo
+
+[ci-workflow-badge]: https://img.shields.io/github/actions/workflow/status/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/main.yml?label=CI
+[ci-workflow]: test
+
+[cc]: ./CHANGELOG.md
+[cc-badge]: https://common-changelog.org/badge.svg

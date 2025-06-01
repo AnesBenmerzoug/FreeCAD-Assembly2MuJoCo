@@ -1,0 +1,39 @@
+name: Main CI Workflow
+
+on:
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why did you trigger the pipeline?
+        required: False
+        default: Check if it runs again due to external changes
+
+env:
+  GITHUB_BOT_USERNAME: github-actions[bot]
+  GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+  PY_COLORS: 1
+  PYTHON_VERSION: '3.10'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  code-quality:
+    name: Lint and format code
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Virtual Environment
+      uses: ./.github/actions/python
+      with:
+        python_version: ${{ env.PYTHON_VERSION }}
+        optional_dependencies: dev
+    - name: Run pre-commit
+      run: pre-commit run --all-files --verbose --show-diff-on-failure
