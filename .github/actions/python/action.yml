@@ -1,0 +1,43 @@
+ame: Setup Python Virtual Environment
+
+inputs:
+  python_version:
+    required: true
+    type: string
+  optional_dependencies:
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+  - name: Setup and Cache Python ${{ inputs.python_version }}
+    uses: actions/setup-python@v5
+    with:
+      python-version: ${{ inputs.python_version }}
+
+  - name: Load cached virtual environment
+    id: cached-venv
+    uses: actions/cache@v4
+    with:
+      path: .venv
+      key: venv-${{ runner.os }}-${{ inputs.python_version }}-${{ hashFiles('pyproject.toml') }}
+
+  - name: Create Virtual Environment
+    shell: bash
+    run: |
+      # create virtual environment
+      python -m venv .venv
+
+      # activate virtual environment
+      source .venv/bin/activate
+
+      # install dependencies
+      if [ -n "${{ inputs.optional_dependencies }}" ]; then
+        pip install .
+      else
+        pip install .[${{ inputs.optional_dependencies }}]
+      fi
+
+      # Set the path for subsequent steps so that the environment is activated by default
+      echo PATH=$PATH >> $GITHUB_ENV
