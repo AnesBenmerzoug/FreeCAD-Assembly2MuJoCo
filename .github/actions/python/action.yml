@@ -33,10 +33,10 @@ runs:
       source .venv/bin/activate
 
       # install dependencies
-      if [ -n "${{ inputs.optional_dependencies }}" ]; then
-        pip install .
+      if [ -z "${{ inputs.optional_dependencies }}" ]; then
+        pip install . --verbose
       else
-        pip install .[${{ inputs.optional_dependencies }}]
+        pip install .[${{ inputs.optional_dependencies }}] --verbose
       fi
 
       # Set the path for subsequent steps so that the environment is activated by default
