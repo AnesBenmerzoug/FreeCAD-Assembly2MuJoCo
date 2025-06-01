@@ -4,7 +4,8 @@
 
 [![GitHub Release][release-badge]][releases]
 [![Changelog][cc-badge]][cc]
-![GitHub Issues][issues-badge][issues]
+[![GitHub Issues][issues-badge]][issues]
+[![Github CI Workflow][ci-workflow-badge]][ci-workflow]
 [![License][license-badge]][license-file]
 
 </div>
@@ -163,14 +164,17 @@ The project logo, including the arrangement and connecting elements, is licensed
 
 This code is licensed under the [LGPL-2.1][license-file] license.
 
-[releases]: <https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/releases>
-[release-badge]: <https://img.shields.io/github/v/release/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo>
+[releases]: https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/releases
+[release-badge]: https://img.shields.io/github/v/release/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo?label=version
 
 [license-file]: ./LICENSE
-[license-badge]: <https://img.shields.io/github/license/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo>
+[license-badge]: https://img.shields.io/github/license/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo
 
-[issues]: <https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues>
-[issues-badge]: <https://img.shields.io/github/issues/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo>
+[issues]: https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues
+[issues-badge]: https://img.shields.io/github/issues/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo
 
-[cc]: <./CHANGELOG.md>
-[cc-badge]: <https://common-changelog.org/badge.svg>
+[ci-workflow-badge]: https://img.shields.io/github/actions/workflow/status/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/main.yml?label=CI
+[ci-workflow]: test
+
+[cc]: ./CHANGELOG.md
+[cc-badge]: https://common-changelog.org/badge.svg
