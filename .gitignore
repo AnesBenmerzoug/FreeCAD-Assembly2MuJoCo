@@ -5,6 +5,9 @@
 *.FCBak
 *.stl
 
+# ruff
+.ruff_cache
+
 ###########################################################################
 # Taken from https://github.com/github/gitignore/blob/main/Python.gitignore
 ###########################################################################
