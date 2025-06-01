@@ -6,7 +6,7 @@
     <icon>resources/icons/AssemblyExportToMuJoCo.svg</icon>
     <version>0.1.0</version>
     <date>2025-05-31</date>
-    
+
     <author email="anes.benmerzoug@gmail.com">Anes Benmerzoug</author>
     <maintainer email="anes.benmerzoug@gmail.com">Anes Benmerzoug</maintainer>
     <license file="LICENSE">LGPL-2.1-or-later</license>
