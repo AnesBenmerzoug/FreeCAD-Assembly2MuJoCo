@@ -29,9 +29,9 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
 
 - [Install the Macro](https://wiki.freecad.org/How_to_install_macros) manually in FreeCAD by copying
   the following files into FreeCAD's Macro directory:
-  
-  - [AssemblyExportToMuJoCo.FCMacro](./AssemblyExportToMuJoCo.FCMacro) 
-  - [AssemblyExportToMuJoCo.svg](./AssemblyExportToMuJoCo.svg) 
+
+  - [AssemblyExportToMuJoCo.FCMacro](./AssemblyExportToMuJoCo.FCMacro)
+  - [AssemblyExportToMuJoCo.svg](./AssemblyExportToMuJoCo.svg)
 
 - (Optional) Add the Macro to the toolbar for easier execution.
 
@@ -48,7 +48,7 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
   - The `simulate` executable:
 
   ```shell
-  simulate <Path to MJCF (XML) file> 
+  simulate <Path to MJCF (XML) file>
   ```
 
   - The MuJoCO Python package:
@@ -103,6 +103,29 @@ Here are some of the planned developments for this Macro:
 - [ ] Handle nested assemblies.
 
 ## Development
+
+### Setup
+
+- Create and activate a virtual environment:
+
+  ```shell
+  python -m venv .venv
+  source .venv/bin/activate
+  ```
+
+- Install development dependencies:
+
+  ```shelll
+  pip install .[dev]
+  ```
+
+- Install pre-commit hooks:
+
+  ```shell
+  pre-commit install
+  ```
+
+### Testing in FreeCAD
 
 To make life easier, we would like to keep the Macro here in the repository and at the same time use it in FreeCAD without
 having to manually copy it there or change FreeCAD's Macro directory.
