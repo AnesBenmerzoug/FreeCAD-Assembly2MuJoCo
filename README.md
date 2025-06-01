@@ -1,6 +1,15 @@
 # FreeCAD Macro - Assembly Export to MuJoCo
 
 <div align="center">
+
+[![GitHub Release][release-badge]][releases]
+[![Changelog][cc-badge]][cc]
+![GitHub Issues][issues-badge][issues]
+[![License][license-badge]][license-file]
+
+</div>
+
+<div align="center">
 <img src="AssemblyExportToMuJoCo.svg" width="200px"/>
 </div>
 
@@ -152,4 +161,16 @@ The project logo, including the arrangement and connecting elements, is licensed
 
 ## License
 
-This code is licensed under the [LGPL-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html) license.
+This code is licensed under the [LGPL-2.1][license-file] license.
+
+[releases]: <https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/releases>
+[release-badge]: <https://img.shields.io/github/v/release/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo>
+
+[license-file]: ./LICENSE
+[license-badge]: <https://img.shields.io/github/license/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo>
+
+[issues]: <https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues>
+[issues-badge]: <https://img.shields.io/github/issues/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo>
+
+[cc]: <./CHANGELOG.md>
+[cc-badge]: <https://common-changelog.org/badge.svg>
