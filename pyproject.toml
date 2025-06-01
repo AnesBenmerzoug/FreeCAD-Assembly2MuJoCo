@@ -1,0 +1,25 @@
+[project]
+name = "AssemblyExportToMuJoCo"
+description = "An addon that contains a macro for exporting FreeCAD builtin Assemblies to MuJoCo."
+readme = "README.md"
+license = "LGPL-2.1-or-later"
+license-files = ["LICENSE"]
+keywords = ["FreeCAD", "Assembly", "MuJoCo", "Export", "Simulation"]
+version = "0.1.0"
+requires-python = ">= 3.10"
+authors = [{ name = "Anes Benmerzoug", email = "anes.benmerzoug@gmail.com" }]
+maintainers = [
+    { name = "Anes Benmerzoug", email = "anes.benmerzoug@gmail.com" },
+]
+
+[project.urls]
+Repository = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo"
+Issues = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues"
+Changelog = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/blob/main/CHANGELOG.md"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = ["pre-commit"]
