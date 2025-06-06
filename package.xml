@@ -4,8 +4,8 @@
     <name>Assembly to MuJoCo</name>
     <description>An addon for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
     <icon>resources/icons/assembly-to-mujoco-icon.svg</icon>
-    <version>0.1.0</version>
-    <date>2025-05-31</date>
+    <version>0.1.1</version>
+    <date>2025-06-06</date>
 
     <author email="anes.benmerzoug@gmail.com">Anes Benmerzoug</author>
     <maintainer email="anes.benmerzoug@gmail.com">Anes Benmerzoug</maintainer>
