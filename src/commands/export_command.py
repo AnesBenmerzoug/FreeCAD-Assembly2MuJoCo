@@ -5,6 +5,7 @@ import FreeCADGui as Gui
 from PySide import QtWidgets
 
 from src.core.mujoco_exporter import MuJoCoExporter
+from src.commands.base import BaseCommand
 from src.commands.export_panel import ExportTaskPanel
 from src.constants import WORKBENCH_ICON_FILE
 
@@ -12,7 +13,7 @@ from src.constants import WORKBENCH_ICON_FILE
 __all__ = ["MuJoCoExportCommand"]
 
 
-class MuJoCoExportCommand:
+class MuJoCoExportCommand(BaseCommand):
     """
     Command to export Assembly to MuJoCo.
     """

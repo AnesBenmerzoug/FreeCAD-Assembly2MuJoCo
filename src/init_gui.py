@@ -3,7 +3,8 @@ import os
 import FreeCADGui as Gui
 
 from src.constants import ICONS_DIR, WORKBENCH_ICON_FILE, WORKBENCH_MENU_NAME
-from src.commands.export_command import MuJoCoExportCommand
+from src.commands import get_all_commands
+from src.utils.helpers import log_message
 
 
 class AssemblyExportToMuJoCoWorkbench(Gui.Workbench):
@@ -12,10 +13,15 @@ class AssemblyExportToMuJoCoWorkbench(Gui.Workbench):
     Icon = os.fspath(WORKBENCH_ICON_FILE)
 
     def Initialize(self):
-        commands = [MuJoCoExportCommand.__name__]
-        self.appendToolbar(f"{WORKBENCH_MENU_NAME} Tools", commands)
-        self.appendMenu(f"{WORKBENCH_MENU_NAME} Tools", commands)
-
+        log_message(f"Initializing {WORKBENCH_MENU_NAME} workbench")
+        command_names = []
+        for command_name, command_cls in get_all_commands().items():
+            command_names.append(command_name)
+            Gui.addCommand(command_name, command_cls())
+        log_message(f"Adding {len(command_names)} commands")
+        self.appendToolbar(f"{WORKBENCH_MENU_NAME} Tools", command_names)
+        self.appendMenu(f"{WORKBENCH_MENU_NAME} Tools", command_names)
+        log_message(f"Using icons in {ICONS_DIR}")
         Gui.addIconPath(os.fspath(ICONS_DIR))
 
 
