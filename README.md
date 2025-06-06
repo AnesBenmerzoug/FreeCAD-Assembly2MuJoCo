@@ -11,7 +11,7 @@
 </div>
 
 <div align="center">
-<img src="AssemblyExportToMuJoCo.svg" width="200px"/>
+<img src="src/resources/icons/assembly-to-mujoco-icon.svg" width="200px"/>
 </div>
 
 This is a [FreeCAD](https://www.freecad.org/) macro to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) to [MuJoCo](https://mujoco.org/).
