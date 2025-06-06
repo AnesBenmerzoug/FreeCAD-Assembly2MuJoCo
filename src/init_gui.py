@@ -3,6 +3,7 @@ import os
 import FreeCADGui as Gui
 
 from src.constants import ICONS_DIR, WORKBENCH_ICON_FILE, WORKBENCH_MENU_NAME
+from src.commands.export_command import MuJoCoExportCommand
 
 
 class AssemblyExportToMuJoCoWorkbench(Gui.Workbench):
@@ -11,7 +12,7 @@ class AssemblyExportToMuJoCoWorkbench(Gui.Workbench):
     Icon = os.fspath(WORKBENCH_ICON_FILE)
 
     def Initialize(self):
-        commands = []
+        commands = [MuJoCoExportCommand.__name__]
         self.appendToolbar(f"{WORKBENCH_MENU_NAME} Tools", commands)
         self.appendMenu(f"{WORKBENCH_MENU_NAME} Tools", commands)
 
