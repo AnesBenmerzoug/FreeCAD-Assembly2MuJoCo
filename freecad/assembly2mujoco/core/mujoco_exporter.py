@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Literal
 
 import FreeCAD as App
+import Mesh
 import MeshPart
 import UtilsAssembly
 
@@ -208,7 +209,7 @@ class MuJoCoExporter:
                 Relative=False,
             )
             mesh_file = Path(meshes_dir).joinpath(part.Name).with_suffix(".stl")
-            mesh.write(os.fspath(mesh_file))
+            Mesh.export([mesh], os.fspath(mesh_file))
             # Add new mesh to assets
             ET.SubElement(
                 self.asset,
