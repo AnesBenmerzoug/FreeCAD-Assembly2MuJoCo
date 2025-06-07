@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from src.constants import MUJOCO_JOINT_TYPE
+from freecad.assembly2mujoco.constants import MUJOCO_JOINT_TYPE
 
 __all__ = ["JointAttributes", "MaterialProperties", "AppearanceDict"]
 
