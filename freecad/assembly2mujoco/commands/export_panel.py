@@ -93,7 +93,7 @@ class ExportTaskPanel:
 
         ### Mesh Format
         self.mesh_export_format_combo = QtWidgets.QComboBox()
-        mesh_export_format_values = ["stl", "obj"]
+        mesh_export_format_values = ["STL", "OBJ"]
         mesh_export_format_values = [DEFAULT_MESH_EXPORT_FORMAT] + list(
             set(mesh_export_format_values).difference([DEFAULT_MESH_EXPORT_FORMAT])
         )

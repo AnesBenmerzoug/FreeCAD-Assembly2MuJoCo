@@ -47,7 +47,7 @@ class MuJoCoExporter:
         *,
         mesh_linear_deflection: float = DEFAULT_MESH_LINEAR_DEFLECTION,
         mesh_angular_deflection: float = DEFAULT_MESH_ANGULAR_DEFLECTION,
-        mesh_export_format: Literal["stl", "obj"] = DEFAULT_MESH_EXPORT_FORMAT,
+        mesh_export_format: Literal["STL", "OBJ"] = DEFAULT_MESH_EXPORT_FORMAT,
         integrator: Literal[
             "Euler", "implicit", "implicitfast", "RK4"
         ] = DEFAULT_MJCF_INTEGRATOR,
@@ -211,7 +211,7 @@ class MuJoCoExporter:
             shape = part.Shape.copy(False)
             mesh_file = Path(meshes_dir).joinpath(part.Name)
 
-            if self.mesh_export_format == "stl":
+            if self.mesh_export_format == "STL":
                 mesh = MeshPart.meshFromShape(
                     Shape=shape,
                     LinearDeflection=self.mesh_linear_deflection,
@@ -220,7 +220,7 @@ class MuJoCoExporter:
                 )
                 mesh_file = mesh_file.with_suffix(".stl")
                 mesh.write(os.fspath(mesh_file))
-            elif self.mesh_export_format == "obj":
+            elif self.mesh_export_format == "OBJ":
                 mesh_file = mesh_file.with_suffix(".obj")
                 Mesh.export([part], os.fspath(mesh_file))
             else:
