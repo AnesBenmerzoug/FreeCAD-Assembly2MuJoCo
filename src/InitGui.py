@@ -7,11 +7,8 @@ from src.commands import get_all_commands
 from src.utils.helpers import log_message
 
 
-log_message(f"Test: {WORKBENCH_MENU_NAME}")
-
-
 class AssemblyExportToMuJoCoWorkbench(Gui.Workbench):
-    MenuText = WORKBENCH_MENU_NAME
+    MenuText = "Assembly To MuJoCo"
     Tooltip = "Export FreeCAD assemblies to MuJoCo"
     Icon = os.fspath(WORKBENCH_ICON_FILE)
 
