@@ -1,6 +1,5 @@
 from pathlib import Path
 from typing import Literal
-from src.utils.helpers import log_message
 
 WORKBENCH_MENU_NAME = "Assembly to MuJoCo"
 WORKBENCH_LOG_NAME = "AssemblyExportToMuJoCo"
@@ -14,7 +13,6 @@ SRC_DIR = ROOT_DIR / "src"
 RESOURCES_DIR = SRC_DIR / "resources"
 ICONS_DIR = RESOURCES_DIR / "icons"
 WORKBENCH_ICON_FILE = ICONS_DIR / "assembly-to-mujoco-icon.svg"
-log_message(f"ICON FILE: {WORKBENCH_ICON_FILE}")
 
 ##########################################
 # MuJoCo
