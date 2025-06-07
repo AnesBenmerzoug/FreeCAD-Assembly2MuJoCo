@@ -98,7 +98,7 @@ class ExportTaskPanel:
             set(mesh_export_format_values).difference([DEFAULT_MESH_EXPORT_FORMAT])
         )
         self.mesh_export_format_combo.addItems(mesh_export_format_values)
-        mesh_layout.addRow("Mesh Format:", self.integrator_combo)
+        mesh_layout.addRow("Mesh Format:", self.mesh_export_format_combo)
 
         mesh_group.setLayout(mesh_layout)
         main_layout.addWidget(mesh_group)
