@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Callable, Literal, TypedDict
 
 import FreeCAD as App
 import FreeCADGui as Gui
@@ -16,11 +17,23 @@ from freecad.assembly2mujoco.constants import (
 )
 from freecad.assembly2mujoco.utils.helpers import log_message
 
-__all__ = ["ExportTaskPanel"]
+__all__ = ["ExportTaskPanel", "ExportParamsDict"]
+
+
+class ExportParamsDict(TypedDict):
+    export_dir: Path
+    linear_deflection: float
+    angular_deflection: float
+    mjcf_timestep: float
+    mjcf_damping: float
+    mjcf_armature: float
+    mjcf_integrator: Literal["implicitfast", "Euler", "implicit", "RK4"]
+    mjcf_solver: Literal["PGS", "CG", "Newton"]
 
 
 class ExportTaskPanel:
-    def __init__(self):
+    def __init__(self, on_accept_callback: Callable[[ExportParamsDict], bool]):
+        self.on_accept_callback = on_accept_callback
         # Get current document and its path
         self.doc = App.ActiveDocument
         if not self.doc:
@@ -133,6 +146,39 @@ class ExportTaskPanel:
 
         debug_group.setLayout(debug_layout)
         main_layout.addWidget(debug_group)
+
+    def accept(self) -> bool:
+        """Called when user clicks the export button in the task panel
+
+        Returns:
+            True, if the task panel should be closed. False otherwise.
+        """
+        # Get all parameters from UI
+        export_dir = Path(self.dir_edit.text())
+        export_dir.mkdir(exist_ok=True)
+
+        # Validate export directory
+        if not os.path.isdir(export_dir):
+            QtWidgets.QMessageBox.warning(
+                self.form,
+                "Directory Error",
+                f"The directory '{export_dir}' does not exist. Please select a valid directory.",
+            )
+            return False
+
+        # Collect parameters
+        export_params = {
+            "export_dir": export_dir,
+            "linear_deflection": self.linear_deflection_spin.value(),
+            "angular_deflection": self.angular_deflection_spin.value(),
+            "mjcf_timestep": self.timestep_spin.value(),
+            "mjcf_damping": self.damping_spin.value(),
+            "mjcf_armature": self.armature_spin.value(),
+            "mjcf_integrator": self.integrator_combo.currentText(),
+            "mjcf_solver": self.solver_combo.currentText(),
+        }
+        # Trigger callback
+        return self.on_accept_callback(export_params)
 
     def browse_export_directory(self) -> None:
         directory = QtWidgets.QFileDialog.getExistingDirectory(

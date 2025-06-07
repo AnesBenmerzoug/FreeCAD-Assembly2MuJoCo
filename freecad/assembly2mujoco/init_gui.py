@@ -1,3 +1,5 @@
+"""Initialization of the Assembly2MuJoCo workbench (graphical interface)."""
+
 import os
 
 import FreeCADGui as Gui

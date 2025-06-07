@@ -6,7 +6,10 @@ from PySide import QtWidgets
 
 from freecad.assembly2mujoco.core.mujoco_exporter import MuJoCoExporter
 from freecad.assembly2mujoco.commands.base import BaseCommand
-from freecad.assembly2mujoco.commands.export_panel import ExportTaskPanel
+from freecad.assembly2mujoco.commands.export_panel import (
+    ExportTaskPanel,
+    ExportParamsDict,
+)
 from freecad.assembly2mujoco.constants import WORKBENCH_ICON_FILE
 
 
@@ -25,7 +28,7 @@ class MuJoCoExportCommand(BaseCommand):
             "ToolTip": "Export the selected assembly to MuJoCo MJCF format",
         }
 
-    def Activated(self):
+    def Activated(self) -> None:
         """
         Execute the export command
         """
@@ -47,21 +50,28 @@ class MuJoCoExportCommand(BaseCommand):
             return
 
         # Show export dialog
-        panel = ExportTaskPanel()
-        if panel.exec_() == QtWidgets.QDialog.Accepted:
+        def on_accept_callback(export_params: ExportParamsDict) -> bool:
             try:
                 # Perform the export
-                exporter = MuJoCoExporter()
-                output_path = panel.get_output_path()
+                exporter = MuJoCoExporter(
+                    integrator=export_params["mjcf_integrator"],
+                    timestep=export_params["mjcf_timestep"],
+                )
+                output_path = export_params["export_dir"]
                 exporter.export_assembly(selected_obj, output_path)
 
                 QtWidgets.QMessageBox.information(
                     None, "Export Successful", f"Assembly exported to: {output_path}"
                 )
+                return True
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
                     None, "Export Failed", f"Failed to export assembly: {str(e)}"
                 )
+                return False
+
+        panel = ExportTaskPanel(on_accept_callback=on_accept_callback)
+        Gui.Control.showDialog(panel)
 
     def IsActive(self) -> bool:
         """
