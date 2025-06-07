@@ -1,5 +1,4 @@
-# FreeCAD Macro - Assembly Export to MuJoCo
-
+# FreeCAD - Assembly2MuJoCo
 
 [![GitHub Release][release-badge]][releases]
 [![Changelog][cc-badge]][cc]
@@ -8,7 +7,7 @@
 [![License][license-badge]][license-file]
 
 
-![Assembly2MuJoCo Icon](resources/icons/assembly-to-mujoco-icon.svg)
+![Assembly2MuJoCo Icon](resources/icons/assembly2mujoco-icon.svg)
 
 This is a [FreeCAD](https://www.freecad.org/) macro to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) to [MuJoCo](https://mujoco.org/).
 
@@ -27,27 +26,13 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
 - Python >= 3.10.0
 - FreeCAD >= 1.0.0
 
-## Installation
+## Usage
 
-### Manual Installation
-
-- [Install the Macro](https://wiki.freecad.org/How_to_install_macros) manually in FreeCAD by copying
-  the following files into FreeCAD's Macro directory:
-
-  - [AssemblyExportToMuJoCo.FCMacro](./AssemblyExportToMuJoCo.FCMacro)
-  - [AssemblyExportToMuJoCo.svg](./AssemblyExportToMuJoCo.svg)
-
-  You can find the path to FreeCAD's data directory by executing the following in the python console:
-
-  ```python
-  App.getUserAppDataDir()
-  ```
-
-- (Optional) Add the Macro to the toolbar for easier execution.
-
-- Open the assembly you want to export into MuJoCo.
-
-- Select it and execute the Macro.
+1. Switch to Assembly2MuJoCo workbench
+2. Select the assembly you want to export.
+3. Execute the export command which will open a task panel
+   for configuring parts of the export.
+4. Click Ok and if no error was raised, a dialog box will pop-up informing you of the location of the export.
 
 ## Simulating the export with MuJoCo
 
@@ -84,6 +69,27 @@ Please refer to the [examples](examples/) directory for some examples showcasing
 
 - A common issue in MuJoCo typically happens when using STL files because MuJoCo handles
   collision geometry differently from visual geometry by default.
+
+## Installation
+
+### Addon Manager
+
+- Open the Addon manager by going to Tools -> Addon manager
+- Type `Assembly2MuJoCo` in the search bar.
+- Select the workbench and click on install.
+
+### Manual Installation
+
+- Find FreeCAD's Mod directory which is located inside the FreeCAD's data directory. The latter can be found by executing the following in the python console:
+
+  ```python
+  App.getUserAppDataDir()
+  ```
+
+- Either:
+
+  - Clone the repository into the Mod directory.
+  - Download the repository as a zip file from Github and extract its contents into the Mod directory.
 
 ## Roadmap
 
@@ -135,21 +141,9 @@ Here are some of the planned developments for this Macro:
   pre-commit install
   ```
 
-### Testing in FreeCAD
+## Icon
 
-To make life easier, we would like to keep the Macro here in the repository and at the same time use it in FreeCAD without
-having to manually copy it there or change FreeCAD's Macro directory.
-
-For that, an easy solution is to create a symbolic link to the Macro (and related files) in FreeCAD's Macro directory:
-
-```shell
-ln -s $(pwd)/AssemblyExportToMuJoCo.FCMacro <Path to FreeCAD Macro Directory>
-ln -s $(pwd)/AssemblyExportToMuJoCo.svg <Path to FreeCAD Macro Directory>
-```
-
-## Logo
-
-The project's logo combines the FreeCAD Assembly Workbench icon with the MuJoCo logo.
+The project's icon combines the FreeCAD Assembly Workbench icon with the MuJoCo logo.
 
 **FreeCAD Component**: Assembly Workbench icon from FreeCAD Artwork, licensed under LGPL-2.1+
 
@@ -157,7 +151,7 @@ The project's logo combines the FreeCAD Assembly Workbench icon with the MuJoCo 
 
 This project is independent and not affiliated with FreeCAD or MuJoCo/DeepMind. Logo elements are used solely to indicate integration between these platforms.
 
-The project logo, including the arrangement and connecting elements, is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Any derivative works must maintain proper attribution to both FreeCAD and MuJoCo as outlined above.
+The project icon, including the arrangement and connecting elements, is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Any derivative works must maintain proper attribution to both FreeCAD and MuJoCo as outlined above.
 
 
 ## License
