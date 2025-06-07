@@ -5,7 +5,7 @@ import FreeCAD as App
 import FreeCADGui as Gui
 from PySide import QtGui, QtWidgets
 
-from src.constants import (
+from freecad.assembly2mujoco.constants import (
     DEFAULT_ANGULAR_DEFLECTION,
     DEFAULT_LINEAR_DEFLECTION,
     DEFAULT_MJCF_ARMATURE,
@@ -14,7 +14,7 @@ from src.constants import (
     DEFAULT_MJCF_SOLVER,
     DEFAULT_MJCF_TIMESTEP,
 )
-from src.utils.helpers import log_message
+from freecad.assembly2mujoco.utils.helpers import log_message
 
 __all__ = ["ExportTaskPanel"]
 

@@ -4,14 +4,14 @@ from typing import Any
 import FreeCAD as App
 import UtilsAssembly
 
-from src.constants import (
+from freecad.assembly2mujoco.constants import (
     WORKBENCH_LOG_NAME,
     MUJOCO_JOINT_TYPE,
     JOINT_TYPE_WEIGHTS,
     JOINT_TYPE_MAPPING,
 )
-from src.utils.helpers import log_message
-from src.utils.types import AppearanceDict, MaterialProperties
+from freecad.assembly2mujoco.utils.helpers import log_message
+from freecad.assembly2mujoco.utils.types import AppearanceDict, MaterialProperties
 
 
 __all__ = ["Graph"]

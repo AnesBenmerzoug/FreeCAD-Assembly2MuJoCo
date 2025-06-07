@@ -7,7 +7,7 @@ import FreeCAD as App
 import MeshPart
 import UtilsAssembly
 
-from src.constants import (
+from freecad.assembly2mujoco.constants import (
     DEFAULT_ANGULAR_DEFLECTION,
     DEFAULT_LINEAR_DEFLECTION,
     DEFAULT_MJCF_INTEGRATOR,
@@ -15,14 +15,14 @@ from src.constants import (
     DEFAULT_MJCF_TIMESTEP,
     WORKBENCH_LOG_NAME,
 )
-from src.core.assembly_parser import (
+from freecad.assembly2mujoco.core.assembly_parser import (
     Graph,
     GraphNode,
     GraphEdge,
     find_minimum_spanning_tree,
     convert_to_directed_tree,
 )
-from src.utils.helpers import log_message
+from freecad.assembly2mujoco.utils.helpers import log_message
 
 __all__ = ["MuJoCoExporter"]
 

@@ -2,7 +2,7 @@ from typing import Literal
 
 import FreeCAD as App
 
-from src.constants import WORKBENCH_LOG_NAME
+from freecad.assembly2mujoco.constants import WORKBENCH_LOG_NAME
 
 
 __all__ = ["log_message"]

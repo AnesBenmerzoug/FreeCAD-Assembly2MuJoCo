@@ -4,10 +4,10 @@ import FreeCAD as App
 import FreeCADGui as Gui
 from PySide import QtWidgets
 
-from src.core.mujoco_exporter import MuJoCoExporter
-from src.commands.base import BaseCommand
-from src.commands.export_panel import ExportTaskPanel
-from src.constants import WORKBENCH_ICON_FILE
+from freecad.assembly2mujoco.core.mujoco_exporter import MuJoCoExporter
+from freecad.assembly2mujoco.commands.base import BaseCommand
+from freecad.assembly2mujoco.commands.export_panel import ExportTaskPanel
+from freecad.assembly2mujoco.constants import WORKBENCH_ICON_FILE
 
 
 __all__ = ["MuJoCoExportCommand"]

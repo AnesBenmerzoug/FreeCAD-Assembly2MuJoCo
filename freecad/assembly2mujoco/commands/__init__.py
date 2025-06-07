@@ -1,5 +1,5 @@
-from src.commands.base import get_all_commands
-from src.commands.export_command import MuJoCoExportCommand  # noqa: F401
+from freecad.assembly2mujoco.commands.base import get_all_commands
+from freecad.assembly2mujoco.commands.export_command import MuJoCoExportCommand  # noqa: F401
 
 
 __all__ = [
