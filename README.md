@@ -1,6 +1,5 @@
 # FreeCAD Macro - Assembly Export to MuJoCo
 
-<div align="center">
 
 [![GitHub Release][release-badge]][releases]
 [![Changelog][cc-badge]][cc]
@@ -8,19 +7,14 @@
 [![Github CI Workflow][ci-workflow-badge]][ci-workflow]
 [![License][license-badge]][license-file]
 
-</div>
 
-<div align="center">
-<img src="src/resources/icons/assembly-to-mujoco-icon.svg" width="200px"/>
-</div>
+![Assembly2MuJoCo Icon](resources/icons/assembly-to-mujoco-icon.svg)
 
 This is a [FreeCAD](https://www.freecad.org/) macro to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) to [MuJoCo](https://mujoco.org/).
 
-<p align="center">
-    <img src="examples/universal_joint/output.gif"/>
-    <br>
-    <em>Export of universal joint assembly to MuJoCo</em>
-</p>
+![Export of universal joint assembly to MuJoCo](examples/universal_joint/output.gif)
+
+*Export of universal joint assembly to MuJoCo*
 
 If you find any bugs while using the macro, please feel free to open an [issue](https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues).
 
@@ -42,6 +36,12 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
 
   - [AssemblyExportToMuJoCo.FCMacro](./AssemblyExportToMuJoCo.FCMacro)
   - [AssemblyExportToMuJoCo.svg](./AssemblyExportToMuJoCo.svg)
+
+  You can find the path to FreeCAD's data directory by executing the following in the python console:
+
+  ```python
+  App.getUserAppDataDir()
+  ```
 
 - (Optional) Add the Macro to the toolbar for easier execution.
 
