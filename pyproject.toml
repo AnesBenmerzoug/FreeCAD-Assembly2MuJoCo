@@ -12,6 +12,9 @@ maintainers = [
     { name = "Anes Benmerzoug", email = "anes.benmerzoug@gmail.com" },
 ]
 
+[tool.setuptools]
+packages = []
+
 [project.urls]
 Repository = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo"
 Issues = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues"
