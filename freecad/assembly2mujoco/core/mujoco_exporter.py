@@ -209,26 +209,25 @@ class MuJoCoExporter:
         for node in assembly_graph.get_nodes():
             part = node.part
             shape = part.Shape.copy(False)
-
-            log_message(f"Shape: Name={part.Name}, Placement={shape.Placement}")
-
-            mesh = MeshPart.meshFromShape(
-                Shape=shape,
-                LinearDeflection=self.mesh_linear_deflection,
-                AngularDeflection=self.mesh_angular_deflection,
-                Relative=False,
-            )
             mesh_file = Path(meshes_dir).joinpath(part.Name)
+
             if self.mesh_export_format == "stl":
+                mesh = MeshPart.meshFromShape(
+                    Shape=shape,
+                    LinearDeflection=self.mesh_linear_deflection,
+                    AngularDeflection=self.mesh_angular_deflection,
+                    Relative=False,
+                )
                 mesh_file = mesh_file.with_suffix(".stl")
+                mesh.write(os.fspath(mesh_file))
             elif self.mesh_export_format == "obj":
                 mesh_file = mesh_file.with_suffix(".obj")
+                Mesh.export([part], os.fspath(mesh_file))
             else:
                 raise ValueError(
                     f"{WORKBENCH_NAME}: Unexpected mesh export format '{self.mesh_export_format}'"
                 )
 
-            Mesh.export([mesh], os.fspath(mesh_file))
             # Add new mesh to assets
             ET.SubElement(
                 self.asset,
