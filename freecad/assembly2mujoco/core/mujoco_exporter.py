@@ -15,6 +15,8 @@ from freecad.assembly2mujoco.constants import (
     DEFAULT_MJCF_INTEGRATOR,
     DEFAULT_MJCF_SOLVER,
     DEFAULT_MJCF_TIMESTEP,
+    DEFAULT_MJCF_ARMATURE,
+    DEFAULT_MJCF_DAMPING,
     WORKBENCH_NAME,
 )
 from freecad.assembly2mujoco.core.assembly_parser import (
@@ -42,21 +44,26 @@ class MuJoCoExporter:
 
     def __init__(
         self,
+        *,
         mesh_linear_deflection: float = DEFAULT_MESH_LINEAR_DEFLECTION,
         mesh_angular_deflection: float = DEFAULT_MESH_ANGULAR_DEFLECTION,
         mesh_export_format: Literal["stl", "obj"] = DEFAULT_MESH_EXPORT_FORMAT,
         integrator: Literal[
             "Euler", "implicit", "implicitfast", "RK4"
         ] = DEFAULT_MJCF_INTEGRATOR,
-        timestep: float = DEFAULT_MJCF_TIMESTEP,
         solver: Literal["PGS", "CG", "Newton"] = DEFAULT_MJCF_SOLVER,
+        timestep: float = DEFAULT_MJCF_TIMESTEP,
+        damping: float = DEFAULT_MJCF_DAMPING,
+        armature: float = DEFAULT_MJCF_ARMATURE,
     ) -> None:
         self.mesh_linear_deflection = mesh_linear_deflection
         self.mesh_angular_deflection = mesh_angular_deflection
         self.mesh_export_format = mesh_export_format
         self.integrator = integrator
-        self.timestep = timestep
         self.solver = solver
+        self.timestep = timestep
+        self.damping = damping
+        self.armature = armature
 
         self.mujoco = ET.Element("mujoco")
         self.option = ET.SubElement(
@@ -79,8 +86,8 @@ class MuJoCoExporter:
         ET.SubElement(
             self.default,
             "joint",
-            damping="10.0",
-            armature="1.0",
+            damping=f"{self.damping}",
+            armature=f"{self.armature}",
         )
         ET.SubElement(
             self.default,
