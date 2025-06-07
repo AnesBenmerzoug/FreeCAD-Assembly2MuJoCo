@@ -11,9 +11,9 @@
     <maintainer email="anes.benmerzoug@gmail.com">Anes Benmerzoug</maintainer>
     <license file="LICENSE">LGPL-2.1-or-later</license>
 
-    <url branch="main" type="repository">https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo</url>
-    <url type="bugtracker">https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues</url>
-    <url type="readme">https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/blob/main/README.md</url>
+    <url branch="main" type="repository">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo</url>
+    <url type="bugtracker">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues</url>
+    <url type="readme">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/blob/main/README.md</url>
 
     <content>
         <workbench>

@@ -9,13 +9,13 @@
 
 ![Assembly2MuJoCo Icon](resources/icons/assembly2mujoco-icon.svg)
 
-This is a [FreeCAD](https://www.freecad.org/) macro to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) to [MuJoCo](https://mujoco.org/).
+This is a [FreeCAD](https://www.freecad.org/) workbench to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) for simulation in [MuJoCo](https://mujoco.org/).
 
 ![Export of universal joint assembly to MuJoCo](examples/universal_joint/output.gif)
 
 *Export of universal joint assembly to MuJoCo*
 
-If you find any bugs while using the macro, please feel free to open an [issue](https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues).
+If you find any bugs while using the macro, please feel free to open an [issue](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues).
 
 ## Changelog
 
@@ -158,17 +158,17 @@ The project icon, including the arrangement and connecting elements, is licensed
 
 This code is licensed under the [LGPL-2.1][license-file] license.
 
-[releases]: https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/releases
+[releases]: https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases
 [release-badge]: https://img.shields.io/github/v/release/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo?label=version
 
 [license-file]: ./LICENSE
 [license-badge]: https://img.shields.io/github/license/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo
 
-[issues]: https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues
+[issues]: https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues
 [issues-badge]: https://img.shields.io/github/issues/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo
 
 [ci-workflow-badge]: https://img.shields.io/github/actions/workflow/status/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/main.yml?label=CI
-[ci-workflow]: test
+[ci-workflow]: https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/actions/workflows/main.yml
 
 [cc]: ./CHANGELOG.md
 [cc-badge]: https://common-changelog.org/badge.svg
