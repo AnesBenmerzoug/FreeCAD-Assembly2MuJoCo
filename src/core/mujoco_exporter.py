@@ -26,10 +26,10 @@ from src.core.assembly_parser import (
 )
 from src.utils.helpers import log_message
 
-__all__ = ["MuJuCoExporter"]
+__all__ = ["MuJoCoExporter"]
 
 
-class MuJuCoExporter:
+class MuJoCoExporter:
     """Class for exporting a kinematic tree as a MuJoCo MJCF (XML) file and STL files.
 
     Args:
