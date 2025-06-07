@@ -2,9 +2,9 @@ import os
 
 import FreeCADGui as Gui
 
-from src.constants import ICONS_DIR, WORKBENCH_ICON_FILE, WORKBENCH_MENU_NAME
-from src.commands import get_all_commands
-from src.utils.helpers import log_message
+from .constants import ICONS_DIR, WORKBENCH_ICON_FILE, WORKBENCH_MENU_NAME
+from .commands import get_all_commands
+from .utils.helpers import log_message
 
 
 class AssemblyExportToMuJoCoWorkbench(Gui.Workbench):
