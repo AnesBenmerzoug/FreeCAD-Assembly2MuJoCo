@@ -25,7 +25,7 @@ class MuJoCoExportCommand(BaseCommand):
         return {
             "Pixmap": os.fspath(WORKBENCH_ICON_FILE),
             "MenuText": "Export to MuJoCo",
-            "ToolTip": "Export the selected assembly to MuJoCo MJCF format",
+            "ToolTip": "Export the selected assembly as meshes and creates an MJCF file for MuJoCo",
         }
 
     def Activated(self) -> None:
