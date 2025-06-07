@@ -9,8 +9,9 @@ import MeshPart
 import UtilsAssembly
 
 from freecad.assembly2mujoco.constants import (
-    DEFAULT_ANGULAR_DEFLECTION,
-    DEFAULT_LINEAR_DEFLECTION,
+    DEFAULT_MESH_ANGULAR_DEFLECTION,
+    DEFAULT_MESH_LINEAR_DEFLECTION,
+    DEFAULT_MESH_EXPORT_FORMAT,
     DEFAULT_MJCF_INTEGRATOR,
     DEFAULT_MJCF_SOLVER,
     DEFAULT_MJCF_TIMESTEP,
@@ -41,16 +42,18 @@ class MuJoCoExporter:
 
     def __init__(
         self,
-        linear_deflection: float = DEFAULT_LINEAR_DEFLECTION,
-        angular_deflection: float = DEFAULT_ANGULAR_DEFLECTION,
+        mesh_linear_deflection: float = DEFAULT_MESH_LINEAR_DEFLECTION,
+        mesh_angular_deflection: float = DEFAULT_MESH_ANGULAR_DEFLECTION,
+        mesh_export_format: Literal["stl", "obj"] = DEFAULT_MESH_EXPORT_FORMAT,
         integrator: Literal[
             "Euler", "implicit", "implicitfast", "RK4"
         ] = DEFAULT_MJCF_INTEGRATOR,
         timestep: float = DEFAULT_MJCF_TIMESTEP,
         solver: Literal["PGS", "CG", "Newton"] = DEFAULT_MJCF_SOLVER,
     ) -> None:
-        self.linear_deflection = linear_deflection
-        self.angular_deflection = angular_deflection
+        self.mesh_linear_deflection = mesh_linear_deflection
+        self.mesh_angular_deflection = mesh_angular_deflection
+        self.mesh_export_format = mesh_export_format
         self.integrator = integrator
         self.timestep = timestep
         self.solver = solver
@@ -204,11 +207,20 @@ class MuJoCoExporter:
 
             mesh = MeshPart.meshFromShape(
                 Shape=shape,
-                LinearDeflection=self.linear_deflection,
-                AngularDeflection=self.angular_deflection,
+                LinearDeflection=self.mesh_linear_deflection,
+                AngularDeflection=self.mesh_angular_deflection,
                 Relative=False,
             )
-            mesh_file = Path(meshes_dir).joinpath(part.Name).with_suffix(".stl")
+            mesh_file = Path(meshes_dir).joinpath(part.Name)
+            if self.mesh_export_format == "stl":
+                mesh_file = mesh_file.with_suffix(".stl")
+            elif self.mesh_export_format == "obj":
+                mesh_file = mesh_file.with_suffix(".obj")
+            else:
+                raise ValueError(
+                    f"{WORKBENCH_NAME}: Unexpected mesh export format '{self.mesh_export_format}'"
+                )
+
             Mesh.export([mesh], os.fspath(mesh_file))
             # Add new mesh to assets
             ET.SubElement(
