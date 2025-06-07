@@ -13,7 +13,7 @@ repos:
     - id: ruff-check
       args: [ --fix ]
       types_or: [file, python]
-      files: .*\.FCMacro$
+      files: .*\.(FCMacro|py)$
     - id: ruff-format
       types_or: [file, python]
-      files: .*\.FCMacro$
+      files: .*\.(FCMacro|py)$

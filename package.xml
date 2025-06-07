@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
 
-    <name>Assembly Export to MuJoCo</name>
-    <description>An addon that contains a macro for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
-    <icon>resources/icons/AssemblyExportToMuJoCo.svg</icon>
+    <name>Assembly2MuJoCo</name>
+    <description>An addon for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
+    <icon>freecad/assembly2mujoco/resources/icons/assembly2mujoco-icon.svg</icon>
     <version>0.1.0</version>
     <date>2025-05-31</date>
 
@@ -16,18 +16,17 @@
     <url type="readme">https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/blob/main/README.md</url>
 
     <content>
-        <macro>
-            <description>A macro for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
+        <workbench>
+            <name>AssemblyToMuJoCo</name>
             <freecadmin>1.0.0</freecadmin>
             <python_min>3.10.0</python_min>
-            <icon>../resources/icons/AssemblyExportToMuJoCo.svg</icon>
-            <subdirectory>./src</subdirectory>
-            <file>AssemblyExportToMuJoCo.FCMacro</file>
+            <subdirectory>freecad/assembly2mujoco</subdirectory>
+            <classname>AssemblyExportToMuJoCoWorkbench</classname>
             <tag>Assembly</tag>
             <tag>MuJoCo</tag>
             <tag>export</tag>
             <tag>simulation</tag>
-        </macro>
+        </workbench>
     </content>
 
 </package>
