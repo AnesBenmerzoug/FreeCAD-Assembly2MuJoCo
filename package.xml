@@ -3,7 +3,7 @@
 
     <name>Assembly to MuJoCo</name>
     <description>An addon for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
-    <icon>src/resources/icons/assembly-to-mujoco-icon.svg</icon>
+    <icon>freecad/assembly2mujoco/resources/icons/assembly-to-mujoco-icon.svg</icon>
     <version>0.1.1</version>
     <date>2025-06-06</date>
 
@@ -21,7 +21,7 @@
             <description>A workbench for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
             <freecadmin>1.0.0</freecadmin>
             <python_min>3.10.0</python_min>
-            <subdirectory>src</subdirectory>
+            <subdirectory>freecad/assembly2mujoco</subdirectory>
             <classname>AssemblyExportToMuJoCoWorkbench</classname>
             <tag>Assembly</tag>
             <tag>MuJoCo</tag>
