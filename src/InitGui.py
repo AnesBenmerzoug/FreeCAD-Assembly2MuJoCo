@@ -7,13 +7,16 @@ from src.commands import get_all_commands
 from src.utils.helpers import log_message
 
 
+log_message(f"Test: {WORKBENCH_MENU_NAME}")
+
+
 class AssemblyExportToMuJoCoWorkbench(Gui.Workbench):
     MenuText = WORKBENCH_MENU_NAME
     Tooltip = "Export FreeCAD assemblies to MuJoCo"
     Icon = os.fspath(WORKBENCH_ICON_FILE)
 
     def Initialize(self):
-        log_message(f"Initializing {WORKBENCH_MENU_NAME} workbench")
+        log_message("Initializing workbench")
         command_names = []
         for command_name, command_cls in get_all_commands().items():
             command_names.append(command_name)
