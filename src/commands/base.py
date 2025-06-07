@@ -10,7 +10,7 @@ def get_all_commands() -> dict[str, "BaseCommand"]:
 
 
 class BaseCommand(ABC):
-    def __init_subclass__(cls, *, backend_name: str, **kwargs):
+    def __init_subclass__(cls, **kwargs):
         global commands
         super().__init_subclass__(**kwargs)
         commands[cls.__name__] = cls
