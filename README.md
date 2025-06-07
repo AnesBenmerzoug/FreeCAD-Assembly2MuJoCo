@@ -159,15 +159,15 @@ The project icon, including the arrangement and connecting elements, is licensed
 This code is licensed under the [LGPL-2.1][license-file] license.
 
 [releases]: https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases
-[release-badge]: https://img.shields.io/github/v/release/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo?label=version
+[release-badge]: https://img.shields.io/github/v/release/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo?label=version
 
 [license-file]: ./LICENSE
-[license-badge]: https://img.shields.io/github/license/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo
+[license-badge]: https://img.shields.io/github/license/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo
 
 [issues]: https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues
-[issues-badge]: https://img.shields.io/github/issues/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo
+[issues-badge]: https://img.shields.io/github/issues/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo
 
-[ci-workflow-badge]: https://img.shields.io/github/actions/workflow/status/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/main.yml?label=CI
+[ci-workflow-badge]: https://img.shields.io/github/actions/workflow/status/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/main.yml?label=CI
 [ci-workflow]: https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/actions/workflows/main.yml
 
 [cc]: ./CHANGELOG.md
