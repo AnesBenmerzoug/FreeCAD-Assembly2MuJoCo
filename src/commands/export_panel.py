@@ -13,7 +13,6 @@ from src.constants import (
     DEFAULT_MJCF_INTEGRATOR,
     DEFAULT_MJCF_SOLVER,
     DEFAULT_MJCF_TIMESTEP,
-    WORKBENCH_LOG_NAME,
 )
 from src.utils.helpers import log_message
 
