@@ -2,7 +2,7 @@ from typing import Literal
 
 import FreeCAD as App
 
-from freecad.assembly2mujoco.constants import WORKBENCH_LOG_NAME
+from freecad.assembly2mujoco.constants import WORKBENCH_NAME
 
 
 __all__ = ["log_message"]
@@ -13,7 +13,7 @@ def log_message(
     *,
     level: Literal["info", "warning", "error"] = "info",
 ) -> None:
-    formatted_message = WORKBENCH_LOG_NAME + ": " + message + "\n"
+    formatted_message = WORKBENCH_NAME + ": " + message + "\n"
     if level == "info":
         App.Console.PrintMessage(formatted_message)
     elif level == "warning":

@@ -1,8 +1,7 @@
 from pathlib import Path
 from typing import Literal
 
-WORKBENCH_MENU_NAME = "Assembly to MuJoCo"
-WORKBENCH_LOG_NAME = "AssemblyExportToMuJoCo"
+WORKBENCH_NAME = "Assembly2MuJoCo"
 
 ##########################################
 # Paths
@@ -11,7 +10,7 @@ WORKBENCH_LOG_NAME = "AssemblyExportToMuJoCo"
 ROOT_DIR = Path(__file__).parents[2].resolve()
 RESOURCES_DIR = ROOT_DIR / "resources"
 ICONS_DIR = RESOURCES_DIR / "icons"
-WORKBENCH_ICON_FILE = ICONS_DIR / "assembly-to-mujoco-icon.svg"
+WORKBENCH_ICON_FILE = ICONS_DIR / "assembly2mujoco-icon.svg"
 
 ##########################################
 # MuJoCo

@@ -5,7 +5,7 @@ import FreeCAD as App
 import UtilsAssembly
 
 from freecad.assembly2mujoco.constants import (
-    WORKBENCH_LOG_NAME,
+    WORKBENCH_NAME,
     MUJOCO_JOINT_TYPE,
     JOINT_TYPE_WEIGHTS,
     JOINT_TYPE_MAPPING,
@@ -101,7 +101,7 @@ class GraphEdge:
         assembly = self.parent_node.part.Parents[0][0]
         if assembly.Type != "Assembly":
             raise RuntimeError(
-                f"{WORKBENCH_LOG_NAME}: Unexpected error trying to get root assembly from part"
+                f"{WORKBENCH_NAME}: Unexpected error trying to get root assembly from part"
             )
 
         # Get global placement of joint
@@ -308,7 +308,7 @@ def convert_to_directed_tree(graph: Graph, root_node: GraphNode | None = None) -
         ]
         if not root_nodes:
             raise RuntimeError(
-                f"{WORKBENCH_LOG_NAME}: Could not find root node for assembly"
+                f"{WORKBENCH_NAME}: Could not find root node for assembly"
             )
 
         # Select first one as main root node
@@ -316,7 +316,7 @@ def convert_to_directed_tree(graph: Graph, root_node: GraphNode | None = None) -
     else:
         if root_node not in graph.get_nodes():
             raise RuntimeError(
-                f"{WORKBENCH_LOG_NAME}: Provided root_node, {root_node.part.Name}, is not part of graph"
+                f"{WORKBENCH_NAME}: Provided root_node, {root_node.part.Name}, is not part of graph"
             )
 
     visited: set[GraphNode] = set()

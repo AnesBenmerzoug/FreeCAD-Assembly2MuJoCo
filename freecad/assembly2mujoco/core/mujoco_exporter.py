@@ -13,7 +13,7 @@ from freecad.assembly2mujoco.constants import (
     DEFAULT_MJCF_INTEGRATOR,
     DEFAULT_MJCF_SOLVER,
     DEFAULT_MJCF_TIMESTEP,
-    WORKBENCH_LOG_NAME,
+    WORKBENCH_NAME,
 )
 from freecad.assembly2mujoco.core.assembly_parser import (
     Graph,
@@ -238,7 +238,7 @@ class MuJoCoExporter:
             else:
                 minimum_z_placement = min(minimum_z_placement, part.Placement.Base[2])
         if minimum_z_placement is None:
-            raise RuntimeError(f"{WORKBENCH_LOG_NAME}: This should not happen")
+            raise RuntimeError(f"{WORKBENCH_NAME}: This should not happen")
         # convert from mm to m
         minimum_z_placement *= 0.001
         # shift placement to account for floorplane size
