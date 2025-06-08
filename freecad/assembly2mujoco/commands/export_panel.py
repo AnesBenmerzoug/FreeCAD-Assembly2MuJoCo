@@ -43,8 +43,8 @@ class ExportTaskPanel:
             raise RuntimeError("No active document")
 
         self.default_dir = Path(self.doc.FileName).parent / "mujoco"
-
         self.setup_ui()
+        self.set_default_values()
 
     def setup_ui(self) -> None:
         # Create the form widget
@@ -80,9 +80,6 @@ class ExportTaskPanel:
         ### Mesh Format
         self.mesh_export_format_combo = QtWidgets.QComboBox()
         mesh_export_format_values = ["STL", "OBJ"]
-        mesh_export_format_values = [DEFAULT_MESH_EXPORT_FORMAT] + list(
-            set(mesh_export_format_values).difference([DEFAULT_MESH_EXPORT_FORMAT])
-        )
         self.mesh_export_format_combo.addItems(mesh_export_format_values)
         self.mesh_export_format_combo.currentTextChanged.connect(
             self.mesh_export_format_changed
@@ -100,9 +97,6 @@ class ExportTaskPanel:
         self.stl_mesh_linear_deflection_spin.setRange(0.01, 1)
         self.stl_mesh_linear_deflection_spin.setSingleStep(0.01)
         self.stl_mesh_linear_deflection_spin.setDecimals(2)
-        self.stl_mesh_linear_deflection_spin.setValue(
-            DEFAULT_STL_MESH_LINEAR_DEFLECTION
-        )
         mesh_stl_layout.addRow(
             "Linear Deflection:", self.stl_mesh_linear_deflection_spin
         )
@@ -111,9 +105,6 @@ class ExportTaskPanel:
         self.stl_mesh_angular_deflection_spin.setRange(0.5, 5.0)
         self.stl_mesh_angular_deflection_spin.setSingleStep(0.1)
         self.stl_mesh_angular_deflection_spin.setDecimals(1)
-        self.stl_mesh_angular_deflection_spin.setValue(
-            DEFAULT_STL_MESH_ANGULAR_DEFLECTION
-        )
         mesh_stl_layout.addRow(
             "Angular Deflection:", self.stl_mesh_angular_deflection_spin
         )
@@ -131,7 +122,6 @@ class ExportTaskPanel:
         self.timestep_spin.setRange(0.0001, 0.05)
         self.timestep_spin.setSingleStep(0.0001)
         self.timestep_spin.setDecimals(4)
-        self.timestep_spin.setValue(DEFAULT_MJCF_TIMESTEP)
         mjcf_layout.addRow("Timestep:", self.timestep_spin)
 
         ## Damping
@@ -139,7 +129,6 @@ class ExportTaskPanel:
         self.damping_spin.setRange(0.0, 10.0)
         self.damping_spin.setSingleStep(0.1)
         self.damping_spin.setDecimals(3)
-        self.damping_spin.setValue(DEFAULT_MJCF_DAMPING)
         mjcf_layout.addRow("Default Damping:", self.damping_spin)
 
         ## Armature
@@ -147,23 +136,16 @@ class ExportTaskPanel:
         self.armature_spin.setRange(0.0, 1.0)
         self.armature_spin.setSingleStep(0.01)
         self.armature_spin.setDecimals(3)
-        self.armature_spin.setValue(DEFAULT_MJCF_ARMATURE)
         mjcf_layout.addRow("Default Armature:", self.armature_spin)
 
         # Additional common parameters
         self.integrator_combo = QtWidgets.QComboBox()
         integrator_values = ["implicitfast", "Euler", "implicit", "RK4"]
-        integrator_values = [DEFAULT_MJCF_INTEGRATOR] + list(
-            set(integrator_values).difference([DEFAULT_MJCF_INTEGRATOR])
-        )
         self.integrator_combo.addItems(integrator_values)
         mjcf_layout.addRow("Integrator:", self.integrator_combo)
 
         self.solver_combo = QtWidgets.QComboBox()
         solver_values = ["PGS", "CG", "Newton"]
-        solver_values = [DEFAULT_MJCF_SOLVER] + list(
-            set(solver_values).difference([DEFAULT_MJCF_SOLVER])
-        )
         self.solver_combo.addItems(solver_values)
         mjcf_layout.addRow("Solver:", self.solver_combo)
 
@@ -212,6 +194,23 @@ class ExportTaskPanel:
         )
         # Trigger callback
         return self.on_accept_callback(export_params)
+
+    def set_default_values(self) -> None:
+        # Mesh
+        self.mesh_export_format_changed.setCurrentText(DEFAULT_MESH_EXPORT_FORMAT)
+        # STL
+        self.stl_mesh_linear_deflection_spin.setValue(
+            DEFAULT_STL_MESH_LINEAR_DEFLECTION
+        )
+        self.stl_mesh_angular_deflection_spin.setValue(
+            DEFAULT_STL_MESH_ANGULAR_DEFLECTION
+        )
+        # MJCF
+        self.timestep_spin.setValue(DEFAULT_MJCF_TIMESTEP)
+        self.damping_spin.setValue(DEFAULT_MJCF_DAMPING)
+        self.armature_spin.setValue(DEFAULT_MJCF_ARMATURE)
+        self.integrator_combo.setCurrentText(DEFAULT_MJCF_INTEGRATOR)
+        self.solver_combo.setCurrentText(DEFAULT_MJCF_SOLVER)
 
     def browse_export_directory(self) -> None:
         directory = QtWidgets.QFileDialog.getExistingDirectory(
