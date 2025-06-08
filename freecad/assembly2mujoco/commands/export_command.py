@@ -53,15 +53,12 @@ class MuJoCoExportCommand(BaseCommand):
         def on_accept_callback(export_params: ExportParamsDict) -> bool:
             try:
                 # Perform the export
-                exporter = MuJoCoExporter(
-                    integrator=export_params["mjcf_integrator"],
-                    timestep=export_params["mjcf_timestep"],
-                )
-                output_path = export_params["export_dir"]
-                exporter.export_assembly(selected_obj, output_path)
+                exporter = MuJoCoExporter(**export_params)
+                exporter.export_assembly(selected_obj)
 
+                export_dir = export_params["export_dir"]
                 QtWidgets.QMessageBox.information(
-                    None, "Export Successful", f"Assembly exported to: {output_path}"
+                    None, "Export Successful", f"Assembly exported to: {export_dir}"
                 )
                 return True
             except Exception as e:
