@@ -89,6 +89,8 @@ class ExportTaskPanel:
         mesh_layout.addRow("Format:", self.mesh_export_format_combo)
 
         ## STL Mesh quality
+        self.mesh_stl_layout = QtWidgets.QFormLayout()
+
         self.stl_mesh_linear_deflection_spin = QtWidgets.QDoubleSpinBox()
         self.stl_mesh_linear_deflection_spin.setRange(0.01, 1)
         self.stl_mesh_linear_deflection_spin.setSingleStep(0.01)
@@ -96,7 +98,9 @@ class ExportTaskPanel:
         self.stl_mesh_linear_deflection_spin.setValue(
             DEFAULT_STL_MESH_LINEAR_DEFLECTION
         )
-        mesh_layout.addRow("Linear Deflection:", self.stl_mesh_linear_deflection_spin)
+        self.mesh_stl_layout.addRow(
+            "Linear Deflection:", self.stl_mesh_linear_deflection_spin
+        )
 
         self.stl_mesh_angular_deflection_spin = QtWidgets.QDoubleSpinBox()
         self.stl_mesh_angular_deflection_spin.setRange(0.5, 5.0)
@@ -105,8 +109,11 @@ class ExportTaskPanel:
         self.stl_mesh_angular_deflection_spin.setValue(
             DEFAULT_STL_MESH_ANGULAR_DEFLECTION
         )
-        mesh_layout.addRow("Angular Deflection:", self.stl_mesh_angular_deflection_spin)
+        self.mesh_stl_layout.addRow(
+            "Angular Deflection:", self.stl_mesh_angular_deflection_spin
+        )
 
+        mesh_layout.addLayout(self.mesh_stl_layout)
         mesh_group.setLayout(mesh_layout)
         main_layout.addWidget(mesh_group)
 
@@ -214,11 +221,9 @@ class ExportTaskPanel:
 
     def mesh_export_format_changed(self, value: Literal["STL", "OBJ"]) -> None:
         if value == "STL":
-            self.stl_mesh_linear_deflection_spin.setVisible(True)
-            self.stl_mesh_angular_deflection_spin.setVisible(True)
+            self.mesh_stl_layout.setVisible(True)
         elif value == "OBJ":
-            self.stl_mesh_linear_deflection_spin.setVisible(False)
-            self.stl_mesh_angular_deflection_spin.setVisible(False)
+            self.mesh_stl_layout.setVisible(False)
         else:
             raise ValueError(f"Unknown mesh format '{value}'")
 
