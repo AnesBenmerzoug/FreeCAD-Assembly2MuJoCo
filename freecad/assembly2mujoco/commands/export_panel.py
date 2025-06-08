@@ -91,7 +91,7 @@ class ExportTaskPanel:
 
         ## STL Mesh quality
         self.stl_mesh_widget_container = QtWidgets.QWidget()
-        mesh_layout.AddRow("", self.stl_mesh_widget_container)
+        mesh_layout.addRow("", self.stl_mesh_widget_container)
         mesh_stl_layout = QtWidgets.QFormLayout()
         mesh_stl_layout.setContentsMargins(0, 0, 0, 0)
         self.stl_mesh_widget_container.setLayout(mesh_stl_layout)
