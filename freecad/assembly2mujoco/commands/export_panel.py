@@ -77,19 +77,23 @@ class ExportTaskPanel:
         mesh_layout = QtWidgets.QFormLayout()
 
         ## Mesh quality
-        self.mesh_linear_deflection_spin = QtWidgets.QDoubleSpinBox()
-        self.mesh_linear_deflection_spin.setRange(0.01, 1)
-        self.mesh_linear_deflection_spin.setSingleStep(0.01)
-        self.mesh_linear_deflection_spin.setDecimals(2)
-        self.mesh_linear_deflection_spin.setValue(DEFAULT_STL_MESH_LINEAR_DEFLECTION)
-        mesh_layout.addRow("Linear Deflection:", self.mesh_linear_deflection_spin)
+        self.stl_mesh_linear_deflection_spin = QtWidgets.QDoubleSpinBox()
+        self.stl_mesh_linear_deflection_spin.setRange(0.01, 1)
+        self.stl_mesh_linear_deflection_spin.setSingleStep(0.01)
+        self.stl_mesh_linear_deflection_spin.setDecimals(2)
+        self.stl_mesh_linear_deflection_spin.setValue(
+            DEFAULT_STL_MESH_LINEAR_DEFLECTION
+        )
+        mesh_layout.addRow("Linear Deflection:", self.stl_mesh_linear_deflection_spin)
 
-        self.mesh_angular_deflection_spin = QtWidgets.QDoubleSpinBox()
-        self.mesh_angular_deflection_spin.setRange(0.5, 5.0)
-        self.mesh_angular_deflection_spin.setSingleStep(0.1)
-        self.mesh_angular_deflection_spin.setDecimals(1)
-        self.mesh_angular_deflection_spin.setValue(DEFAULT_STL_MESH_ANGULAR_DEFLECTION)
-        mesh_layout.addRow("Angular Deflection:", self.mesh_angular_deflection_spin)
+        self.stl_mesh_angular_deflection_spin = QtWidgets.QDoubleSpinBox()
+        self.stl_mesh_angular_deflection_spin.setRange(0.5, 5.0)
+        self.stl_mesh_angular_deflection_spin.setSingleStep(0.1)
+        self.stl_mesh_angular_deflection_spin.setDecimals(1)
+        self.stl_mesh_angular_deflection_spin.setValue(
+            DEFAULT_STL_MESH_ANGULAR_DEFLECTION
+        )
+        mesh_layout.addRow("Angular Deflection:", self.stl_mesh_angular_deflection_spin)
 
         ### Mesh Format
         self.mesh_export_format_combo = QtWidgets.QComboBox()
@@ -184,17 +188,17 @@ class ExportTaskPanel:
             return False
 
         # Collect parameters
-        export_params = {
-            "export_dir": export_dir,
-            "mesh_linear_deflection": self.mesh_linear_deflection_spin.value(),
-            "mesh_angular_deflection": self.mesh_angular_deflection_spin.value(),
-            "mesh_export_format": self.mesh_export_format_combo.currentText(),
-            "mjcf_timestep": self.timestep_spin.value(),
-            "mjcf_damping": self.damping_spin.value(),
-            "mjcf_armature": self.armature_spin.value(),
-            "mjcf_integrator": self.integrator_combo.currentText(),
-            "mjcf_solver": self.solver_combo.currentText(),
-        }
+        export_params = ExportParamsDict(
+            export_dir=export_dir,
+            mesh_export_format=self.mesh_export_format_combo.currentText(),
+            mesh_linear_deflection=self.stl_mesh_linear_deflection_spin.value(),
+            stl_mesh_angular_deflection=self.stl_mesh_angular_deflection_spin.value(),
+            mjcf_timestep=self.timestep_spin.value(),
+            mjcf_damping=self.damping_spin.value(),
+            mjcf_armature=self.armature_spin.value(),
+            mjcf_integrator=self.integrator_combo.currentText(),
+            mjcf_solver=self.solver_combo.currentText(),
+        )
         # Trigger callback
         return self.on_accept_callback(export_params)
 
