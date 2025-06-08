@@ -23,7 +23,7 @@ __all__ = ["ExportTaskPanel", "ExportParamsDict"]
 
 class ExportParamsDict(TypedDict):
     export_dir: Path
-    mesh_export_format: Literal["stl", "obj"]
+    mesh_export_format: Literal["STL", "OBJ"]
     stl_mesh_linear_deflection: float
     stl_mesh_angular_deflection: float
     mjcf_timestep: float
