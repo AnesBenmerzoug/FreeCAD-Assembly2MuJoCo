@@ -20,9 +20,14 @@ Repository = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMu
 Issues = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues"
 Changelog = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/blob/main/CHANGELOG.md"
 
+
+[project.optional-dependencies]
+dev = ["pre-commit==4.2.*", "mypy==1.16.*"]
+
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
-[project.optional-dependencies]
-dev = ["pre-commit"]
+[tool.mypy]
+explicit_package_bases = true
+ignore_missing_imports = true
