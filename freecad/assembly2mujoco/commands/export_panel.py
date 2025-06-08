@@ -76,7 +76,19 @@ class ExportTaskPanel:
         mesh_group = QtWidgets.QGroupBox("Mesh Export Options")
         mesh_layout = QtWidgets.QFormLayout()
 
-        ## Mesh quality
+        ### Mesh Format
+        self.mesh_export_format_combo = QtWidgets.QComboBox()
+        mesh_export_format_values = ["STL", "OBJ"]
+        mesh_export_format_values = [DEFAULT_MESH_EXPORT_FORMAT] + list(
+            set(mesh_export_format_values).difference([DEFAULT_MESH_EXPORT_FORMAT])
+        )
+        self.mesh_export_format_combo.addItems(mesh_export_format_values)
+        self.mesh_export_format_combo.currentTextChanged.connect(
+            self.mesh_export_format_changed
+        )
+        mesh_layout.addRow("Format:", self.mesh_export_format_combo)
+
+        ## STL Mesh quality
         self.stl_mesh_linear_deflection_spin = QtWidgets.QDoubleSpinBox()
         self.stl_mesh_linear_deflection_spin.setRange(0.01, 1)
         self.stl_mesh_linear_deflection_spin.setSingleStep(0.01)
@@ -94,15 +106,6 @@ class ExportTaskPanel:
             DEFAULT_STL_MESH_ANGULAR_DEFLECTION
         )
         mesh_layout.addRow("Angular Deflection:", self.stl_mesh_angular_deflection_spin)
-
-        ### Mesh Format
-        self.mesh_export_format_combo = QtWidgets.QComboBox()
-        mesh_export_format_values = ["STL", "OBJ"]
-        mesh_export_format_values = [DEFAULT_MESH_EXPORT_FORMAT] + list(
-            set(mesh_export_format_values).difference([DEFAULT_MESH_EXPORT_FORMAT])
-        )
-        self.mesh_export_format_combo.addItems(mesh_export_format_values)
-        mesh_layout.addRow("Mesh Format:", self.mesh_export_format_combo)
 
         mesh_group.setLayout(mesh_layout)
         main_layout.addWidget(mesh_group)
@@ -208,6 +211,16 @@ class ExportTaskPanel:
         )
         if directory:
             self.dir_edit.setText(directory)
+
+    def mesh_export_format_changed(self, value: Literal["STL", "OBJ"]) -> None:
+        if value == "STL":
+            self.stl_mesh_linear_deflection_spin.setVisible(True)
+            self.stl_mesh_angular_deflection_spin.setVisible(True)
+        elif value == "OBJ":
+            self.stl_mesh_linear_deflection_spin.setVisible(False)
+            self.stl_mesh_angular_deflection_spin.setVisible(False)
+        else:
+            raise ValueError(f"Unknown mesh format '{value}'")
 
     def clear_report_view(self) -> None:
         """Clear the contents of the FreeCAD Report View"""
