@@ -191,7 +191,7 @@ class ExportTaskPanel:
         export_params = ExportParamsDict(
             export_dir=export_dir,
             mesh_export_format=self.mesh_export_format_combo.currentText(),
-            mesh_linear_deflection=self.stl_mesh_linear_deflection_spin.value(),
+            stl_mesh_linear_deflection=self.stl_mesh_linear_deflection_spin.value(),
             stl_mesh_angular_deflection=self.stl_mesh_angular_deflection_spin.value(),
             mjcf_timestep=self.timestep_spin.value(),
             mjcf_damping=self.damping_spin.value(),
