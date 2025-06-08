@@ -82,7 +82,7 @@ class ExportTaskPanel:
         mesh_export_format_values = ["STL", "OBJ"]
         self.mesh_export_format_combo.addItems(mesh_export_format_values)
         self.mesh_export_format_combo.currentTextChanged.connect(
-            self.mesh_export_format_changed
+            self.mesh_export_format_changed_callback
         )
         mesh_layout.addRow("Format:", self.mesh_export_format_combo)
 
@@ -197,7 +197,7 @@ class ExportTaskPanel:
 
     def set_default_values(self) -> None:
         # Mesh
-        self.mesh_export_format_changed.setCurrentText(DEFAULT_MESH_EXPORT_FORMAT)
+        self.mesh_export_format_combo.setCurrentText(DEFAULT_MESH_EXPORT_FORMAT)
         # STL
         self.stl_mesh_linear_deflection_spin.setValue(
             DEFAULT_STL_MESH_LINEAR_DEFLECTION
@@ -219,7 +219,7 @@ class ExportTaskPanel:
         if directory:
             self.dir_edit.setText(directory)
 
-    def mesh_export_format_changed(self, value: Literal["STL", "OBJ"]) -> None:
+    def mesh_export_format_changed_callback(self, value: Literal["STL", "OBJ"]) -> None:
         if value == "STL":
             self.stl_mesh_widget_container.show()
         elif value == "OBJ":
