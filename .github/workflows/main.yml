@@ -37,3 +37,8 @@ jobs:
         optional_dependencies: dev
     - name: Run pre-commit
       run: pre-commit run --all-files --verbose --show-diff-on-failure
+    - name: Add mypy PR annotator
+      uses: pr-annotators/mypy-pr-annotator@v1.0.0
+    - name: Run mypy
+      run: mypy freecad/
+      continue-on-error: true
