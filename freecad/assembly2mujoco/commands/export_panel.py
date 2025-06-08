@@ -7,8 +7,8 @@ import FreeCADGui as Gui
 from PySide import QtGui, QtWidgets
 
 from freecad.assembly2mujoco.constants import (
-    DEFAULT_MESH_ANGULAR_DEFLECTION,
-    DEFAULT_MESH_LINEAR_DEFLECTION,
+    DEFAULT_STL_MESH_ANGULAR_DEFLECTION,
+    DEFAULT_STL_MESH_LINEAR_DEFLECTION,
     DEFAULT_MESH_EXPORT_FORMAT,
     DEFAULT_MJCF_ARMATURE,
     DEFAULT_MJCF_DAMPING,
@@ -23,9 +23,9 @@ __all__ = ["ExportTaskPanel", "ExportParamsDict"]
 
 class ExportParamsDict(TypedDict):
     export_dir: Path
-    mesh_linear_deflection: float
-    mesh_angular_deflection: float
     mesh_export_format: Literal["stl", "obj"]
+    stl_mesh_linear_deflection: float
+    stl_mesh_angular_deflection: float
     mjcf_timestep: float
     mjcf_damping: float
     mjcf_armature: float
@@ -81,14 +81,14 @@ class ExportTaskPanel:
         self.mesh_linear_deflection_spin.setRange(0.01, 1)
         self.mesh_linear_deflection_spin.setSingleStep(0.01)
         self.mesh_linear_deflection_spin.setDecimals(2)
-        self.mesh_linear_deflection_spin.setValue(DEFAULT_MESH_LINEAR_DEFLECTION)
+        self.mesh_linear_deflection_spin.setValue(DEFAULT_STL_MESH_LINEAR_DEFLECTION)
         mesh_layout.addRow("Linear Deflection:", self.mesh_linear_deflection_spin)
 
         self.mesh_angular_deflection_spin = QtWidgets.QDoubleSpinBox()
         self.mesh_angular_deflection_spin.setRange(0.5, 5.0)
         self.mesh_angular_deflection_spin.setSingleStep(0.1)
         self.mesh_angular_deflection_spin.setDecimals(1)
-        self.mesh_angular_deflection_spin.setValue(DEFAULT_MESH_ANGULAR_DEFLECTION)
+        self.mesh_angular_deflection_spin.setValue(DEFAULT_STL_MESH_ANGULAR_DEFLECTION)
         mesh_layout.addRow("Angular Deflection:", self.mesh_angular_deflection_spin)
 
         ### Mesh Format

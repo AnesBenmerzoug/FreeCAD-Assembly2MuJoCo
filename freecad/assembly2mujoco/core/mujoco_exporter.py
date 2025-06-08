@@ -9,8 +9,8 @@ import MeshPart
 import UtilsAssembly
 
 from freecad.assembly2mujoco.constants import (
-    DEFAULT_MESH_ANGULAR_DEFLECTION,
-    DEFAULT_MESH_LINEAR_DEFLECTION,
+    DEFAULT_STL_MESH_ANGULAR_DEFLECTION,
+    DEFAULT_STL_MESH_LINEAR_DEFLECTION,
     DEFAULT_MESH_EXPORT_FORMAT,
     DEFAULT_MJCF_INTEGRATOR,
     DEFAULT_MJCF_SOLVER,
@@ -35,43 +35,45 @@ class MuJoCoExporter:
     """Class for exporting a kinematic tree as a MuJoCo MJCF (XML) file and STL files.
 
     Args:
-        integrator: The numerical integrator to be used in MuJoCo.
+        mjcf_integrator: The numerical integrator to be used in MuJoCo.
             The available integrators are the semi-implicit Euler method,
             the fixed-step 4-th order Runge Kutta method,
             the Implicit-in-velocity Euler method, and implicitfast.
-        timestep: Simulation time step in seconds.
+        mjcf_timestep: Simulation time step in seconds.
     """
 
     def __init__(
         self,
         *,
-        mesh_linear_deflection: float = DEFAULT_MESH_LINEAR_DEFLECTION,
-        mesh_angular_deflection: float = DEFAULT_MESH_ANGULAR_DEFLECTION,
+        export_dir: os.PathLike,
         mesh_export_format: Literal["STL", "OBJ"] = DEFAULT_MESH_EXPORT_FORMAT,
-        integrator: Literal[
+        stl_mesh_linear_deflection: float = DEFAULT_STL_MESH_LINEAR_DEFLECTION,
+        stl_mesh_angular_deflection: float = DEFAULT_STL_MESH_ANGULAR_DEFLECTION,
+        mjcf_integrator: Literal[
             "Euler", "implicit", "implicitfast", "RK4"
         ] = DEFAULT_MJCF_INTEGRATOR,
-        solver: Literal["PGS", "CG", "Newton"] = DEFAULT_MJCF_SOLVER,
-        timestep: float = DEFAULT_MJCF_TIMESTEP,
-        damping: float = DEFAULT_MJCF_DAMPING,
-        armature: float = DEFAULT_MJCF_ARMATURE,
+        mjcf_solver: Literal["PGS", "CG", "Newton"] = DEFAULT_MJCF_SOLVER,
+        mjcf_timestep: float = DEFAULT_MJCF_TIMESTEP,
+        mjcf_damping: float = DEFAULT_MJCF_DAMPING,
+        mjcf_armature: float = DEFAULT_MJCF_ARMATURE,
     ) -> None:
-        self.mesh_linear_deflection = mesh_linear_deflection
-        self.mesh_angular_deflection = mesh_angular_deflection
+        self.export_dir = export_dir
         self.mesh_export_format = mesh_export_format
-        self.integrator = integrator
-        self.solver = solver
-        self.timestep = timestep
-        self.damping = damping
-        self.armature = armature
+        self.stl_mesh_linear_deflection = stl_mesh_linear_deflection
+        self.stl_mesh_angular_deflection = stl_mesh_angular_deflection
+        self.mjcf_integrator = mjcf_integrator
+        self.mjcf_solver = mjcf_solver
+        self.mjcf_timestep = mjcf_timestep
+        self.mjcf_damping = mjcf_damping
+        self.mjcf_armature = mjcf_armature
 
         self.mujoco = ET.Element("mujoco")
         self.option = ET.SubElement(
             self.mujoco,
             "option",
-            integrator=self.integrator,
-            timestep=str(self.timestep),
-            solver=self.solver,
+            integrator=self.mjcf_integrator,
+            timestep=str(self.mjcf_timestep),
+            solver=self.mjcf_solver,
         )
         self.compiler = ET.SubElement(
             self.mujoco,
@@ -86,8 +88,8 @@ class MuJoCoExporter:
         ET.SubElement(
             self.default,
             "joint",
-            damping=f"{self.damping}",
-            armature=f"{self.armature}",
+            damping=f"{self.mjcf_damping}",
+            armature=f"{self.mjcf_armature}",
         )
         ET.SubElement(
             self.default,
@@ -148,16 +150,14 @@ class MuJoCoExporter:
         self.actuator = ET.SubElement(self.mujoco, "actuator")
         self.sensor = ET.SubElement(self.mujoco, "sensor")
 
-    def export_assembly(
-        self, assembly: App.DocumentObject, output_dir: str | os.PathLike
-    ) -> None:
+    def export_assembly(self, assembly: App.DocumentObject) -> None:
         """Main export method"""
 
         # Create graph connecting parts with joints
         assembly_graph = Graph.from_assembly(assembly)
 
         # Export assembly parts as binary stl meshes
-        meshes_dir = Path(output_dir).joinpath("meshes")
+        meshes_dir = Path(self.export_dir).joinpath("meshes")
         meshes_dir.mkdir(exist_ok=True, parents=True)
         self.worldbody.append(ET.Comment("Part Meshes"))
         self.export_parts_as_meshes_and_add_to_assets(assembly_graph, meshes_dir)
@@ -197,7 +197,9 @@ class MuJoCoExporter:
 
         # Save MJCF file
         xml_file = (
-            Path(output_dir).joinpath(App.activeDocument().Name).with_suffix(".xml")
+            Path(self.export_dir)
+            .joinpath(App.activeDocument().Name)
+            .with_suffix(".xml")
         )
         self.write_xml(xml_file)
 
@@ -214,8 +216,8 @@ class MuJoCoExporter:
             if self.mesh_export_format == "STL":
                 mesh = MeshPart.meshFromShape(
                     Shape=shape,
-                    LinearDeflection=self.mesh_linear_deflection,
-                    AngularDeflection=self.mesh_angular_deflection,
+                    LinearDeflection=self.stl_mesh_linear_deflection,
+                    AngularDeflection=self.stl_mesh_angular_deflection,
                     Relative=False,
                 )
                 mesh_file = mesh_file.with_suffix(".stl")

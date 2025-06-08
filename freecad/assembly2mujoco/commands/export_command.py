@@ -53,21 +53,12 @@ class MuJoCoExportCommand(BaseCommand):
         def on_accept_callback(export_params: ExportParamsDict) -> bool:
             try:
                 # Perform the export
-                exporter = MuJoCoExporter(
-                    mesh_linear_deflection=export_params["mesh_linear_deflection"],
-                    mesh_angular_deflection=export_params["mesh_angular_deflection"],
-                    mesh_export_format=export_params["mesh_export_format"],
-                    integrator=export_params["mjcf_integrator"],
-                    solver=export_params["mjcf_solver"],
-                    timestep=export_params["mjcf_timestep"],
-                    damping=export_params["mjcf_damping"],
-                    armature=export_params["mjcf_armature"],
-                )
-                output_path = export_params["export_dir"]
-                exporter.export_assembly(selected_obj, output_path)
+                exporter = MuJoCoExporter(**export_params)
+                exporter.export_assembly(selected_obj)
 
+                export_dir = export_params["export_dir"]
                 QtWidgets.QMessageBox.information(
-                    None, "Export Successful", f"Assembly exported to: {output_path}"
+                    None, "Export Successful", f"Assembly exported to: {export_dir}"
                 )
                 return True
             except Exception as e:
