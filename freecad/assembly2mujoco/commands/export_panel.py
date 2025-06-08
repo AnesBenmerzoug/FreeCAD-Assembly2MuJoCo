@@ -57,8 +57,10 @@ class ExportTaskPanel:
         ###############################################
         # Directory selection section
         ###############################################
-        dir_group = QtWidgets.QGroupBox("Export Directory")
         dir_layout = QtWidgets.QHBoxLayout()
+        dir_group = QtWidgets.QGroupBox("Export Directory")
+        dir_group.setLayout(dir_layout)
+        main_layout.addWidget(dir_group)
 
         self.dir_edit = QtWidgets.QLineEdit(os.fspath(self.default_dir))
         dir_layout.addWidget(self.dir_edit)
@@ -67,14 +69,13 @@ class ExportTaskPanel:
         browse_button.clicked.connect(self.browse_export_directory)
         dir_layout.addWidget(browse_button)
 
-        dir_group.setLayout(dir_layout)
-        main_layout.addWidget(dir_group)
-
         ###############################################
         # Mesh Export options
         ###############################################
-        mesh_group = QtWidgets.QGroupBox("Mesh Export Options")
         mesh_layout = QtWidgets.QFormLayout()
+        mesh_group = QtWidgets.QGroupBox("Mesh Export Options")
+        mesh_group.setLayout(mesh_layout)
+        main_layout.addWidget(mesh_group)
 
         ### Mesh Format
         self.mesh_export_format_combo = QtWidgets.QComboBox()
@@ -89,7 +90,11 @@ class ExportTaskPanel:
         mesh_layout.addRow("Format:", self.mesh_export_format_combo)
 
         ## STL Mesh quality
-        self.mesh_stl_layout = QtWidgets.QFormLayout()
+        self.stl_mesh_widget_container = QtWidgets.QWidget()
+        mesh_layout.AddRow("", self.stl_mesh_widget_container)
+        mesh_stl_layout = QtWidgets.QFormLayout()
+        mesh_stl_layout.setContentsMargins(0, 0, 0, 0)
+        self.stl_mesh_widget_container.setLayout(mesh_stl_layout)
 
         self.stl_mesh_linear_deflection_spin = QtWidgets.QDoubleSpinBox()
         self.stl_mesh_linear_deflection_spin.setRange(0.01, 1)
@@ -98,7 +103,7 @@ class ExportTaskPanel:
         self.stl_mesh_linear_deflection_spin.setValue(
             DEFAULT_STL_MESH_LINEAR_DEFLECTION
         )
-        self.mesh_stl_layout.addRow(
+        mesh_stl_layout.addRow(
             "Linear Deflection:", self.stl_mesh_linear_deflection_spin
         )
 
@@ -109,19 +114,17 @@ class ExportTaskPanel:
         self.stl_mesh_angular_deflection_spin.setValue(
             DEFAULT_STL_MESH_ANGULAR_DEFLECTION
         )
-        self.mesh_stl_layout.addRow(
+        mesh_stl_layout.addRow(
             "Angular Deflection:", self.stl_mesh_angular_deflection_spin
         )
-
-        mesh_layout.addLayout(self.mesh_stl_layout)
-        mesh_group.setLayout(mesh_layout)
-        main_layout.addWidget(mesh_group)
 
         ###############################################
         # MuJoCo MJCF parameters
         ###############################################
-        mjcf_group = QtWidgets.QGroupBox("MuJoCo MJCF Parameters")
         mjcf_layout = QtWidgets.QFormLayout()
+        mjcf_group = QtWidgets.QGroupBox("MuJoCo MJCF Parameters")
+        mjcf_group.setLayout(mjcf_layout)
+        main_layout.addWidget(mjcf_group)
 
         ## Timestep
         self.timestep_spin = QtWidgets.QDoubleSpinBox()
@@ -164,19 +167,17 @@ class ExportTaskPanel:
         self.solver_combo.addItems(solver_values)
         mjcf_layout.addRow("Solver:", self.solver_combo)
 
-        mjcf_group.setLayout(mjcf_layout)
-        main_layout.addWidget(mjcf_group)
-
+        ###############################################
         # Debug
-        debug_group = QtWidgets.QGroupBox("Debug Options")
+        ###############################################
         debug_layout = QtWidgets.QVBoxLayout()
+        debug_group = QtWidgets.QGroupBox("Debug Options")
+        debug_group.setLayout(debug_layout)
+        main_layout.addWidget(debug_group)
 
         clear_report_button = QtWidgets.QPushButton("Clear Report View")
         clear_report_button.clicked.connect(self.clear_report_view)
         debug_layout.addWidget(clear_report_button)
-
-        debug_group.setLayout(debug_layout)
-        main_layout.addWidget(debug_group)
 
     def accept(self) -> bool:
         """Called when user clicks the export button in the task panel
@@ -221,9 +222,9 @@ class ExportTaskPanel:
 
     def mesh_export_format_changed(self, value: Literal["STL", "OBJ"]) -> None:
         if value == "STL":
-            self.mesh_stl_layout.setVisible(True)
+            self.stl_mesh_widget_container.show()
         elif value == "OBJ":
-            self.mesh_stl_layout.setVisible(False)
+            self.stl_mesh_widget_container.hide()
         else:
             raise ValueError(f"Unknown mesh format '{value}'")
 
