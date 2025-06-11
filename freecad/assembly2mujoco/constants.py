@@ -31,8 +31,8 @@ JOINT_TYPE_MAPPING: dict[str, MUJOCO_JOINT_TYPE] = {
 # Base weight by joint type
 JOINT_TYPE_WEIGHTS = {
     "Fixed": 10.0,
-    "Revolute": 1.0,
-    "Slider": 2.0,
+    "Revolute": 2.0,
+    "Slider": 1.0,
     "Cylindrical": 3.0,
     "Ball": 5.0,
     "Planar": 8.0,
@@ -52,3 +52,5 @@ DEFAULT_MJCF_INTEGRATOR: Literal["Euler", "implicit", "implicitfast", "RK4"] = (
     "implicitfast"
 )
 DEFAULT_MJCF_SOLVER: Literal["PGS", "CG", "Newton"] = "Newton"
+DEFAULT_MJCF_SOLVER_MAX_ITERATIONS: float = 200
+DEFAULT_MJCF_SOLVER_TOLERANCE: float = 1e-10

@@ -14,6 +14,8 @@ from freecad.assembly2mujoco.constants import (
     DEFAULT_MESH_EXPORT_FORMAT,
     DEFAULT_MJCF_INTEGRATOR,
     DEFAULT_MJCF_SOLVER,
+    DEFAULT_MJCF_SOLVER_MAX_ITERATIONS,
+    DEFAULT_MJCF_SOLVER_TOLERANCE,
     DEFAULT_MJCF_TIMESTEP,
     DEFAULT_MJCF_ARMATURE,
     DEFAULT_MJCF_DAMPING,
@@ -53,6 +55,8 @@ class MuJoCoExporter:
             "Euler", "implicit", "implicitfast", "RK4"
         ] = DEFAULT_MJCF_INTEGRATOR,
         mjcf_solver: Literal["PGS", "CG", "Newton"] = DEFAULT_MJCF_SOLVER,
+        mjcf_solver_max_iterations: float = DEFAULT_MJCF_SOLVER_MAX_ITERATIONS,
+        mjcf_solver_tolerance: float = DEFAULT_MJCF_SOLVER_TOLERANCE,
         mjcf_timestep: float = DEFAULT_MJCF_TIMESTEP,
         mjcf_damping: float = DEFAULT_MJCF_DAMPING,
         mjcf_armature: float = DEFAULT_MJCF_ARMATURE,
@@ -63,6 +67,8 @@ class MuJoCoExporter:
         self.stl_mesh_angular_deflection = stl_mesh_angular_deflection
         self.mjcf_integrator = mjcf_integrator
         self.mjcf_solver = mjcf_solver
+        self.mjcf_solver_max_iterations = mjcf_solver_max_iterations
+        self.mjcf_solver_tolerance = mjcf_solver_tolerance
         self.mjcf_timestep = mjcf_timestep
         self.mjcf_damping = mjcf_damping
         self.mjcf_armature = mjcf_armature
@@ -74,6 +80,8 @@ class MuJoCoExporter:
             integrator=self.mjcf_integrator,
             timestep=str(self.mjcf_timestep),
             solver=self.mjcf_solver,
+            iterations=str(self.mjcf_solver_max_iterations),
+            tolerance=str(self.mjcf_solver_tolerance),
         )
         self.compiler = ET.SubElement(
             self.mujoco,
