@@ -242,6 +242,9 @@ class Graph:
                         seen.add(edge_key)
         return edge_list
 
+    def __repr__(self) -> str:
+        return f"<Graph directed={self.is_directed} n_nodes={len(self.get_nodes())} n_edges={len(self.get_edges())}>"
+
 
 ####################################################################
 # Minimum Spanning Tree
