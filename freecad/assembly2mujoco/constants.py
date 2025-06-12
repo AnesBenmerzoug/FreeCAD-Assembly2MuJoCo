@@ -26,18 +26,6 @@ JOINT_TYPE_MAPPING: dict[str, MUJOCO_JOINT_TYPE] = {
     "Planar": "free",
 }
 
-# Assign weights to prioritize which joints to keep in the tree
-# Higher weight are more likely to be excluded from tree
-# Base weight by joint type
-JOINT_TYPE_WEIGHTS = {
-    "Fixed": 10.0,
-    "Revolute": 2.0,
-    "Slider": 1.0,
-    "Cylindrical": 3.0,
-    "Ball": 5.0,
-    "Planar": 8.0,
-}
-
 ##########################################
 # Defaults
 ##########################################
@@ -54,3 +42,15 @@ DEFAULT_MJCF_INTEGRATOR: Literal["Euler", "implicit", "implicitfast", "RK4"] = (
 DEFAULT_MJCF_SOLVER: Literal["PGS", "CG", "Newton"] = "Newton"
 DEFAULT_MJCF_SOLVER_MAX_ITERATIONS: float = 200
 DEFAULT_MJCF_SOLVER_TOLERANCE: float = 1e-10
+
+# Assign weights to prioritize which joints to keep in the tree
+# Higher weight are more likely to be excluded from tree
+# Base weight by joint type
+DEFAULT_JOINT_TYPE_WEIGHTS = {
+    "Slider": 1.0,
+    "Revolute": 2.0,
+    "Cylindrical": 3.0,
+    "Ball": 4.0,
+    "Planar": 5.0,
+    "Fixed": 10.0,
+}

@@ -12,6 +12,7 @@ from freecad.assembly2mujoco.constants import (
     DEFAULT_STL_MESH_ANGULAR_DEFLECTION,
     DEFAULT_STL_MESH_LINEAR_DEFLECTION,
     DEFAULT_MESH_EXPORT_FORMAT,
+    DEFAULT_JOINT_TYPE_WEIGHTS,
     DEFAULT_MJCF_INTEGRATOR,
     DEFAULT_MJCF_SOLVER,
     DEFAULT_MJCF_SOLVER_MAX_ITERATIONS,
@@ -51,6 +52,7 @@ class MuJoCoExporter:
         mesh_export_format: Literal["STL", "OBJ"] = DEFAULT_MESH_EXPORT_FORMAT,
         stl_mesh_linear_deflection: float = DEFAULT_STL_MESH_LINEAR_DEFLECTION,
         stl_mesh_angular_deflection: float = DEFAULT_STL_MESH_ANGULAR_DEFLECTION,
+        joint_type_weights: dict = DEFAULT_JOINT_TYPE_WEIGHTS,
         mjcf_integrator: Literal[
             "Euler", "implicit", "implicitfast", "RK4"
         ] = DEFAULT_MJCF_INTEGRATOR,
@@ -65,6 +67,7 @@ class MuJoCoExporter:
         self.mesh_export_format = mesh_export_format
         self.stl_mesh_linear_deflection = stl_mesh_linear_deflection
         self.stl_mesh_angular_deflection = stl_mesh_angular_deflection
+        self.joint_type_weights = joint_type_weights
         self.mjcf_integrator = mjcf_integrator
         self.mjcf_solver = mjcf_solver
         self.mjcf_solver_max_iterations = mjcf_solver_max_iterations
@@ -162,7 +165,7 @@ class MuJoCoExporter:
         """Main export method"""
 
         # Create graph connecting parts with joints
-        assembly_graph = Graph.from_assembly(assembly)
+        assembly_graph = Graph.from_assembly(assembly, self.joint_type_weights)
 
         # Export assembly parts as binary stl meshes
         meshes_dir = Path(self.export_dir).joinpath("meshes")
