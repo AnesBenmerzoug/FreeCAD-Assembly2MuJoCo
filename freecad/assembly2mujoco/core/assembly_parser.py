@@ -7,7 +7,6 @@ import UtilsAssembly
 from freecad.assembly2mujoco.constants import (
     WORKBENCH_NAME,
     MUJOCO_JOINT_TYPE,
-    JOINT_TYPE_WEIGHTS,
     JOINT_TYPE_MAPPING,
 )
 from freecad.assembly2mujoco.utils.helpers import log_message
@@ -66,18 +65,12 @@ class GraphEdge:
         *,
         parent_node: GraphNode,
         child_node: GraphNode,
+        weight: float,
     ) -> None:
         self.joint = joint
         self.parent_node = parent_node
         self.child_node = child_node
-        self.weight = self.compute_weight(self.joint)
-
-    @staticmethod
-    def compute_weight(joint) -> float:
-        # Assign weights to prioritize which joints to keep in the tree
-        # Higher weight are more likely to be excluded from tree
-        weight = JOINT_TYPE_WEIGHTS.get(joint.JointType, 20.0)
-        return weight
+        self.weight = weight
 
     def get_mujoco_joint_type(self) -> MUJOCO_JOINT_TYPE | None:
         if not (
@@ -174,12 +167,18 @@ class GraphEdge:
 
 
 class Graph:
-    def __init__(self, *, is_directed: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        is_directed: bool = False,
+    ) -> None:
         self.is_directed = is_directed
         self.adjacency_list: dict[GraphNode, dict[GraphNode, GraphEdge]] = {}
 
     @classmethod
-    def from_assembly(cls, assembly: App.DocumentObject) -> None:
+    def from_assembly(
+        cls, assembly: App.DocumentObject, joint_type_weights: dict[str, float]
+    ) -> None:
         """Construct graph from FreeCAD assembly"""
         graph = cls()
         joint_group = UtilsAssembly.getJointGroup(assembly)
@@ -190,7 +189,10 @@ class Graph:
             else:
                 part1 = UtilsAssembly.getMovingPart(assembly, joint.Reference1)
                 part2 = UtilsAssembly.getMovingPart(assembly, joint.Reference2)
-                graph.add_edge(part1, part2, joint)
+                # Assign weights to prioritize which joints to keep in the tree                 ..
+                # Higher weight are more likely to be excluded from tree                        ..
+                weight = joint_type_weights.get(joint.JointType, 100.0)
+                graph.add_edge(part1, part2, joint, weight=weight)
         return graph
 
     def add_node(self, part: App.DocumentObject) -> GraphNode:
@@ -204,10 +206,12 @@ class Graph:
         part1: App.DocumentObject,
         part2: App.DocumentObject,
         joint: App.DocumentObject,
+        weight: float,
     ) -> None:
         node1 = self.add_node(part1)
         node2 = self.add_node(part2)
-        edge = GraphEdge(joint, parent_node=node1, child_node=node2)
+        edge = GraphEdge(joint, parent_node=node1, child_node=node2, weight=weight)
+
         self.adjacency_list[node1][node2] = edge
         if not self.is_directed:
             # Since undirected, add both directions
@@ -241,6 +245,9 @@ class Graph:
                         edge_list.append((edge_key[0], edge_key[1], edge))
                         seen.add(edge_key)
         return edge_list
+
+    def __repr__(self) -> str:
+        return f"<Graph directed={self.is_directed} n_nodes={len(self.get_nodes())} n_edges={len(self.get_edges())}>"
 
 
 ####################################################################
@@ -329,7 +336,7 @@ def convert_to_directed_tree(graph: Graph, root_node: GraphNode | None = None) -
                 # Get edge from undirected graph
                 edge = graph.get_edge(node, neighbor)
                 # Add only one direction
-                directed_tree.add_edge(node.part, neighbor.part, edge.joint)
+                directed_tree.add_edge(node.part, neighbor.part, edge.joint, weight=1.0)
                 dfs(neighbor)
 
     dfs(root_node)
@@ -356,7 +363,7 @@ def find_minimum_spanning_tree(
     unused_edges: list[tuple[GraphNode, GraphNode, GraphEdge]] = []
     for u, v, edge in sorted_edges:
         if uf.union(u, v):
-            tree.add_edge(u.part, v.part, edge.joint)
+            tree.add_edge(u.part, v.part, edge.joint, weight=1.0)
         else:
             unused_edges.append((u, v, edge))
 

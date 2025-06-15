@@ -12,8 +12,11 @@ from freecad.assembly2mujoco.constants import (
     DEFAULT_STL_MESH_ANGULAR_DEFLECTION,
     DEFAULT_STL_MESH_LINEAR_DEFLECTION,
     DEFAULT_MESH_EXPORT_FORMAT,
+    DEFAULT_JOINT_TYPE_WEIGHTS,
     DEFAULT_MJCF_INTEGRATOR,
     DEFAULT_MJCF_SOLVER,
+    DEFAULT_MJCF_SOLVER_MAX_ITERATIONS,
+    DEFAULT_MJCF_SOLVER_TOLERANCE,
     DEFAULT_MJCF_TIMESTEP,
     DEFAULT_MJCF_ARMATURE,
     DEFAULT_MJCF_DAMPING,
@@ -49,10 +52,13 @@ class MuJoCoExporter:
         mesh_export_format: Literal["STL", "OBJ"] = DEFAULT_MESH_EXPORT_FORMAT,
         stl_mesh_linear_deflection: float = DEFAULT_STL_MESH_LINEAR_DEFLECTION,
         stl_mesh_angular_deflection: float = DEFAULT_STL_MESH_ANGULAR_DEFLECTION,
+        joint_type_weights: dict = DEFAULT_JOINT_TYPE_WEIGHTS,
         mjcf_integrator: Literal[
             "Euler", "implicit", "implicitfast", "RK4"
         ] = DEFAULT_MJCF_INTEGRATOR,
         mjcf_solver: Literal["PGS", "CG", "Newton"] = DEFAULT_MJCF_SOLVER,
+        mjcf_solver_max_iterations: float = DEFAULT_MJCF_SOLVER_MAX_ITERATIONS,
+        mjcf_solver_tolerance: float = DEFAULT_MJCF_SOLVER_TOLERANCE,
         mjcf_timestep: float = DEFAULT_MJCF_TIMESTEP,
         mjcf_damping: float = DEFAULT_MJCF_DAMPING,
         mjcf_armature: float = DEFAULT_MJCF_ARMATURE,
@@ -61,8 +67,11 @@ class MuJoCoExporter:
         self.mesh_export_format = mesh_export_format
         self.stl_mesh_linear_deflection = stl_mesh_linear_deflection
         self.stl_mesh_angular_deflection = stl_mesh_angular_deflection
+        self.joint_type_weights = joint_type_weights
         self.mjcf_integrator = mjcf_integrator
         self.mjcf_solver = mjcf_solver
+        self.mjcf_solver_max_iterations = mjcf_solver_max_iterations
+        self.mjcf_solver_tolerance = mjcf_solver_tolerance
         self.mjcf_timestep = mjcf_timestep
         self.mjcf_damping = mjcf_damping
         self.mjcf_armature = mjcf_armature
@@ -74,6 +83,8 @@ class MuJoCoExporter:
             integrator=self.mjcf_integrator,
             timestep=str(self.mjcf_timestep),
             solver=self.mjcf_solver,
+            iterations=str(self.mjcf_solver_max_iterations),
+            tolerance=str(self.mjcf_solver_tolerance),
         )
         self.compiler = ET.SubElement(
             self.mujoco,
@@ -154,7 +165,7 @@ class MuJoCoExporter:
         """Main export method"""
 
         # Create graph connecting parts with joints
-        assembly_graph = Graph.from_assembly(assembly)
+        assembly_graph = Graph.from_assembly(assembly, self.joint_type_weights)
 
         # Export assembly parts as binary stl meshes
         meshes_dir = Path(self.export_dir).joinpath("meshes")
@@ -380,6 +391,9 @@ class MuJoCoExporter:
         log_message(f"Found {len(unused_edges)} kinematic loops in the assembly")
         for u, v, edge in unused_edges:
             joint_type = edge.get_mujoco_joint_type()
+            joint_pos_vector, joint_axis_vector = edge.get_joint_position_and_axis()
+            joint_pos = " ".join(str(x) for x in joint_pos_vector)
+
             if joint_type is None:
                 # For fixed joints, use weld constraint
                 ET.SubElement(
@@ -392,8 +406,41 @@ class MuJoCoExporter:
                     solimp="0.9 0.95 0.001",
                 )
             else:
-                raise NotImplementedError(
-                    f"Processing kinematic loop not implemented for joint type '{joint_type}'"
+                # For other joint types we insert dummy bodies and add weld constraints
+                found_bodies = self.worldbody.findall(f".//body[@name='{u.part.Name}']")
+                if not found_bodies:
+                    raise ValueError(
+                        f"Could not find body with name '{u.part.Name}' in MJCF"
+                    )
+
+                parent_body = found_bodies[0]
+
+                # Insert dummy body
+                dummy_body = ET.SubElement(
+                    parent_body,
+                    "body",
+                    name=f"dummy_{u.part.Name}_{v.part.Name}",
+                    pos=joint_pos,
+                )
+                ET.SubElement(
+                    dummy_body,
+                    "inertial",
+                    pos=joint_pos,
+                    mass="1e-6",  # Much larger than mjMINVAL (1e-15)
+                    diaginertia="1e-9 1e-9 1e-9",  # Much larger than mjMINVAL
+                )
+                # Insert joint between parent and dummy body
+                self.add_joint_to_body(dummy_body, edge)
+
+                # Insert weld constraint between dummy body and child body
+                ET.SubElement(
+                    self.equality,
+                    "weld",
+                    name=f"loop_weld_{edge.joint.Label}",
+                    body1=dummy_body.get("name"),
+                    body2=v.part.Name,
+                    solref="0.01 1",
+                    solimp="0.9 0.95 0.001",
                 )
 
     def write_xml(self, xml_file: str | os.PathLike) -> None:

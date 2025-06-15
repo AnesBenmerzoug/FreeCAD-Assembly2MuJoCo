@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Allow configuring the weights assigned to the different joints in order to handle kinematic loops. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
+
+### Changed
+
+- Change handling of kinematic loops by adding dummy bodies and weld constraints. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
+- Use collapsible sections for the different configuration options in the task panel. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
+
 ## [0.2.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.2.0) - 2025-06-08
 
 ### Added
