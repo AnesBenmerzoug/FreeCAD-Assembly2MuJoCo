@@ -15,3 +15,10 @@ the [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) page of th
     <br>
     <em>Export of universal joint assembly to MuJoCo</em>
 </p>
+
+## Crank and Slider
+
+A crank and slider mechanism is a mechanical system that converts rotary motion into linear motion or vice versa, commonly used in engines and pumps.
+
+Part of this example is taken from the universal joint example found in
+the [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) page of the FreeCAD Wiki.
