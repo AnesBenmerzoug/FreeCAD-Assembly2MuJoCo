@@ -9,7 +9,7 @@
 
 ![Assembly2MuJoCo Icon](resources/icons/assembly2mujoco-icon.svg)
 
-This is a [FreeCAD](https://www.freecad.org/) workbench to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) for simulation in [MuJoCo](https://mujoco.org/).
+A [FreeCAD](https://www.freecad.org/) workbench to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) for simulation in [MuJoCo](https://mujoco.org/).
 
 ![Export of universal joint assembly to MuJoCo](examples/universal_joint/output.gif)
 
@@ -32,7 +32,7 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
 2. Select the assembly you want to export.
 3. Execute the export command which will open a task panel
    for configuring parts of the export.
-4. Click Ok and if no error was raised, a dialog box will pop-up informing you of the location of the export.
+4. Click `Ok` and if no error was raised, a dialog box will pop-up informing you of the location of the export.
 
 ## Simulating the export with MuJoCo
 
@@ -80,6 +80,9 @@ Please refer to the [examples](examples/) directory for some examples showcasing
 
 ### Manual Installation
 
+<details>
+   <summary>Click to expand Manual Installation instructions</summary>
+   
 - Find FreeCAD's Mod directory which is located inside the FreeCAD's data directory. The latter can be found by executing the following in the python console:
 
   ```python
@@ -90,6 +93,8 @@ Please refer to the [examples](examples/) directory for some examples showcasing
 
   - Clone the repository into the Mod directory.
   - Download the repository as a zip file from Github and extract its contents into the Mod directory.
+
+</details>
 
 ## Roadmap
 
@@ -120,6 +125,9 @@ Here are some of the planned developments for this Macro:
 
 ## Development
 
+<details>
+   <summary>Click to expand setting up a development environment</summary>
+
 ### Setup
 
 - Create and activate a virtual environment:
@@ -131,7 +139,7 @@ Here are some of the planned developments for this Macro:
 
 - Install development dependencies:
 
-  ```shelll
+  ```shell
   pip install .[dev]
   ```
 
@@ -141,18 +149,16 @@ Here are some of the planned developments for this Macro:
   pre-commit install
   ```
 
+</details>
+
 ## Icon
 
-The project's icon combines the FreeCAD Assembly Workbench icon with the MuJoCo logo.
-
-**FreeCAD Component**: Assembly Workbench icon from FreeCAD Artwork, licensed under LGPL-2.1+
-
+The project's icon combines the FreeCAD Assembly Workbench icon with the MuJoCo logo.  
+**FreeCAD Component**: Assembly Workbench icon from FreeCAD Artwork, licensed under LGPL-2.1+  
 **MuJoCo Component**: MuJoCo logo owned by DeepMind, used to indicate compatibility with MuJoCo.
 
-This project is independent and not affiliated with FreeCAD or MuJoCo/DeepMind. Logo elements are used solely to indicate integration between these platforms.
-
+This project is independent and not affiliated with FreeCAD or MuJoCo/DeepMind. Logo elements are used solely to indicate integration between these platforms.  
 The project icon, including the arrangement and connecting elements, is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Any derivative works must maintain proper attribution to both FreeCAD and MuJoCo as outlined above.
-
 
 ## License
 
