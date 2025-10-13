@@ -341,11 +341,10 @@ class MuJoCoExporter:
         self,
         body: ET.Element,
         edge: GraphEdge,
-    ) -> ET.Element:
+    ) -> ET.Element | None:
         """Add a joint to a body element"""
         joint_type = edge.get_mujoco_joint_type()
-
-        if joint_type is None or joint_type == "fixed":
+        if joint_type is None:
             return None
 
         joint_pos_vector, joint_axis_vector = edge.get_joint_position_and_axis()
@@ -391,8 +390,6 @@ class MuJoCoExporter:
         log_message(f"Found {len(unused_edges)} kinematic loops in the assembly")
         for u, v, edge in unused_edges:
             joint_type = edge.get_mujoco_joint_type()
-            joint_pos_vector, joint_axis_vector = edge.get_joint_position_and_axis()
-            joint_pos = " ".join(str(x) for x in joint_pos_vector)
 
             if joint_type is None:
                 # For fixed joints, use weld constraint
@@ -406,6 +403,9 @@ class MuJoCoExporter:
                     solimp="0.9 0.95 0.001",
                 )
             else:
+                joint_pos_vector, joint_axis_vector = edge.get_joint_position_and_axis()
+                joint_pos = " ".join(str(x) for x in joint_pos_vector)
+
                 # For other joint types we insert dummy bodies and add weld constraints
                 found_bodies = self.worldbody.findall(f".//body[@name='{u.part.Name}']")
                 if not found_bodies:

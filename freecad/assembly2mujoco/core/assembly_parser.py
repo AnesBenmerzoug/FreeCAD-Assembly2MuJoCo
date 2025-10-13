@@ -73,12 +73,14 @@ class GraphEdge:
         self.weight = weight
 
     def get_mujoco_joint_type(self) -> MUJOCO_JOINT_TYPE | None:
-        if not (
-            hasattr(self.joint, "ObjectToGround") or hasattr(self.joint, "JointType")
-        ):
+        # Grounded joint are handled differently from other joints
+        is_grounded_joint = hasattr(self.joint, "ObjectToGround")
+        is_joint = hasattr(self.joint, "JointType")
+
+        if not (is_grounded_joint or is_joint):
             raise RuntimeError(f"Object {self.joint.Name} is not a joint")
 
-        if hasattr(self.joint, "ObjectToGround"):
+        if is_grounded_joint or (is_joint and self.joint.JointType == "Fixed"):
             return None
 
         if self.joint.JointType not in JOINT_TYPE_MAPPING:

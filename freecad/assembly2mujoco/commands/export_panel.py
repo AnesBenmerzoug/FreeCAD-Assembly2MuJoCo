@@ -78,7 +78,7 @@ class ExportDirEditor(QtWidgets.QWidget):
 
     def get_options(self) -> dict[str, Path]:
         export_dir = Path(self.dir_edit.text())
-        export_dir.mkdir(exist_ok=True)
+        export_dir.mkdir(parents=True, exist_ok=True)
 
         # Validate export directory
         if not os.path.isdir(export_dir):
