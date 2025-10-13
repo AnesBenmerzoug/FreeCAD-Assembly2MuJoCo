@@ -222,7 +222,7 @@ class MuJoCoExporter:
         for node in assembly_graph.get_nodes():
             part = node.part
             shape = part.Shape.copy(False)
-            mesh_file = Path(meshes_dir).joinpath(part.Name)
+            mesh_file = Path(meshes_dir).joinpath(part.Label)
 
             if self.mesh_export_format == "STL":
                 mesh = MeshPart.meshFromShape(
@@ -245,7 +245,7 @@ class MuJoCoExporter:
             ET.SubElement(
                 self.asset,
                 "mesh",
-                name=part.Name,
+                name=part.Label,
                 file=mesh_file.name,
                 # Convert mm to m
                 scale="0.001 0.001 0.001",
@@ -319,7 +319,7 @@ class MuJoCoExporter:
         body = ET.SubElement(
             parent_body,
             "body",
-            name=node.part.Name,
+            name=node.label,
             pos=pos,
             quat=quat,
         )
@@ -329,8 +329,8 @@ class MuJoCoExporter:
             body,
             "geom",
             type="mesh",
-            name=f"{node.part.Name} geom",
-            mesh=node.part.Name,
+            name=f"{node.label} geom",
+            mesh=node.label,
             material=appearance_dict["name"],
             contype="0",
             conaffinity="0",
@@ -397,8 +397,8 @@ class MuJoCoExporter:
                     self.equality,
                     "weld",
                     name=f"loop_weld_{edge.joint.Label}",
-                    body1=u.part.Name,
-                    body2=v.part.Name,
+                    body1=u.label,
+                    body2=v.label,
                     solref="0.01 1",
                     solimp="0.9 0.95 0.001",
                 )
@@ -407,10 +407,10 @@ class MuJoCoExporter:
                 joint_pos = " ".join(str(x) for x in joint_pos_vector)
 
                 # For other joint types we insert dummy bodies and add weld constraints
-                found_bodies = self.worldbody.findall(f".//body[@name='{u.part.Name}']")
+                found_bodies = self.worldbody.findall(f".//body[@name='{u.label}']")
                 if not found_bodies:
                     raise ValueError(
-                        f"Could not find body with name '{u.part.Name}' in MJCF"
+                        f"Could not find body with name '{u.label}' in MJCF"
                     )
 
                 parent_body = found_bodies[0]
@@ -419,7 +419,7 @@ class MuJoCoExporter:
                 dummy_body = ET.SubElement(
                     parent_body,
                     "body",
-                    name=f"dummy_{u.part.Name}_{v.part.Name}",
+                    name=f"dummy_{u.label}_{v.label}",
                     pos=joint_pos,
                 )
                 ET.SubElement(
@@ -438,7 +438,7 @@ class MuJoCoExporter:
                     "weld",
                     name=f"loop_weld_{edge.joint.Label}",
                     body1=dummy_body.get("name"),
-                    body2=v.part.Name,
+                    body2=v.label,
                     solref="0.01 1",
                     solimp="0.9 0.95 0.001",
                 )

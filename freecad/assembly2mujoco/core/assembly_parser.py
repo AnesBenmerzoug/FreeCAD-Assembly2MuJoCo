@@ -28,7 +28,7 @@ class GraphNode:
         pos = "0 0 0"
         quat = "1.0 0.0 0.0 0.0"
 
-        log_message(f"Part: Name={self.part.Name}, Pos={pos}, Quat={quat}")
+        log_message(f"Part: Name={self.label}, Pos={pos}, Quat={quat}")
         return pos, quat
 
     def get_body_material(
@@ -40,7 +40,7 @@ class GraphNode:
     def get_body_appearance(
         self,
     ) -> AppearanceDict:
-        name = self.part.Name
+        name = self.label
         rgb = self.part.ViewObject.ShapeAppearance[0].DiffuseColor[:3]
         rgba = rgb + (1.0,)
         rgba = " ".join(str(x) for x in rgba)
@@ -48,8 +48,12 @@ class GraphNode:
         appearance_dict = AppearanceDict(name=name, rgba=rgba, shininess=shininess)
         return appearance_dict
 
+    @property
+    def label(self) -> str:
+        return self.part.Label
+
     def __repr__(self) -> str:
-        return f"<AssemblyGraphNode part={self.part.Name}>"
+        return f"<AssemblyGraphNode part={self.label}>"
 
     def __hash__(self):
         return hash(repr(self))
@@ -78,14 +82,14 @@ class GraphEdge:
         is_joint = hasattr(self.joint, "JointType")
 
         if not (is_grounded_joint or is_joint):
-            raise RuntimeError(f"Object {self.joint.Name} is not a joint")
+            raise RuntimeError(f"Object {self.label} is not a joint")
 
         if is_grounded_joint or (is_joint and self.joint.JointType == "Fixed"):
             return None
 
         if self.joint.JointType not in JOINT_TYPE_MAPPING:
             raise NotImplementedError(
-                f"Getting MuJoCo joint type not implemented for joint '{self.joint.Name}' of type '{self.joint.JointType}'"
+                f"Getting MuJoCo joint type not implemented for joint '{self.label}' of type '{self.joint.JointType}'"
             )
 
         mujoco_joint_type = JOINT_TYPE_MAPPING[self.joint.JointType]
@@ -130,9 +134,7 @@ class GraphEdge:
         # Normalize axis
         axis_vector = axis_vector.normalize()
 
-        log_message(
-            f"Joint: Name={self.joint.Name}, Pos={pos_vector}, Axis={axis_vector}"
-        )
+        log_message(f"Joint: Name={self.label}, Pos={pos_vector}, Axis={axis_vector}")
         return pos_vector, axis_vector
 
     def get_joint_range(self) -> str | None:
@@ -158,6 +160,10 @@ class GraphEdge:
 
         return range
 
+    @property
+    def label(self) -> str:
+        return self.joint.Label
+
     def __eq__(self, other: "GraphEdge") -> bool:
         return self.joint == other.joint
 
@@ -180,7 +186,7 @@ class Graph:
     @classmethod
     def from_assembly(
         cls, assembly: App.DocumentObject, joint_type_weights: dict[str, float]
-    ) -> None:
+    ) -> "Graph":
         """Construct graph from FreeCAD assembly"""
         graph = cls()
         joint_group = UtilsAssembly.getJointGroup(assembly)
@@ -271,7 +277,7 @@ class UnionFind:
             self.parent[node] = self.find_root(self.parent[node])
         return self.parent[node]
 
-    def union(self, node1: GraphNode, node2: GraphNode) -> None:
+    def union(self, node1: GraphNode, node2: GraphNode) -> bool:
         """Union the sets containing node1 and node2 using union by rank."""
 
         root1 = self.find_root(node1)
