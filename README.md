@@ -82,7 +82,7 @@ Please refer to the [examples](examples/) directory for some examples showcasing
 
 <details>
    <summary>Click to expand Manual Installation instructions</summary>
-   
+
 - Find FreeCAD's Mod directory which is located inside the FreeCAD's data directory. The latter can be found by executing the following in the python console:
 
   ```python
@@ -123,42 +123,23 @@ Here are some of the planned developments for this Macro:
 - [ ] Extract properties from part material (e.g. density).
 - [ ] Handle nested assemblies.
 
-## Development
-
-<details>
-   <summary>Click to expand setting up a development environment</summary>
-
-### Setup
-
-- Create and activate a virtual environment:
-
-  ```shell
-  python -m venv .venv
-  source .venv/bin/activate
-  ```
-
-- Install development dependencies:
-
-  ```shell
-  pip install .[dev]
-  ```
-
-- Install pre-commit hooks:
-
-  ```shell
-  pre-commit install
-  ```
-
-</details>
-
 ## Icon
 
-The project's icon combines the FreeCAD Assembly Workbench icon with the MuJoCo logo.  
-**FreeCAD Component**: Assembly Workbench icon from FreeCAD Artwork, licensed under LGPL-2.1+  
+The project's icon combines the FreeCAD Assembly Workbench icon with the MuJoCo logo.
+**FreeCAD Component**: Assembly Workbench icon from FreeCAD Artwork, licensed under LGPL-2.1+
 **MuJoCo Component**: MuJoCo logo owned by DeepMind, used to indicate compatibility with MuJoCo.
 
-This project is independent and not affiliated with FreeCAD or MuJoCo/DeepMind. Logo elements are used solely to indicate integration between these platforms.  
+This project is independent and not affiliated with FreeCAD or MuJoCo/DeepMind. Logo elements are used solely to indicate integration between these platforms.
 The project icon, including the arrangement and connecting elements, is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Any derivative works must maintain proper attribution to both FreeCAD and MuJoCo as outlined above.
+
+## Contribution
+
+Read the [contributing guide](Contributing.md) for information about setting your development environment
+and contributing features or bug fixes.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you shall be license under the LGPL-2.1 license.
+
 
 ## License
 
