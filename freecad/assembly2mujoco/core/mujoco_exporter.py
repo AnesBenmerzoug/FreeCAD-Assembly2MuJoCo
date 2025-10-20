@@ -6,7 +6,6 @@ from typing import Literal
 import FreeCAD as App
 import Mesh
 import MeshPart
-import UtilsAssembly
 
 from freecad.assembly2mujoco.constants import (
     DEFAULT_STL_MESH_ANGULAR_DEFLECTION,
@@ -177,34 +176,40 @@ class MuJoCoExporter:
         self.add_floorplane(assembly_graph)
         self.worldbody.append(ET.Comment("Assembly"))
 
-        # Find minimum spanning tree representing kinematic tree
-        # As well as unused edges (joints) that will be converted to equality constraints
-        tree, unused_edges = find_minimum_spanning_tree(assembly_graph)
+        # See if graph can be split into disconnected graphs
+        assembly_subgraphs = assembly_graph.get_disconnected_subgraphs()
+        log_message(f"Number of disconnected subgraphs: {len(assembly_subgraphs)}")
 
-        # Use grounded part as root node
-        root_node: GraphNode | None = None
-        grounded_joints = [
-            joint
-            for joint in UtilsAssembly.getJointGroup(assembly).Group
-            if hasattr(joint, "ObjectToGround")
-        ]
-        if grounded_joints:
-            grounded_joint = grounded_joints[0]
-            grounded_part = grounded_joint.ObjectToGround
-            # Find corresponding node
-            root_node = [
-                node for node in tree.get_nodes() if node.part == grounded_part
-            ][0]
+        for graph in assembly_subgraphs:
+            # Handle graphs with a single node
+            if len(graph.get_nodes()) == 1:
+                self.process_tree(graph.get_nodes()[0], graph)
+                continue
 
-        # Build tree
-        tree = convert_to_directed_tree(tree, root_node)
-        if root_node is None:
-            root_node = tree.get_nodes()[0]
-        self.process_tree(root_node, tree)
+            # Find minimum spanning tree representing kinematic tree
+            # As well as unused edges (joints) that will be converted to equality constraints
+            tree, unused_edges = find_minimum_spanning_tree(graph)
 
-        # Handle kinematic loops
-        if unused_edges:
-            self.process_kinematic_loops(unused_edges)
+            grounded_part_nodes = [
+                node for node in graph.get_nodes() if node.is_grounded
+            ]
+            if grounded_part_nodes:
+                root_node = grounded_part_nodes[0]
+            else:
+                log_message(
+                    "Could not find grounded node in graph. Using a non-grounded node as root",
+                    level="warning",
+                )
+                root_node = tree.get_nodes()[0]
+
+            # Convert directed tree
+            tree = convert_to_directed_tree(tree, root_node)
+
+            self.process_tree(root_node, tree)
+
+            # Handle kinematic loops
+            if unused_edges:
+                self.process_kinematic_loops(unused_edges)
 
         # Save MJCF file
         xml_file = (
@@ -291,26 +296,35 @@ class MuJoCoExporter:
         current_node: GraphNode,
         tree: Graph,
         *,
-        parent_node: ET.Element | None = None,
+        parent_node: GraphNode | None = None,
         body_elements: dict[GraphNode, ET.Element] | None = None,
     ) -> ET.Element:
         if body_elements is None:
             body_elements = {}
-        parent_body = body_elements.get(parent_node, self.worldbody)
+
+        if parent_node is None:
+            parent_body = self.worldbody
+        else:
+            parent_body = body_elements.get(parent_node) or self.worldbody
 
         if (current_body := body_elements.get(current_node)) is None:
             current_body = self.add_body(current_node, parent_body)
             body_elements[current_node] = current_body
 
-        for child_node in tree.get_neighbors(current_node):
-            child_body = self.process_tree(
-                child_node,
-                tree,
-                parent_node=current_node,
-                body_elements=body_elements,
-            )
-            edge = tree.get_edge(current_node, child_node)
-            self.add_joint_to_body(child_body, edge)
+        children_nodes = tree.get_neighbors(current_node)
+        if not children_nodes and parent_node is None:
+            # Handle case when there is a single node in the graph
+            self.add_free_joint_to_body(current_body)
+        else:
+            for child_node in tree.get_neighbors(current_node):
+                child_body = self.process_tree(
+                    child_node,
+                    tree,
+                    parent_node=current_node,
+                    body_elements=body_elements,
+                )
+                edge = tree.get_edge(current_node, child_node)
+                self.add_joint_to_body(child_body, edge)
         return current_body
 
     def add_body(self, node: GraphNode, parent_body: ET.Element) -> ET.Element:
@@ -337,6 +351,16 @@ class MuJoCoExporter:
         )
         return body
 
+    def add_free_joint_to_body(
+        self,
+        body: ET.Element,
+    ) -> ET.Element:
+        joint_element = ET.SubElement(
+            body,
+            "freejoint",
+        )
+        return joint_element
+
     def add_joint_to_body(
         self,
         body: ET.Element,
@@ -357,7 +381,7 @@ class MuJoCoExporter:
             body,
             "joint",
             type=joint_type,
-            name=edge.joint.Label,
+            name=edge.label,
             pos=joint_pos,
             axis=joint_axis,
         )
@@ -396,7 +420,7 @@ class MuJoCoExporter:
                 ET.SubElement(
                     self.equality,
                     "weld",
-                    name=f"loop_weld_{edge.joint.Label}",
+                    name=f"loop_weld_{edge.label}",
                     body1=u.label,
                     body2=v.label,
                     solref="0.01 1",
@@ -436,7 +460,7 @@ class MuJoCoExporter:
                 ET.SubElement(
                     self.equality,
                     "weld",
-                    name=f"loop_weld_{edge.joint.Label}",
+                    name=f"loop_weld_{edge.label}",
                     body1=dummy_body.get("name"),
                     body2=v.label,
                     solref="0.01 1",

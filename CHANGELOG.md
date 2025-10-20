@@ -5,11 +5,13 @@
 ### Added
 
 - Allow configuring the weights assigned to the different joints in order to handle kinematic loops. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
+- Allow exporting assemblies with disconnected parts.
 
 ### Changed
 
 - Change handling of kinematic loops by adding dummy bodies and weld constraints. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
 - Use collapsible sections for the different configuration options in the task panel. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
+- Use part and joint labels instead of names in exported MJCF and mesh files.
 
 ### Fixed
 

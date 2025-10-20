@@ -1,5 +1,5 @@
 import math
-from typing import Any
+from queue import Queue
 
 import FreeCAD as App
 import UtilsAssembly
@@ -17,11 +17,13 @@ __all__ = ["Graph"]
 
 
 class GraphNode:
-    def __init__(
-        self,
-        part: App.DocumentObject,
-    ) -> None:
+    def __init__(self, part: App.DocumentObject, *, is_grounded: bool = False) -> None:
+        if not isinstance(part, App.DocumentObject):
+            raise RuntimeError(
+                f"part must be an instance of 'App.DocumentObject' instead of '{type(part)}'"
+            )
         self.part = part
+        self.is_grounded = is_grounded
 
     def get_body_position_and_orientation(self) -> tuple[str, str]:
         """Get position and orientation for FreeCAD part in MuJoCo."""
@@ -71,20 +73,23 @@ class GraphEdge:
         child_node: GraphNode,
         weight: float,
     ) -> None:
+        if not isinstance(joint, App.DocumentObject):
+            raise RuntimeError(
+                f"joint must be an instance of 'App.DocumentObject' instead of '{type(joint)}'"
+            )
+
         self.joint = joint
         self.parent_node = parent_node
         self.child_node = child_node
         self.weight = weight
+        self.is_joint = hasattr(self.joint, "JointType")
+
+        if not self.is_joint:
+            raise RuntimeError(f"Object {self.label} is not a joint")
 
     def get_mujoco_joint_type(self) -> MUJOCO_JOINT_TYPE | None:
         # Grounded joint are handled differently from other joints
-        is_grounded_joint = hasattr(self.joint, "ObjectToGround")
-        is_joint = hasattr(self.joint, "JointType")
-
-        if not (is_grounded_joint or is_joint):
-            raise RuntimeError(f"Object {self.label} is not a joint")
-
-        if is_grounded_joint or (is_joint and self.joint.JointType == "Fixed"):
+        if self.is_joint and self.joint.JointType == "Fixed":
             return None
 
         if self.joint.JointType not in JOINT_TYPE_MAPPING:
@@ -189,11 +194,13 @@ class Graph:
     ) -> "Graph":
         """Construct graph from FreeCAD assembly"""
         graph = cls()
+        # First add all parts connected by joints
         joint_group = UtilsAssembly.getJointGroup(assembly)
         for joint in joint_group.Group:
             # Grounded Joint will be set as the root of the graph
+            # and we don't create a graph joint for it
             if hasattr(joint, "ObjectToGround"):
-                graph.add_node(joint.ObjectToGround)
+                graph.add_node(joint.ObjectToGround, is_grounded=True)
             else:
                 part1 = UtilsAssembly.getMovingPart(assembly, joint.Reference1)
                 part2 = UtilsAssembly.getMovingPart(assembly, joint.Reference2)
@@ -201,10 +208,18 @@ class Graph:
                 # Higher weight are more likely to be excluded from tree                        ..
                 weight = joint_type_weights.get(joint.JointType, 100.0)
                 graph.add_edge(part1, part2, joint, weight=weight)
+
+        # Then get all disconnected parts that are still part of the assembly
+        for object in assembly.OutList:
+            if object.TypeId == "PartDesign::Body" or UtilsAssembly.isLink(object):
+                graph.add_node(object)
+
         return graph
 
-    def add_node(self, part: App.DocumentObject) -> GraphNode:
-        node = GraphNode(part)
+    def add_node(
+        self, part: App.DocumentObject, *, is_grounded: bool = False
+    ) -> GraphNode:
+        node = GraphNode(part, is_grounded=is_grounded)
         if node not in self.adjacency_list:
             self.adjacency_list[node] = {}
         return node
@@ -232,27 +247,84 @@ class Graph:
     def get_neighbors(self, node: GraphNode) -> list[GraphNode]:
         return list(self.adjacency_list.get(node, []))
 
-    def get_edge(self, u: GraphNode, v: GraphNode) -> GraphEdge | None:
-        return self.adjacency_list.get(u, {}).get(v, None)
+    def get_edge(self, u: GraphNode, v: GraphNode) -> GraphEdge:
+        try:
+            return self.adjacency_list[u][v]
+        except KeyError:
+            raise RuntimeError(
+                f"Did not find edge between node '{u.label}' and node '{v.label}'"
+            )
 
     def get_edges(
         self,
-    ) -> list[tuple[GraphNode, GraphNode, dict[str, GraphEdge | Any]]]:
+    ) -> list[tuple[GraphNode, GraphNode, GraphEdge]]:
         """Return a list of all unique edges as (u, v, edge)."""
         seen: set[tuple[GraphNode, GraphNode]] = set()
         edge_list = []
         for u in self.adjacency_list:
             for v in self.adjacency_list[u]:
-                if self.is_directed:
+                if self.is_directed or u.part.Name < v.part.Name:
                     edge_key = (u, v)
                 else:
-                    edge_key = tuple(sorted((u, v), key=lambda x: x.part.Name))
+                    edge_key = (v, u)
                 if edge_key not in seen:
                     edge = self.get_edge(edge_key[0], edge_key[1])
-                    if edge is not None:
-                        edge_list.append((edge_key[0], edge_key[1], edge))
-                        seen.add(edge_key)
+                    edge_list.append((edge_key[0], edge_key[1], edge))
+                    seen.add(edge_key)
         return edge_list
+
+    def get_disconnected_subgraphs(self) -> list["Graph"]:
+        """Splits graph into disconnected subgraphs"""
+        # Get list of grounded parts to use
+        # as possible root nodes for the subgraphs
+        possible_root_nodes = [u for u in self.get_nodes() if u.is_grounded]
+        # Get all of the graph's nodes
+        remaining_nodes = [
+            node for node in self.get_nodes() if node not in possible_root_nodes
+        ]
+        # Add the possible root nodes at the end so that we can pop them out first
+        remaining_nodes += possible_root_nodes
+        subgraphs = []
+
+        while len(remaining_nodes) > 0:
+            # Breadth first traversal
+            subgraph = Graph()
+            seen_nodes: set[GraphNode] = set()
+            queue: Queue[GraphNode] = Queue()
+            queue.put(remaining_nodes.pop())
+
+            while not queue.empty():
+                current_node = queue.get()
+                if current_node in seen_nodes:
+                    continue
+
+                subgraph.add_node(
+                    current_node.part, is_grounded=current_node.is_grounded
+                )
+                seen_nodes.add(current_node)
+
+                if current_node in remaining_nodes:
+                    remaining_nodes.remove(current_node)
+
+                for next_node in self.get_neighbors(current_node):
+                    edge = self.get_edge(current_node, next_node)
+                    if edge is None:
+                        raise RuntimeError("Expected edge to be not be None")
+
+                    subgraph.add_edge(
+                        current_node.part,
+                        next_node.part,
+                        edge.joint,
+                        weight=edge.weight,
+                    )
+                    queue.put(next_node)
+
+                    if next_node in remaining_nodes:
+                        remaining_nodes.remove(next_node)
+
+            subgraphs.append(subgraph)
+
+        return subgraphs
 
     def __repr__(self) -> str:
         return f"<Graph directed={self.is_directed} n_nodes={len(self.get_nodes())} n_edges={len(self.get_edges())}>"
@@ -303,36 +375,20 @@ class UnionFind:
         return True
 
 
-def convert_to_directed_tree(graph: Graph, root_node: GraphNode | None = None) -> Graph:
+def convert_to_directed_tree(graph: Graph, root_node: GraphNode) -> Graph:
     """Converts an undirected graph to a directed graph.
-
-    If root_node is provided, the directed graph will start from that node.
-    Otherwise, it will attempt to select as root_node the first node it finds with a single neighbor.
 
     Args:
         graph: Undirected graph.
-        root_node: Optional starting node for directed graph.
+        root_node: Starting node for directed graph.
 
     Returns:
         Directed graph.
     """
-    if root_node is None:
-        # Find root(s)
-        root_nodes = [
-            node for node in graph.get_nodes() if len(graph.get_neighbors(node)) == 1
-        ]
-        if not root_nodes:
-            raise RuntimeError(
-                f"{WORKBENCH_NAME}: Could not find root node for assembly"
-            )
-
-        # Select first one as main root node
-        root_node = root_nodes[0]
-    else:
-        if root_node not in graph.get_nodes():
-            raise RuntimeError(
-                f"{WORKBENCH_NAME}: Provided root_node, {root_node.part.Name}, is not part of graph"
-            )
+    if root_node not in graph.get_nodes():
+        raise RuntimeError(
+            f"{WORKBENCH_NAME}: Provided root_node, {root_node.part.Name}, is not part of graph"
+        )
 
     visited: set[GraphNode] = set()
     directed_tree = Graph(is_directed=True)

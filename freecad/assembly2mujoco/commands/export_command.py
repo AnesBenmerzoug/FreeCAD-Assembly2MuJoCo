@@ -1,4 +1,5 @@
 import os
+import traceback
 
 import FreeCAD as App
 import FreeCADGui as Gui
@@ -63,7 +64,9 @@ class MuJoCoExportCommand(BaseCommand):
                 return True
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
-                    None, "Export Failed", f"Failed to export assembly: {str(e)}"
+                    None,
+                    "Export Failed",
+                    f"Failed to export assembly: {str(e)}\n\n Stack trace:\n{traceback.format_exc()}",
                 )
                 return False
 
