@@ -3,11 +3,13 @@ import traceback
 
 import FreeCAD as App
 import FreeCADGui as Gui
+
 from PySide import QtWidgets
 
+from freecad.assembly2mujoco.core.assembly_parser import Graph
 from freecad.assembly2mujoco.core.mujoco_exporter import MuJoCoExporter
 from freecad.assembly2mujoco.commands.base import BaseCommand
-from freecad.assembly2mujoco.commands.export_panel import (
+from freecad.assembly2mujoco.ui.export_panel import (
     ExportTaskPanel,
     ExportParamsDict,
 )
@@ -50,12 +52,15 @@ class MuJoCoExportCommand(BaseCommand):
             )
             return
 
+        # Create graph connecting parts with joints
+        assembly_graph = Graph.from_assembly(selected_obj)
+
         # Show export dialog
         def on_accept_callback(export_params: ExportParamsDict) -> bool:
             try:
                 # Perform the export
                 exporter = MuJoCoExporter(**export_params)
-                exporter.export_assembly(selected_obj)
+                exporter.export_assembly(assembly_graph)
 
                 export_dir = export_params["export_dir"]
                 QtWidgets.QMessageBox.information(
@@ -70,7 +75,7 @@ class MuJoCoExportCommand(BaseCommand):
                 )
                 return False
 
-        panel = ExportTaskPanel(on_accept_callback=on_accept_callback)
+        panel = ExportTaskPanel(assembly_graph, on_accept_callback=on_accept_callback)
         Gui.Control.showDialog(panel)
 
     def IsActive(self) -> bool:

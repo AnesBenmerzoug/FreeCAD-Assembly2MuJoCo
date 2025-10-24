@@ -8,6 +8,7 @@ from freecad.assembly2mujoco.constants import (
     WORKBENCH_NAME,
     MUJOCO_JOINT_TYPE,
     JOINT_TYPE_MAPPING,
+    DEFAULT_JOINT_TYPE_WEIGHTS,
 )
 from freecad.assembly2mujoco.utils.helpers import log_message
 from freecad.assembly2mujoco.utils.types import AppearanceDict, MaterialProperties
@@ -190,7 +191,9 @@ class Graph:
 
     @classmethod
     def from_assembly(
-        cls, assembly: App.DocumentObject, joint_type_weights: dict[str, float]
+        cls,
+        assembly: App.DocumentObject,
+        joint_type_weights: dict[str, float] = DEFAULT_JOINT_TYPE_WEIGHTS,
     ) -> "Graph":
         """Construct graph from FreeCAD assembly"""
         graph = cls()
@@ -215,6 +218,11 @@ class Graph:
                 graph.add_node(object)
 
         return graph
+
+    def update_edge_weights(self, joint_type_weights: dict[str, float]) -> None:
+        """Update edge weights using provided joint type weights"""
+        for *_, edge in self.get_edges():
+            edge.weight = joint_type_weights.get(edge.joint.JointType, 100.0)
 
     def add_node(
         self, part: App.DocumentObject, *, is_grounded: bool = False

@@ -160,11 +160,11 @@ class MuJoCoExporter:
         self.actuator = ET.SubElement(self.mujoco, "actuator")
         self.sensor = ET.SubElement(self.mujoco, "sensor")
 
-    def export_assembly(self, assembly: App.DocumentObject) -> None:
+    def export_assembly(self, assembly_graph: Graph) -> None:
         """Main export method"""
 
-        # Create graph connecting parts with joints
-        assembly_graph = Graph.from_assembly(assembly, self.joint_type_weights)
+        # Apply edge weights from configuration
+        assembly_graph.update_edge_weights(self.joint_type_weights)
 
         # Export assembly parts as binary stl meshes
         meshes_dir = Path(self.export_dir).joinpath("meshes")
