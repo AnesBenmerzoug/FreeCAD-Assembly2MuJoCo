@@ -1,0 +1,11 @@
+name: freecad
+channels:
+- conda-forge
+- freecad
+dependencies:
+- python=3.11
+- freecad=1.0.2
+- pre-commit=4.2.*
+- mypy=1.16.*
+- pip:
+  - -e . --config-settings editable_mode=strict # we use strict mode because of pylance

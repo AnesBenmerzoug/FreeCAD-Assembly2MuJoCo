@@ -12,17 +12,14 @@ maintainers = [
     { name = "Anes Benmerzoug", email = "anes.benmerzoug@gmail.com" },
 ]
 
-[tool.setuptools]
-packages = []
-
 [project.urls]
 Repository = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo"
 Issues = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues"
 Changelog = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/blob/main/CHANGELOG.md"
 
-
-[project.optional-dependencies]
-dev = ["pre-commit==4.2.*", "mypy==1.16.*"]
+[tool.setuptools.packages.find]
+where = [""]
+include = ["freecad.*"]
 
 [build-system]
 requires = ["setuptools >= 77.0.3"]
