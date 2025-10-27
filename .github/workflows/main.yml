@@ -38,6 +38,13 @@ jobs:
       with:
         python_version: ${{ env.PYTHON_VERSION }}
         freecad_version: ${{ env.FREECAD_VERSION }}
+    - name: Cache pre-commit environments
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+        restore-keys: |
+          pre-commit-${{ runner.os }}-
     - name: Run pre-commit
       run: pre-commit run --all-files --verbose --show-diff-on-failure
     - name: Add mypy PR annotator
