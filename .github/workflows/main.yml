@@ -32,9 +32,9 @@ jobs:
     name: Lint and format code
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup Virtual Environment
-      uses: ./.github/actions/python
+    - uses: actions/checkout@v5
+    - name: Setup Environment
+      uses: ./.github/actions/environment
       with:
         python_version: ${{ env.PYTHON_VERSION }}
         freecad_version: ${{ env.FREECAD_VERSION }}
@@ -72,3 +72,40 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "---" >> $GITHUB_STEP_SUMMARY
         echo "*Workflow triggered by: ${{ github.event_name }}*" >> $GITHUB_STEP_SUMMARY
+
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Environment
+        uses: ./.github/actions/environment
+        with:
+          python_version: ${{ env.PYTHON_VERSION }}
+          freecad_version: ${{ env.FREECAD_VERSION }}
+      - name: Run pytest
+        id: pytest
+        run: |
+          pytest --verbose --color=yes --tb=short
+        continue-on-error: true
+      - name: Generate Test Summary
+        if: always()
+        run: |
+          echo "# Test Results 🧪" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Python Version:** ${{ env.PYTHON_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **FreeCAD Version:** ${{ env.FREECAD_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.pytest.outcome }}" == "success" ]; then
+            echo "✅ **Pytest:** All tests passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Pytest:** Some tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Workflow triggered by: ${{ github.event_name }}*" >> $GITHUB_STEP_SUMMARY
