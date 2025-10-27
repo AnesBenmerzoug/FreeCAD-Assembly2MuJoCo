@@ -20,7 +20,7 @@ env:
   GITHUB_BOT_USERNAME: github-actions[bot]
   GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
   PY_COLORS: 1
-  PYTHON_VERSION: '3.10'
+  PYTHON_VERSION: '3.11'
 
 defaults:
   run:
@@ -36,7 +36,6 @@ jobs:
       uses: ./.github/actions/python
       with:
         python_version: ${{ env.PYTHON_VERSION }}
-        optional_dependencies: dev
     - name: Run pre-commit
       run: pre-commit run --all-files --verbose --show-diff-on-failure
     - name: Add mypy PR annotator
