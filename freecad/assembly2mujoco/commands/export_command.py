@@ -59,7 +59,7 @@ class MuJoCoExportCommand(BaseCommand):
         def on_accept_callback(export_params: ExportParamsDict) -> bool:
             try:
                 # Perform the export
-                exporter = MuJoCoExporter(**export_params)
+                exporter = MuJoCoExporter(**export_params)  # type: ignore
                 exporter.export_assembly(assembly_graph)
 
                 export_dir = export_params["export_dir"]

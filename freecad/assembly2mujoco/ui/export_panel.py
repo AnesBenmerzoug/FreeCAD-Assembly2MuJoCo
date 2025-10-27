@@ -130,7 +130,7 @@ class ExportTaskPanel:
         mjcf_options = self.mjcf_options_editor.get_options()
 
         export_params = ExportParamsDict(
-            **export_dir_options,
+            **export_dir_options,  # type: ignore
             **mesh_export_options,
             **joint_type_weights_options,
             **mjcf_options,

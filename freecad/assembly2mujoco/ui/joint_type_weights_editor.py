@@ -46,7 +46,7 @@ class JointTypeWeightEditor(QtWidgets.QWidget):
     def get_options(self) -> dict[str, JointTypeWeightsDict]:
         options = {
             "joint_type_weights": JointTypeWeightsDict(
-                **{joint: spin.value() for joint, spin in self.inputs.items()}
+                **{joint: spin.value() for joint, spin in self.inputs.items()}  # type: ignore
             )
         }
         return options

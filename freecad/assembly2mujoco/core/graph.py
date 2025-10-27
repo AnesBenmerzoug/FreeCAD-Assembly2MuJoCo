@@ -4,7 +4,6 @@ from typing import Generic, Protocol, TypeVar
 from freecad.assembly2mujoco.constants import (
     WORKBENCH_NAME,
 )
-from freecad.assembly2mujoco.utils.helpers import log_message
 
 __all__ = ["GraphNode", "GraphEdge", "Graph"]
 
@@ -106,7 +105,6 @@ class Graph(Generic[NodeType, EdgeType]):
         # Get list of nodes to use
         # as possible root nodes for the subgraphs
         possible_root_nodes = self.get_possible_root_nodes()
-        log_message(f"Possible root nodes: {[x.label for x in possible_root_nodes]}")
         # Get all of the graph's nodes
         remaining_nodes = [
             node for node in self.get_nodes() if node not in possible_root_nodes
@@ -133,10 +131,6 @@ class Graph(Generic[NodeType, EdgeType]):
                 if current_node in remaining_nodes:
                     remaining_nodes.remove(current_node)
 
-                log_message(f"Current Node: {current_node.label}")
-                log_message(
-                    f"Neighbors of current Node: {[x.label for x in self.get_neighbors(current_node)]}"
-                )
                 for next_node in self.get_neighbors(current_node):
                     edge = self.get_edge(current_node, next_node)
                     if edge is None:

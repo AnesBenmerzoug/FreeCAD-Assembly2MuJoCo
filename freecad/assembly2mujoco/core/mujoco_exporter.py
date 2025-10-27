@@ -164,10 +164,6 @@ class MuJoCoExporter:
 
     def export_assembly(self, assembly_graph: AssemblyGraph) -> None:
         """Main export method"""
-        log_message(f"Graph: {assembly_graph.adjacency_list}")
-        log_message(
-            f"Graph nodes: {list(sorted([(x.label, x.part.Name, x.is_grounded) for x in assembly_graph.get_nodes()]))}"
-        )
 
         # Apply edge weights from configuration
         assembly_graph.update_edge_weights(self.joint_type_weights)
@@ -185,13 +181,11 @@ class MuJoCoExporter:
         # See if graph can be split into disconnected graphs
         assembly_subgraphs = assembly_graph.get_disconnected_subgraphs()
         log_message(f"Number of disconnected subgraphs: {len(assembly_subgraphs)}")
-        for subgraph in assembly_subgraphs:
-            log_message(f"Subgraph: {[x.label for x in subgraph.get_nodes()]}")
 
         for graph in assembly_subgraphs:
             # Handle graphs with a single node
             if len(graph.get_nodes()) == 1:
-                self.process_tree(graph.get_nodes()[0], graph)
+                self.process_tree(graph.get_nodes()[0], graph)  # type: ignore
                 continue
 
             # Find minimum spanning tree representing kinematic tree
@@ -213,7 +207,7 @@ class MuJoCoExporter:
             # Convert directed tree
             tree = convert_to_directed_tree(tree, root_node)
 
-            self.process_tree(root_node, tree)
+            self.process_tree(root_node, tree)  # type: ignore
 
             # Handle kinematic loops
             if unused_edges:
