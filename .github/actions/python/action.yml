@@ -4,6 +4,9 @@ inputs:
   python_version:
     required: true
     type: string
+  freecad_version:
+    required: true
+    type: string
 
 runs:
   using: "composite"
@@ -12,8 +15,8 @@ runs:
     uses: mamba-org/setup-micromamba@v2
     with:
       environment-file: environment.yml
-      init-shell: >-
-        bash
-        powershell
+      create-args: >-
+        python=${{ inputs.python_version }}
+        freecad=${{ inputs.freecad_version }}
       cache-environment: true
       post-cleanup: 'all'
