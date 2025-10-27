@@ -45,3 +45,30 @@ jobs:
     - name: Run mypy
       run: mypy freecad/
       continue-on-error: true
+    - name: Generate Job Summary
+      if: always()
+      run: |
+        echo "# Code Quality Results 🔍" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Configuration" >> $GITHUB_STEP_SUMMARY
+        echo "- **Python Version:** ${{ env.PYTHON_VERSION }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **FreeCAD Version:** ${{ env.FREECAD_VERSION }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Check Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ steps.precommit.outcome }}" == "success" ]; then
+          echo "✅ **Pre-commit checks:** Passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Pre-commit checks:** Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ steps.mypy.outcome }}" == "success" ]; then
+          echo "✅ **MyPy type checking:** Passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **MyPy type checking:** Failed (non-blocking)" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "*Workflow triggered by: ${{ github.event_name }}*" >> $GITHUB_STEP_SUMMARY
