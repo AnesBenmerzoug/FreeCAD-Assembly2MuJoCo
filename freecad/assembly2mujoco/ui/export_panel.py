@@ -4,7 +4,7 @@ from typing import Callable, Literal, TypedDict
 import FreeCAD as App
 from PySide import QtWidgets
 
-from freecad.assembly2mujoco.core.assembly_parser import Graph, GraphNode
+from freecad.assembly2mujoco.core.assembly_parser import AssemblyGraph
 from freecad.assembly2mujoco.ui.export_dir_editor import ExportDirEditor
 from freecad.assembly2mujoco.ui.debug_options_editor import DebugOptionsEditor
 from freecad.assembly2mujoco.ui.joint_type_weights_editor import (
@@ -31,13 +31,12 @@ class ExportParamsDict(TypedDict):
     mjcf_armature: float
     mjcf_integrator: Literal["implicitfast", "Euler", "implicit", "RK4"]
     mjcf_solver: Literal["PGS", "CG", "Newton"]
-    collisions: dict[GraphNode, list[GraphNode]]
 
 
 class ExportTaskPanel:
     def __init__(
         self,
-        assembly_graph: Graph,
+        assembly_graph: AssemblyGraph,
         on_accept_callback: Callable[[ExportParamsDict], bool],
     ):
         self.assembly_graph = assembly_graph
@@ -129,14 +128,12 @@ class ExportTaskPanel:
         mesh_export_options = self.mesh_export_options_editor.get_options()
         joint_type_weights_options = self.joint_type_weight_editor.get_options()
         mjcf_options = self.mjcf_options_editor.get_options()
-        collisions_options = self.collisions_editor.get_options()
 
         export_params = ExportParamsDict(
             **export_dir_options,
             **mesh_export_options,
             **joint_type_weights_options,
             **mjcf_options,
-            collisions=collisions_options["collisions"],
         )
         # Trigger callback
         return self.on_accept_callback(export_params)

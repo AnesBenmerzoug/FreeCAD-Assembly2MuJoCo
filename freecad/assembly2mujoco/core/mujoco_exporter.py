@@ -22,9 +22,11 @@ from freecad.assembly2mujoco.constants import (
     WORKBENCH_NAME,
 )
 from freecad.assembly2mujoco.core.assembly_parser import (
-    Graph,
-    GraphNode,
-    GraphEdge,
+    AssemblyGraph,
+    AssemblyGraphNode,
+    AssemblyGraphEdge,
+)
+from freecad.assembly2mujoco.core.graph import (
     find_minimum_spanning_tree,
     convert_to_directed_tree,
 )
@@ -160,8 +162,12 @@ class MuJoCoExporter:
         self.actuator = ET.SubElement(self.mujoco, "actuator")
         self.sensor = ET.SubElement(self.mujoco, "sensor")
 
-    def export_assembly(self, assembly_graph: Graph) -> None:
+    def export_assembly(self, assembly_graph: AssemblyGraph) -> None:
         """Main export method"""
+        log_message(f"Graph: {assembly_graph.adjacency_list}")
+        log_message(
+            f"Graph nodes: {list(sorted([(x.label, x.part.Name, x.is_grounded) for x in assembly_graph.get_nodes()]))}"
+        )
 
         # Apply edge weights from configuration
         assembly_graph.update_edge_weights(self.joint_type_weights)
@@ -179,6 +185,8 @@ class MuJoCoExporter:
         # See if graph can be split into disconnected graphs
         assembly_subgraphs = assembly_graph.get_disconnected_subgraphs()
         log_message(f"Number of disconnected subgraphs: {len(assembly_subgraphs)}")
+        for subgraph in assembly_subgraphs:
+            log_message(f"Subgraph: {[x.label for x in subgraph.get_nodes()]}")
 
         for graph in assembly_subgraphs:
             # Handle graphs with a single node
@@ -221,7 +229,7 @@ class MuJoCoExporter:
 
     def export_parts_as_meshes_and_add_to_assets(
         self,
-        assembly_graph: Graph,
+        assembly_graph: AssemblyGraph,
         meshes_dir: str | os.PathLike,
     ) -> None:
         for node in assembly_graph.get_nodes():
@@ -266,7 +274,7 @@ class MuJoCoExporter:
             if len(found_existing_materials) == 0:
                 ET.SubElement(self.asset, "material", **appearance_dict)
 
-    def add_floorplane(self, assembly_graph: Graph) -> None:
+    def add_floorplane(self, assembly_graph: AssemblyGraph) -> None:
         minimum_z_placement: float | None = None
         for node in assembly_graph.get_nodes():
             part = node.part
@@ -293,11 +301,11 @@ class MuJoCoExporter:
 
     def process_tree(
         self,
-        current_node: GraphNode,
-        tree: Graph,
+        current_node: AssemblyGraphNode,
+        tree: AssemblyGraph,
         *,
-        parent_node: GraphNode | None = None,
-        body_elements: dict[GraphNode, ET.Element] | None = None,
+        parent_node: AssemblyGraphNode | None = None,
+        body_elements: dict[AssemblyGraphNode, ET.Element] | None = None,
     ) -> ET.Element:
         if body_elements is None:
             body_elements = {}
@@ -327,7 +335,7 @@ class MuJoCoExporter:
                 self.add_joint_to_body(child_body, edge)
         return current_body
 
-    def add_body(self, node: GraphNode, parent_body: ET.Element) -> ET.Element:
+    def add_body(self, node: AssemblyGraphNode, parent_body: ET.Element) -> ET.Element:
         # Create body element for this part
         pos, quat = node.get_body_position_and_orientation()
         body = ET.SubElement(
@@ -364,7 +372,7 @@ class MuJoCoExporter:
     def add_joint_to_body(
         self,
         body: ET.Element,
-        edge: GraphEdge,
+        edge: AssemblyGraphEdge,
     ) -> ET.Element | None:
         """Add a joint to a body element"""
         joint_type = edge.get_mujoco_joint_type()
@@ -378,8 +386,8 @@ class MuJoCoExporter:
 
         # Create the joint element
         joint_element = ET.SubElement(
-            body,
-            "joint",
+            parent=body,
+            tag="joint",
             type=joint_type,
             name=edge.label,
             pos=joint_pos,
@@ -390,10 +398,10 @@ class MuJoCoExporter:
 
         # Create actuator element
         actuator_element = ET.SubElement(
-            self.actuator,
-            "position",
-            name=joint_element.get("name"),
-            joint=joint_element.get("name"),
+            parent=self.actuator,
+            tag="position",
+            name=joint_element.get("name"),  # type: ignore
+            joint=joint_element.get("name"),  # type: ignore
             kp="100",
         )
         if joint_range is not None:
@@ -401,15 +409,18 @@ class MuJoCoExporter:
 
         # Create sensor element
         ET.SubElement(
-            self.sensor,
-            "jointpos",
-            name=joint_element.get("name") + "_pos",
-            joint=joint_element.get("name"),
+            parent=self.sensor,
+            tag="jointpos",
+            name=joint_element.get("name") + "_pos",  # type: ignore
+            joint=joint_element.get("name"),  # type: ignore
         )
         return joint_element
 
     def process_kinematic_loops(
-        self, unused_edges: list[tuple[GraphNode, GraphNode, GraphEdge]]
+        self,
+        unused_edges: list[
+            tuple[AssemblyGraphNode, AssemblyGraphNode, AssemblyGraphEdge]
+        ],
     ) -> None:
         log_message(f"Found {len(unused_edges)} kinematic loops in the assembly")
         for u, v, edge in unused_edges:
@@ -458,10 +469,10 @@ class MuJoCoExporter:
 
                 # Insert weld constraint between dummy body and child body
                 ET.SubElement(
-                    self.equality,
-                    "weld",
+                    parent=self.equality,
+                    tag="weld",
                     name=f"loop_weld_{edge.label}",
-                    body1=dummy_body.get("name"),
+                    body1=dummy_body.get("name"),  # type: ignore
                     body2=v.label,
                     solref="0.01 1",
                     solimp="0.9 0.95 0.001",
