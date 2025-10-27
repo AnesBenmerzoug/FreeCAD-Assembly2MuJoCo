@@ -3,12 +3,12 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/.conda_env/lib",
         "${workspaceFolder}/.conda_env/Ext",
-        "${workspaceFolder}/.conda_env/Mod"
+        "${workspaceFolder}/.conda_env/Mod/Assembly"
     ],
     "python.autoComplete.extraPaths": [
         "${workspaceFolder}/.conda_env/lib",
         "${workspaceFolder}/.conda_env/Ext",
-        "${workspaceFolder}/.conda_env/Mod"
+        "${workspaceFolder}/.conda_env/Mod/Assembly"
     ],
     "terminal.integrated.env.linux": {
         "PYTHONPATH": "${workspaceFolder}/.conda_env/lib:${workspaceFolder}/.conda_env/Ext:${workspaceFolder}/.conda_env/Mod:${env:PYTHONPATH}"
