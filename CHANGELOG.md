@@ -6,6 +6,7 @@
 
 - Allow configuring the weights assigned to the different joints in order to handle kinematic loops. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
 - Allow exporting assemblies with disconnected parts.
+- Handle conversion of revolute joints in kinematic loops.
 
 ### Changed
 
