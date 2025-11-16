@@ -17,6 +17,7 @@
 ### Fixed
 
 - Fix workbench icon path in package metadata ([#11](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/11))
+- Fix exporting part appearance.
 
 ## [0.2.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.2.0) - 2025-06-08
 

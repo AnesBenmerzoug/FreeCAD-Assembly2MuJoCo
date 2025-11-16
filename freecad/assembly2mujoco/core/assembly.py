@@ -32,16 +32,20 @@ class AssemblyGraphNode:
 
     @property
     def body_appearance(self) -> AppearanceDict:
-        appearance_properties: dict[str, str] = (
-            self.part.ShapeMaterial.AppearanceProperties
-        )
-        rgb: tuple[float, float, float] = literal_eval(
-            appearance_properties["DiffuseColor"]
-        )[:3]
-        # TODO: Investigate whether this value is always the same as the one above
-        # rgb = self.part.ViewObject.ShapeAppearance[0].DiffuseColor[:3]
-        rgba = " ".join(str(x) for x in rgb + (1.0,))
-        shininess = appearance_properties["Shininess"]
+        if App.GuiUp:
+            diffuse_color = self.part.ViewObject.ShapeAppearance[0].DiffuseColor
+            shininess = str(self.part.ViewObject.ShapeAppearance[0].Shininess)
+            rgba = f"{diffuse_color[0]} {diffuse_color[1]} {diffuse_color[2]} 1.0"
+        else:
+            log_message(
+                "Gui is not running. Using shape material appearance properties.",
+                level="warning",
+            )
+            rgb: tuple[float, float, float] = literal_eval(
+                self.part.ShapeMaterial.AppearanceProperties["DiffuseColor"]
+            )[:3]
+            rgba = " ".join(str(x) for x in rgb + (1.0,))
+            shininess = self.part.ShapeMaterial.AppearanceProperties["Shininess"]
         appearance_dict = AppearanceDict(
             name=self.label, rgba=rgba, shininess=shininess
         )

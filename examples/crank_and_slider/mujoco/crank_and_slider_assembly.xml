@@ -12,16 +12,16 @@
     <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.1" />
     <!--Part Meshes-->
     <mesh name="Base" file="Base.obj" scale="0.001 0.001 0.001" />
-    <material name="Base" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <material name="Base" rgba="0.800000011920929 0.6000000238418579 0.14901961386203766 1.0" shininess="0.8999999761581421" />
     <!--Part Meshes-->
     <mesh name="SliderRod" file="SliderRod.obj" scale="0.001 0.001 0.001" />
-    <material name="SliderRod" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <material name="SliderRod" rgba="0.5490196347236633 0.7019608020782471 0.7019608020782471 1.0" shininess="0.8999999761581421" />
     <!--Part Meshes-->
     <mesh name="Crank" file="Crank.obj" scale="0.001 0.001 0.001" />
-    <material name="Crank" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <material name="Crank" rgba="0.7019608020782471 0.3019607961177826 0.20000000298023224 1.0" shininess="0.8999999761581421" />
     <!--Part Meshes-->
     <mesh name="ConnectingRod" file="ConnectingRod.obj" scale="0.001 0.001 0.001" />
-    <material name="ConnectingRod" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <material name="ConnectingRod" rgba="0.5490196347236633 0.7019608020782471 0.0 1.0" shininess="0.8999999761581421" />
   </asset>
   <worldbody>
     <!--Lighting and floor-->

@@ -12,16 +12,16 @@
     <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.1" />
     <!--Part Meshes-->
     <mesh name="Base001" file="Base001.obj" scale="0.001 0.001 0.001" />
-    <material name="Base001" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <material name="Base001" rgba="0.5490196347236633 0.7019608020782471 0.7019608020782471 1.0" shininess="0.8999999761581421" />
     <!--Part Meshes-->
     <mesh name="Fork001" file="Fork001.obj" scale="0.001 0.001 0.001" />
-    <material name="Fork001" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <material name="Fork001" rgba="0.800000011920929 0.6000000238418579 0.14901961386203766 1.0" shininess="0.8999999761581421" />
     <!--Part Meshes-->
     <mesh name="Cross001" file="Cross001.obj" scale="0.001 0.001 0.001" />
-    <material name="Cross001" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <material name="Cross001" rgba="0.5490196347236633 0.7019608020782471 0.7019608020782471 1.0" shininess="0.8999999761581421" />
     <!--Part Meshes-->
     <mesh name="Fork002" file="Fork002.obj" scale="0.001 0.001 0.001" />
-    <material name="Fork002" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <material name="Fork002" rgba="0.800000011920929 0.6000000238418579 0.14901961386203766 1.0" shininess="0.8999999761581421" />
   </asset>
   <worldbody>
     <!--Lighting and floor-->
