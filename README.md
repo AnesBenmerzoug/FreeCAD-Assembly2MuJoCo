@@ -57,7 +57,7 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
 
 ## Examples
 
-Please refer to the [examples](examples/) directory for some examples showcasing the use of this macro.
+Please refer to the [examples](examples/) directory for some examples showcasing the use of this workbench.
 
 ## Troubleshooting
 
@@ -72,7 +72,7 @@ Please refer to the [examples](examples/) directory for some examples showcasing
 
 ## Installation
 
-### Addon Manager
+### Addon Manager (Recommended)
 
 - Open the Addon manager by going to Tools -> Addon manager
 - Type `Assembly2MuJoCo` in the search bar.
@@ -98,14 +98,14 @@ Please refer to the [examples](examples/) directory for some examples showcasing
 
 ## Roadmap
 
-Here are some of the planned developments for this Macro:
+Here are some of the planned developments for this Workbench:
 
 - [ ] Support, if possible, all assembly joint types:
   - [X] Grounded
   - [X] Fixed
   - [X] Revolute
   - [ ] Cylindrical
-  - [ ] Slider
+  - [X] Slider
   - [ ] Ball
   - [ ] Distance
   - [ ] Parallel
@@ -116,7 +116,7 @@ Here are some of the planned developments for this Macro:
   - [ ] Gear
   - [ ] Bolt
 - [ ] Add, if possible, all examples from the Assembly Workbench [wiki page](https://wiki.freecad.org/Assembly_Workbench):
-  - [ ] Crank and Slider
+  - [X] Crank and Slider
   - [X] Universal Joint
   - [ ] Vise
   - [ ] Shock Absorber
