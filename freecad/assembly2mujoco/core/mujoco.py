@@ -473,6 +473,29 @@ class MuJoCoExporter:
                     solref="0.01 1",
                     solimp="0.9 0.95 0.001",
                 )
+            elif edge.mujoco_joint_type == "hinge":
+                joint_position, joint_axis = edge.joint_position_and_axis
+                offset_joint_position = joint_position + joint_axis.scale(
+                    0.01, 0.01, 0.01
+                )
+                anchor = f"{joint_position.x} {joint_position.y} {joint_position.z}"
+                offset_anchor = f"{offset_joint_position.x} {offset_joint_position.y} {offset_joint_position.z}"
+                ET.SubElement(
+                    self.equality,
+                    "connect",
+                    body1=u.label,
+                    body2=v.label,
+                    name=f"connect_hinge_{edge.label}_1",
+                    anchor=anchor,
+                )
+                ET.SubElement(
+                    self.equality,
+                    "connect",
+                    body1=u.label,
+                    body2=v.label,
+                    name=f"connect_hinge_{edge.label}_2",
+                    anchor=offset_anchor,
+                )
             else:
                 joint_pos_vector, joint_axis_vector = edge.joint_position_and_axis
                 joint_pos = " ".join(str(x) for x in joint_pos_vector)
