@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco>
+  <option integrator="implicitfast" timestep="0.002" solver="Newton" iterations="200" tolerance="1e-10" />
+  <compiler meshdir="meshes" autolimits="true" inertiafromgeom="true" angle="radian" />
+  <default>
+    <joint damping="10.0" armature="1.0" />
+    <geom conaffinity="0" condim="3" friction="1 0.5 0.5" margin="0" />
+  </default>
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.1" />
+    <!--Part Meshes-->
+    <mesh name="Base" file="Base.obj" scale="0.001 0.001 0.001" />
+    <material name="Base" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <!--Part Meshes-->
+    <mesh name="SliderRod" file="SliderRod.obj" scale="0.001 0.001 0.001" />
+    <material name="SliderRod" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <!--Part Meshes-->
+    <mesh name="Crank" file="Crank.obj" scale="0.001 0.001 0.001" />
+    <material name="Crank" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+    <!--Part Meshes-->
+    <mesh name="ConnectingRod" file="ConnectingRod.obj" scale="0.001 0.001 0.001" />
+    <material name="ConnectingRod" rgba="0.447059 0.47451 0.501961 1.0" shininess="0.9" />
+  </asset>
+  <worldbody>
+    <!--Lighting and floor-->
+    <light diffuse=".8 .8 .8" pos="0 0 4" dir="0 0 -1" />
+    <light diffuse=".6 .6 .6" pos="4 4 4" dir="-1 -1 -1" />
+    <geom name="floor" pos="0 0 -0.001" size="0 0 1" type="plane" material="groundplane" />
+    <!--Assembly-->
+    <body name="Base" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+      <geom type="mesh" name="Base geom" mesh="Base" material="Base" contype="0" conaffinity="0" />
+      <body name="SliderRod" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+        <geom type="mesh" name="SliderRod geom" mesh="SliderRod" material="SliderRod" contype="0" conaffinity="0" />
+        <joint type="slide" name="Slider" pos="0.008664736742441264 0.0 0.017343900279106646" axis="-0.9997784669888635 8.659560562354933e-17 0.02104796772608386" />
+        <body name="ConnectingRod" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+          <geom type="mesh" name="ConnectingRod geom" mesh="ConnectingRod" material="ConnectingRod" contype="0" conaffinity="0" />
+          <joint type="hinge" name="Revolute002" pos="0.06477861870017405 3.552713678800501e-18 0.022163884888379136" axis="0.02104796772608147 5.507747036226361e-17 0.9997784669888634" />
+        </body>
+      </body>
+      <body name="Crank" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+        <geom type="mesh" name="Crank geom" mesh="Crank" material="Crank" contype="0" conaffinity="0" />
+        <joint type="hinge" name="Revolute" pos="0.12 1.3096492309053453e-20 0.015" axis="0.021047967726081435 -8.673617379884035e-18 0.9997784669888634" />
+      </body>
+    </body>
+  </worldbody>
+  <contact />
+  <equality>
+    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_1" anchor="0.11299525273490786 0.013195673559064217 0.021148797856068942" />
+    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_2" anchor="0.11320573241216868 0.013195673559064217 0.031146582525957575" />
+  </equality>
+  <tendon />
+  <actuator>
+    <position name="Slider" joint="Slider" kp="100" />
+    <position name="Revolute" joint="Revolute" kp="100" />
+    <position name="Revolute002" joint="Revolute002" kp="100" />
+  </actuator>
+  <sensor>
+    <jointpos name="Slider_pos" joint="Slider" />
+    <jointpos name="Revolute_pos" joint="Revolute" />
+    <jointpos name="Revolute002_pos" joint="Revolute002" />
+  </sensor>
+</mujoco>
