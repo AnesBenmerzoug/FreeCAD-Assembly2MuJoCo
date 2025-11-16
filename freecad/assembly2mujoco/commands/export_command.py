@@ -6,8 +6,8 @@ import FreeCADGui as Gui
 
 from PySide import QtWidgets
 
-from freecad.assembly2mujoco.core.assembly_parser import AssemblyGraph
-from freecad.assembly2mujoco.core.mujoco_exporter import MuJoCoExporter
+from freecad.assembly2mujoco.core.assembly import AssemblyGraph
+from freecad.assembly2mujoco.core.mujoco import MuJoCoExporter
 from freecad.assembly2mujoco.commands.base import BaseCommand
 from freecad.assembly2mujoco.ui.export_panel import (
     ExportTaskPanel,
@@ -58,11 +58,16 @@ class MuJoCoExportCommand(BaseCommand):
         # Show export dialog
         def on_accept_callback(export_params: ExportParamsDict) -> bool:
             try:
+                export_dir = export_params.pop("export_dir")  # type: ignore
+                mujoco_xml_file = export_dir.joinpath(
+                    App.activeDocument().Name
+                ).with_suffix(".xml")
                 # Perform the export
                 exporter = MuJoCoExporter(**export_params)  # type: ignore
-                exporter.export_assembly(assembly_graph)
-
-                export_dir = export_params["export_dir"]
+                mujoco_xml = exporter.export_assembly(
+                    assembly_graph, export_dir=export_dir
+                )
+                exporter.write_xml(mujoco_xml, mujoco_xml_file)
                 QtWidgets.QMessageBox.information(
                     None, "Export Successful", f"Assembly exported to: {export_dir}"
                 )

@@ -1,4 +1,6 @@
 import math
+from ast import literal_eval
+from collections import defaultdict
 
 import FreeCAD as App
 import UtilsAssembly
@@ -9,9 +11,8 @@ from freecad.assembly2mujoco.constants import (
     JOINT_TYPE_MAPPING,
     DEFAULT_JOINT_TYPE_WEIGHTS,
 )
-from freecad.assembly2mujoco.core.graph import Graph
 from freecad.assembly2mujoco.utils.helpers import log_message
-from freecad.assembly2mujoco.utils.types import AppearanceDict, MaterialProperties
+from freecad.assembly2mujoco.utils.types import AppearanceDict
 
 
 __all__ = ["AssemblyGraph", "AssemblyGraphNode", "AssemblyGraphEdge"]
@@ -21,40 +22,30 @@ class AssemblyGraphNode:
     def __init__(self, part: App.DocumentObject, *, is_grounded: bool = False) -> None:
         if not isinstance(part, App.DocumentObject):
             raise RuntimeError(
-                f"part must be an instance of 'App.DocumentObject' instead of '{type(part)}'"
+                f"{WORKBENCH_NAME}: part must be an instance of 'App.DocumentObject' instead of '{type(part)}'"
             )
         super().__init__()
         self.part = part
         self.is_grounded = is_grounded
-
-    def get_body_position_and_orientation(self) -> tuple[str, str]:
-        """Get position and orientation for FreeCAD part in MuJoCo."""
-        pos = "0 0 0"
-        quat = "1.0 0.0 0.0 0.0"
-
-        log_message(f"Part: Name={self.label}, Pos={pos}, Quat={quat}")
-        return pos, quat
-
-    def get_body_material(
-        self,
-    ) -> MaterialProperties:
-        material_properties: MaterialProperties = self.part.ShapeMaterial.Properties
-        return material_properties
-
-    def get_body_appearance(
-        self,
-    ) -> AppearanceDict:
-        name = self.label
-        rgb = self.part.ViewObject.ShapeAppearance[0].DiffuseColor[:3]
-        rgba = rgb + (1.0,)
-        rgba = " ".join(str(x) for x in rgba)
-        shininess = str(self.part.ViewObject.ShapeAppearance[0].Shininess)
-        appearance_dict = AppearanceDict(name=name, rgba=rgba, shininess=shininess)
-        return appearance_dict
+        self.pos = "0 0 0"
+        self.quat = "1.0 0.0 0.0 0.0"
 
     @property
-    def name(self) -> str:
-        return self.part.Name
+    def body_appearance(self) -> AppearanceDict:
+        appearance_properties: dict[str, str] = (
+            self.part.ShapeMaterial.AppearanceProperties
+        )
+        rgb: tuple[float, float, float] = literal_eval(
+            appearance_properties["DiffuseColor"]
+        )[:3]
+        # TODO: Investigate whether this value is always the same as the one above
+        # rgb = self.part.ViewObject.ShapeAppearance[0].DiffuseColor[:3]
+        rgba = " ".join(str(x) for x in rgb + (1.0,))
+        shininess = appearance_properties["Shininess"]
+        appearance_dict = AppearanceDict(
+            name=self.label, rgba=rgba, shininess=shininess
+        )
+        return appearance_dict
 
     @property
     def label(self) -> str:
@@ -69,14 +60,14 @@ class AssemblyGraphNode:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, AssemblyGraphNode):
             return False
-        return self.part == other.part
+        return self.label == other.label
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, AssemblyGraphNode):
             raise RuntimeError(
-                f"Can't compare object of type '{type(self)}' with object of type '{type(other)}'"
+                f"{WORKBENCH_NAME}: Can't compare object of type '{type(self)}' with object of type '{type(other)}'"
             )
-        return self.name < other.name
+        return self.label < other.label
 
 
 class AssemblyGraphEdge:
@@ -84,45 +75,37 @@ class AssemblyGraphEdge:
         self,
         joint: App.DocumentObject,
         *,
-        parent_node: AssemblyGraphNode,
-        child_node: AssemblyGraphNode,
         weight: float,
     ) -> None:
         if not isinstance(joint, App.DocumentObject):
             raise RuntimeError(
-                f"joint must be an instance of 'App.DocumentObject' instead of '{type(joint)}'"
+                f"{WORKBENCH_NAME}: joint must be an instance of 'App.DocumentObject' instead of '{type(joint)}'"
             )
 
-        self.parent_node = parent_node
-        self.child_node = child_node
         self.weight = weight
         self.joint = joint
         self.is_joint = hasattr(self.joint, "JointType")
 
         if not self.is_joint:
-            raise RuntimeError(f"Object {self.label} is not a joint")
+            raise RuntimeError(f"{WORKBENCH_NAME}: Object {self.label} is not a joint")
 
-    def get_mujoco_joint_type(self) -> MUJOCO_JOINT_TYPE | None:
+    @property
+    def mujoco_joint_type(self) -> MUJOCO_JOINT_TYPE | None:
         # Grounded joint are handled differently from other joints
         if self.is_joint and self.joint.JointType == "Fixed":
             return None
 
         if self.joint.JointType not in JOINT_TYPE_MAPPING:
             raise NotImplementedError(
-                f"Getting MuJoCo joint type not implemented for joint '{self.label}' of type '{self.joint.JointType}'"
+                f"{WORKBENCH_NAME}: Getting MuJoCo joint type not implemented for joint '{self.label}' of type '{self.joint.JointType}'"
             )
 
         mujoco_joint_type = JOINT_TYPE_MAPPING[self.joint.JointType]
         return mujoco_joint_type
 
-    def get_joint_position_and_axis(self) -> tuple[App.Vector, App.Vector]:
+    @property
+    def joint_position_and_axis(self) -> tuple[App.Vector, App.Vector]:
         """Extract joint position and axis from FreeCAD joint"""
-        assembly = self.parent_node.part.Parents[0][0]
-        if assembly.Type != "Assembly":
-            raise RuntimeError(
-                f"{WORKBENCH_NAME}: Unexpected error trying to get root assembly from part"
-            )
-
         # Get global placement of joint
         global_plc = UtilsAssembly.getJcsGlobalPlc(
             self.joint.Placement1, self.joint.Reference1
@@ -146,7 +129,7 @@ class AssemblyGraphEdge:
 
         else:
             raise NotImplementedError(
-                f"Getting joint axis not implemented for joint type: {self.joint.JointType}"
+                f"{WORKBENCH_NAME}: Getting joint axis not implemented for joint type: {self.joint.JointType}"
             )
 
         # Convert mm to m
@@ -157,7 +140,8 @@ class AssemblyGraphEdge:
         log_message(f"Joint: Name={self.label}, Pos={pos_vector}, Axis={axis_vector}")
         return pos_vector, axis_vector
 
-    def get_joint_range(self) -> str | None:
+    @property
+    def joint_range(self) -> str | None:
         """Extract joint range from a FreeCAD joint limits, if there are any."""
         limits = {"lower": None, "upper": None}
 
@@ -181,29 +165,34 @@ class AssemblyGraphEdge:
         return range
 
     @property
-    def name(self) -> str:
-        return self.joint.Name
-
-    @property
     def label(self) -> str:
         return self.joint.Label
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, AssemblyGraphEdge):
             return False
-        return self.joint == other.joint
+        return self.label == other.label
 
     def __hash__(self):
-        return hash((self.name, self.joint.JointType))
+        return hash((self.label, self.joint.JointType))
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} joint={self.label}>"
 
 
-class AssemblyGraph(Graph[AssemblyGraphNode, AssemblyGraphEdge]):
+class AssemblyGraph:
     def __init__(
         self,
         *,
         is_directed: bool = False,
     ) -> None:
-        super().__init__(is_directed=is_directed)
+        self.is_directed = is_directed
+        self.adjacency_list: dict[
+            AssemblyGraphNode, dict[AssemblyGraphNode, AssemblyGraphEdge]
+        ] = defaultdict(dict)
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} directed={self.is_directed} n_nodes={len(self.get_nodes())} n_edges={len(self.get_edges())}>"
 
     @classmethod
     def from_assembly(
@@ -230,10 +219,8 @@ class AssemblyGraph(Graph[AssemblyGraphNode, AssemblyGraphEdge]):
             # Assign weights to prioritize which joints to keep in the tree                 ..
             # Higher weight are more likely to be excluded from tree                        ..
             weight = joint_type_weights.get(joint.JointType, 100.0)
-            edge = AssemblyGraphEdge(
-                joint, parent_node=node1, child_node=node2, weight=weight
-            )
-            graph.add_edge(edge)
+            edge = AssemblyGraphEdge(joint=joint, weight=weight)
+            graph.add_edge(edge=edge, parent_node=node1, child_node=node2)
 
         # Then get all disconnected parts that are still part of the assembly
         for object in assembly.OutList:
@@ -245,14 +232,66 @@ class AssemblyGraph(Graph[AssemblyGraphNode, AssemblyGraphEdge]):
 
         # Sanity checks
         graph_nodes = graph.get_nodes()
-        unique_part_names = set(x.name for x in graph_nodes)
+        unique_part_names = set(x.label for x in graph_nodes)
         if len(graph_nodes) != len(unique_part_names):
             raise RuntimeError(
-                f"Sanity check failed. Number of created graph nodes, '{len(graph_nodes)}', "
+                f"{WORKBENCH_NAME}: Sanity check failed. Number of created graph nodes, '{len(graph_nodes)}', "
                 f"is different from number of unique part names, '{len(unique_part_names)}'"
             )
 
         return graph
+
+    def add_node(self, node: AssemblyGraphNode) -> AssemblyGraphNode:
+        if node not in self.adjacency_list:
+            self.adjacency_list[node] = {}
+        return node
+
+    def add_edge(
+        self,
+        edge: AssemblyGraphEdge,
+        *,
+        parent_node: AssemblyGraphNode,
+        child_node: AssemblyGraphNode,
+    ) -> None:
+        self.adjacency_list[parent_node][child_node] = edge
+        if not self.is_directed:
+            # Since undirected, add both directions
+            self.adjacency_list[child_node][parent_node] = edge
+
+    def get_nodes(self) -> list[AssemblyGraphNode]:
+        """Return a list of all unique nodes."""
+        return list(self.adjacency_list.keys())
+
+    def get_neighbors(self, node: AssemblyGraphNode) -> list[AssemblyGraphNode]:
+        return list(self.adjacency_list.get(node, []))
+
+    def get_edge(
+        self, parent: AssemblyGraphNode, child: AssemblyGraphNode
+    ) -> AssemblyGraphEdge:
+        try:
+            return self.adjacency_list[parent][child]
+        except KeyError:
+            raise RuntimeError(
+                f"{WORKBENCH_NAME}: Did not find edge between node '{parent}' and node '{child}'"
+            )
+
+    def get_edges(
+        self,
+    ) -> list[tuple[AssemblyGraphNode, AssemblyGraphNode, AssemblyGraphEdge]]:
+        """Return a list of all unique edges as (parent, child, edge)."""
+        seen: set[tuple[AssemblyGraphNode, AssemblyGraphNode]] = set()
+        edge_list = []
+        for u in self.adjacency_list:
+            for v in self.adjacency_list[u]:
+                if self.is_directed or u < v:
+                    edge_key = (u, v)
+                else:
+                    edge_key = (v, u)
+                if edge_key not in seen:
+                    edge = self.get_edge(edge_key[0], edge_key[1])
+                    edge_list.append((edge_key[0], edge_key[1], edge))
+                    seen.add(edge_key)
+        return edge_list
 
     def update_edge_weights(self, joint_type_weights: dict[str, float]) -> None:
         """Update edge weights using provided joint type weights"""

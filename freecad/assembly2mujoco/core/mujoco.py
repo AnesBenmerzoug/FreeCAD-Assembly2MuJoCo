@@ -3,7 +3,6 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Literal
 
-import FreeCAD as App
 import Mesh
 import MeshPart
 
@@ -21,14 +20,15 @@ from freecad.assembly2mujoco.constants import (
     DEFAULT_MJCF_DAMPING,
     WORKBENCH_NAME,
 )
-from freecad.assembly2mujoco.core.assembly_parser import (
+from freecad.assembly2mujoco.core.assembly import (
     AssemblyGraph,
     AssemblyGraphNode,
     AssemblyGraphEdge,
 )
-from freecad.assembly2mujoco.core.graph import (
-    find_minimum_spanning_tree,
+from freecad.assembly2mujoco.core.graph_utils import (
+    get_disconnected_subgraphs,
     convert_to_directed_tree,
+    depth_first_traversal,
 )
 from freecad.assembly2mujoco.utils.helpers import log_message
 
@@ -49,7 +49,6 @@ class MuJoCoExporter:
     def __init__(
         self,
         *,
-        export_dir: os.PathLike,
         mesh_export_format: Literal["STL", "OBJ"] = DEFAULT_MESH_EXPORT_FORMAT,
         stl_mesh_linear_deflection: float = DEFAULT_STL_MESH_LINEAR_DEFLECTION,
         stl_mesh_angular_deflection: float = DEFAULT_STL_MESH_ANGULAR_DEFLECTION,
@@ -64,7 +63,6 @@ class MuJoCoExporter:
         mjcf_damping: float = DEFAULT_MJCF_DAMPING,
         mjcf_armature: float = DEFAULT_MJCF_ARMATURE,
     ) -> None:
-        self.export_dir = export_dir
         self.mesh_export_format = mesh_export_format
         self.stl_mesh_linear_deflection = stl_mesh_linear_deflection
         self.stl_mesh_angular_deflection = stl_mesh_angular_deflection
@@ -162,35 +160,40 @@ class MuJoCoExporter:
         self.actuator = ET.SubElement(self.mujoco, "actuator")
         self.sensor = ET.SubElement(self.mujoco, "sensor")
 
-    def export_assembly(self, assembly_graph: AssemblyGraph) -> None:
+    def export_assembly(
+        self, assembly_graph: AssemblyGraph, *, export_dir: Path | None = None
+    ) -> ET.Element:
         """Main export method"""
 
         # Apply edge weights from configuration
         assembly_graph.update_edge_weights(self.joint_type_weights)
 
-        # Export assembly parts as binary stl meshes
-        meshes_dir = Path(self.export_dir).joinpath("meshes")
-        meshes_dir.mkdir(exist_ok=True, parents=True)
-        self.worldbody.append(ET.Comment("Part Meshes"))
-        self.export_parts_as_meshes_and_add_to_assets(assembly_graph, meshes_dir)
+        if export_dir is not None:
+            # Export assembly parts as binary stl or obj meshes
+            self.export_parts_as_meshes_and_add_to_assets(
+                assembly_graph,
+                parent=self.asset,
+                export_dir=export_dir,
+                mesh_export_format=self.mesh_export_format,
+                stl_mesh_angular_deflection=self.stl_mesh_angular_deflection,
+                stl_mesh_linear_deflection=self.stl_mesh_linear_deflection,
+            )
 
         # Add floorplane (cosmetic)
         self.add_floorplane(assembly_graph)
-        self.worldbody.append(ET.Comment("Assembly"))
 
         # See if graph can be split into disconnected graphs
-        assembly_subgraphs = assembly_graph.get_disconnected_subgraphs()
+        assembly_subgraphs = get_disconnected_subgraphs(assembly_graph)
         log_message(f"Number of disconnected subgraphs: {len(assembly_subgraphs)}")
+        for graph in assembly_subgraphs:
+            log_message(f"Graph nodes: {[x.label for x in graph.get_nodes()]}")
 
+        self.worldbody.append(ET.Comment("Assembly"))
         for graph in assembly_subgraphs:
             # Handle graphs with a single node
             if len(graph.get_nodes()) == 1:
-                self.process_tree(graph.get_nodes()[0], graph)  # type: ignore
+                self.process_single_node_tree(graph, self.worldbody)
                 continue
-
-            # Find minimum spanning tree representing kinematic tree
-            # As well as unused edges (joints) that will be converted to equality constraints
-            tree, unused_edges = find_minimum_spanning_tree(graph)
 
             grounded_part_nodes = [
                 node for node in graph.get_nodes() if node.is_grounded
@@ -202,71 +205,76 @@ class MuJoCoExporter:
                     "Could not find grounded node in graph. Using a non-grounded node as root",
                     level="warning",
                 )
-                root_node = tree.get_nodes()[0]
+                root_node = graph.get_nodes()[0]
 
             # Convert directed tree
-            tree = convert_to_directed_tree(tree, root_node)
+            tree, unused_edges = convert_to_directed_tree(graph, root_node=root_node)
+            log_message(f"Directed tree nodes: {[x.label for x in tree.get_nodes()]}")
+            log_message(f"Directed tree edges: {[x for x in tree.get_edges()]}")
 
-            self.process_tree(root_node, tree)  # type: ignore
+            self.process_tree_no_recursion(
+                tree, root_node=root_node, worldbody=self.worldbody
+            )  # type: ignore
 
             # Handle kinematic loops
             if unused_edges:
                 self.process_kinematic_loops(unused_edges)
 
-        # Save MJCF file
-        xml_file = (
-            Path(self.export_dir)
-            .joinpath(App.activeDocument().Name)
-            .with_suffix(".xml")
-        )
-        self.write_xml(xml_file)
+        return self.mujoco
 
+    @staticmethod
     def export_parts_as_meshes_and_add_to_assets(
-        self,
         assembly_graph: AssemblyGraph,
-        meshes_dir: str | os.PathLike,
+        *,
+        parent: ET.Element,
+        export_dir: Path,
+        mesh_export_format: Literal["STL", "OBJ"],
+        stl_mesh_linear_deflection: float,
+        stl_mesh_angular_deflection: float,
     ) -> None:
-        for node in assembly_graph.get_nodes():
-            part = node.part
-            shape = part.Shape.copy(False)
-            mesh_file = Path(meshes_dir).joinpath(part.Label)
+        meshes_dir = Path(export_dir).joinpath("meshes")
+        meshes_dir.mkdir(exist_ok=True, parents=True)
 
-            if self.mesh_export_format == "STL":
+        for node in assembly_graph.get_nodes():
+            mesh_file = Path(meshes_dir).joinpath(node.label)
+
+            if mesh_export_format == "STL":
+                shape = node.part.Shape.copy(False)
                 mesh = MeshPart.meshFromShape(
                     Shape=shape,
-                    LinearDeflection=self.stl_mesh_linear_deflection,
-                    AngularDeflection=self.stl_mesh_angular_deflection,
+                    LinearDeflection=stl_mesh_linear_deflection,
+                    AngularDeflection=stl_mesh_angular_deflection,
                     Relative=False,
                 )
                 mesh_file = mesh_file.with_suffix(".stl")
                 mesh.write(os.fspath(mesh_file))
-            elif self.mesh_export_format == "OBJ":
+            elif mesh_export_format == "OBJ":
                 mesh_file = mesh_file.with_suffix(".obj")
-                Mesh.export([part], os.fspath(mesh_file))
+                Mesh.export([node.part], os.fspath(mesh_file))
             else:
                 raise ValueError(
-                    f"{WORKBENCH_NAME}: Unexpected mesh export format '{self.mesh_export_format}'"
+                    f"{WORKBENCH_NAME}: Unexpected mesh export format '{mesh_export_format}'"
                 )
 
+            parent.append(ET.Comment("Part Meshes"))
             # Add new mesh to assets
             ET.SubElement(
-                self.asset,
+                parent,
                 "mesh",
-                name=part.Label,
+                name=node.label,
                 file=mesh_file.name,
                 # Convert mm to m
                 scale="0.001 0.001 0.001",
             )
             # Add material for appearance to assets
-            appearance_dict = node.get_body_appearance()
-            found_existing_materials = self.asset.findall(
-                f"./material[@name='{appearance_dict['name']}']"
+            found_existing_materials = parent.findall(
+                f"./material[@name='{node.body_appearance['name']}']"
             )
             # Add material only if it wasn't added already
             # We do the check by name
             # TODO: Consider using a dictionary to keep track of added materials
             if len(found_existing_materials) == 0:
-                ET.SubElement(self.asset, "material", **appearance_dict)
+                ET.SubElement(parent, "material", **node.body_appearance)
 
     def add_floorplane(self, assembly_graph: AssemblyGraph) -> None:
         minimum_z_placement: float | None = None
@@ -292,6 +300,44 @@ class MuJoCoExporter:
             type="plane",
             material="groundplane",
         )
+
+    def process_single_node_tree(
+        self,
+        tree: AssemblyGraph,
+        worldbody: ET.Element,
+    ) -> None:
+        if len(tree.get_nodes()) != 1:
+            raise RuntimeError(
+                "This method should only be called for trees with a single node"
+            )
+
+        node = tree.get_nodes()[0]
+        body = self.add_body(node, worldbody)
+        ET.SubElement(
+            body,
+            "freejoint",
+        )
+
+    def process_tree_no_recursion(
+        self,
+        tree: AssemblyGraph,
+        root_node: AssemblyGraphNode,
+        worldbody: ET.Element,
+    ) -> None:
+        body_elements: dict[AssemblyGraphNode, ET.Element] = {}
+
+        for parent_node, child_node, edge in depth_first_traversal(
+            tree, root_node=root_node
+        ):
+            if (parent_body := body_elements.get(parent_node)) is None:
+                parent_body = self.add_body(parent_node, worldbody)
+                body_elements[parent_node] = parent_body
+
+            if (child_body := body_elements.get(child_node)) is None:
+                child_body = self.add_body(child_node, parent_body)
+                body_elements[child_node] = child_body
+
+            self.add_joint_to_body(child_body, edge)
 
     def process_tree(
         self,
@@ -331,23 +377,21 @@ class MuJoCoExporter:
 
     def add_body(self, node: AssemblyGraphNode, parent_body: ET.Element) -> ET.Element:
         # Create body element for this part
-        pos, quat = node.get_body_position_and_orientation()
         body = ET.SubElement(
             parent_body,
             "body",
             name=node.label,
-            pos=pos,
-            quat=quat,
+            pos=node.pos,
+            quat=node.quat,
         )
         # Add mesh for visualization
-        appearance_dict = node.get_body_appearance()
         ET.SubElement(
             body,
             "geom",
             type="mesh",
             name=f"{node.label} geom",
             mesh=node.label,
-            material=appearance_dict["name"],
+            material=node.body_appearance["name"],
             contype="0",
             conaffinity="0",
         )
@@ -369,19 +413,19 @@ class MuJoCoExporter:
         edge: AssemblyGraphEdge,
     ) -> ET.Element | None:
         """Add a joint to a body element"""
-        joint_type = edge.get_mujoco_joint_type()
+        joint_type = edge.mujoco_joint_type
         if joint_type is None:
             return None
 
-        joint_pos_vector, joint_axis_vector = edge.get_joint_position_and_axis()
+        joint_pos_vector, joint_axis_vector = edge.joint_position_and_axis
         joint_pos = " ".join(str(x) for x in joint_pos_vector)
         joint_axis = " ".join(str(x) for x in joint_axis_vector)
-        joint_range = edge.get_joint_range()
+        joint_range = edge.joint_range
 
         # Create the joint element
         joint_element = ET.SubElement(
-            parent=body,
-            tag="joint",
+            body,
+            "joint",
             type=joint_type,
             name=edge.label,
             pos=joint_pos,
@@ -392,8 +436,8 @@ class MuJoCoExporter:
 
         # Create actuator element
         actuator_element = ET.SubElement(
-            parent=self.actuator,
-            tag="position",
+            self.actuator,
+            "position",
             name=joint_element.get("name"),  # type: ignore
             joint=joint_element.get("name"),  # type: ignore
             kp="100",
@@ -403,8 +447,8 @@ class MuJoCoExporter:
 
         # Create sensor element
         ET.SubElement(
-            parent=self.sensor,
-            tag="jointpos",
+            self.sensor,
+            "jointpos",
             name=joint_element.get("name") + "_pos",  # type: ignore
             joint=joint_element.get("name"),  # type: ignore
         )
@@ -418,9 +462,7 @@ class MuJoCoExporter:
     ) -> None:
         log_message(f"Found {len(unused_edges)} kinematic loops in the assembly")
         for u, v, edge in unused_edges:
-            joint_type = edge.get_mujoco_joint_type()
-
-            if joint_type is None:
+            if edge.mujoco_joint_type is None:
                 # For fixed joints, use weld constraint
                 ET.SubElement(
                     self.equality,
@@ -432,7 +474,7 @@ class MuJoCoExporter:
                     solimp="0.9 0.95 0.001",
                 )
             else:
-                joint_pos_vector, joint_axis_vector = edge.get_joint_position_and_axis()
+                joint_pos_vector, joint_axis_vector = edge.joint_position_and_axis
                 joint_pos = " ".join(str(x) for x in joint_pos_vector)
 
                 # For other joint types we insert dummy bodies and add weld constraints
@@ -463,8 +505,8 @@ class MuJoCoExporter:
 
                 # Insert weld constraint between dummy body and child body
                 ET.SubElement(
-                    parent=self.equality,
-                    tag="weld",
+                    self.equality,
+                    "weld",
                     name=f"loop_weld_{edge.label}",
                     body1=dummy_body.get("name"),  # type: ignore
                     body2=v.label,
@@ -472,13 +514,18 @@ class MuJoCoExporter:
                     solimp="0.9 0.95 0.001",
                 )
 
-    def write_xml(self, xml_file: str | os.PathLike) -> None:
+    def write_xml(
+        self,
+        xml: ET.Element,
+        xml_file: Path,
+    ) -> None:
         """Writes final XML structure to a file.
 
         Args:
             xml_file: Output path to XML file.
         """
-        ET.indent(self.mujoco)
-        tree = ET.ElementTree(self.mujoco)
+        # Save MJCF file
+        ET.indent(xml)
+        tree = ET.ElementTree(xml)
         tree.write(xml_file, encoding="utf-8", xml_declaration=True)
         log_message(f"Successfully exported to {xml_file}")

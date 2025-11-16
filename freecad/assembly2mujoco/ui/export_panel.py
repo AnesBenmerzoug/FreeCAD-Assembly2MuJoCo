@@ -4,7 +4,7 @@ from typing import Callable, Literal, TypedDict
 import FreeCAD as App
 from PySide import QtWidgets
 
-from freecad.assembly2mujoco.core.assembly_parser import AssemblyGraph
+from freecad.assembly2mujoco.core.assembly import AssemblyGraph
 from freecad.assembly2mujoco.ui.export_dir_editor import ExportDirEditor
 from freecad.assembly2mujoco.ui.debug_options_editor import DebugOptionsEditor
 from freecad.assembly2mujoco.ui.joint_type_weights_editor import (
