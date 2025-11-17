@@ -140,8 +140,6 @@ class AssemblyGraphEdge:
         pos_vector = pos_vector / 1000
         # Normalize axis
         axis_vector = axis_vector.normalize()
-
-        log_message(f"Joint: Name={self.label}, Pos={pos_vector}, Axis={axis_vector}")
         return pos_vector, axis_vector
 
     @property

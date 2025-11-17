@@ -185,8 +185,6 @@ class MuJoCoExporter:
         # See if graph can be split into disconnected graphs
         assembly_subgraphs = get_disconnected_subgraphs(assembly_graph)
         log_message(f"Number of disconnected subgraphs: {len(assembly_subgraphs)}")
-        for graph in assembly_subgraphs:
-            log_message(f"Graph nodes: {[x.label for x in graph.get_nodes()]}")
 
         self.worldbody.append(ET.Comment("Assembly"))
         for graph in assembly_subgraphs:
@@ -209,8 +207,6 @@ class MuJoCoExporter:
 
             # Convert directed tree
             tree, unused_edges = convert_to_directed_tree(graph, root_node=root_node)
-            log_message(f"Directed tree nodes: {[x.label for x in tree.get_nodes()]}")
-            log_message(f"Directed tree edges: {[x for x in tree.get_edges()]}")
 
             self.process_tree_no_recursion(
                 tree, root_node=root_node, worldbody=self.worldbody
