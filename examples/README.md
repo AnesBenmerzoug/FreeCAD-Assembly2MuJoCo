@@ -12,7 +12,7 @@ the [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) page of th
 
 | FreeCAD | MuJoCo |
 |---|---|
-| <img src="universal_joint/universal_joint_freecad.gif" alt="Export of universal joint assembly to MuJoCo"> | <img src="universal_joint/universal_joint_mujoco.gif" alt="Simulation of universal joint assembly in MuJoCo"> |
+| ![Export of universal joint assembly to MuJoCo](universal_joint/universal_joint_freecad.gif) | ![Simulation of universal joint assembly in MuJoCo](universal_joint/universal_joint_mujoco.gif) |
 
 ## Crank and Slider
 
@@ -23,4 +23,4 @@ the [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) page of th
 
 | FreeCAD | MuJoCo |
 |---|---|
-| <img src="crank_and_slider/crank_and_slider_freecad.gif" alt="Export of crank and slider assembly to MuJoCo"> | <img src="crank_and_slider/crank_and_slider_mujoco.gif" alt="Simulation of crank and slider assembly in MuJoCo"> |
+| ![Export of crank and slider assembly to MuJoCo](crank_and_slider/crank_and_slider_freecad.gif) | ![Simulation of crank and slider assembly in MuJoCo](crank_and_slider/crank_and_slider_mujoco.gif) |
