@@ -11,9 +11,9 @@
 
 A [FreeCAD](https://www.freecad.org/) workbench to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) for simulation in [MuJoCo](https://mujoco.org/).
 
-![Export of universal joint assembly to MuJoCo](examples/universal_joint/output.gif)
-
-*Export of universal joint assembly to MuJoCo*
+| FreeCAD | MuJoCo |
+|---|---|
+| <img src="examples/universal_joint/universal_joint_freecad.gif" alt="Export of universal joint assembly to MuJoCo"> | <img src="examples/universal_joint/universal_joint_mujoco.gif" alt="Simulation of universal joint assembly in MuJoCo"> |
 
 If you find any bugs while using the macro, please feel free to open an [issue](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues).
 

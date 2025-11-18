@@ -33,22 +33,22 @@
       <geom type="mesh" name="Base geom" mesh="Base" material="Base" contype="0" conaffinity="0" />
       <body name="SliderRod" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
         <geom type="mesh" name="SliderRod geom" mesh="SliderRod" material="SliderRod" contype="0" conaffinity="0" />
-        <joint type="slide" name="Slider" pos="0.008664736742441264 0.0 0.017343900279106646" axis="-0.9997784669888635 8.659560562354933e-17 0.02104796772608386" />
+        <joint type="slide" name="Slider" pos="0.005212720478003966 0.0 0.01741657430572624" axis="-0.9997784669888635 0.0 0.02104796772608125" />
         <body name="ConnectingRod" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
           <geom type="mesh" name="ConnectingRod geom" mesh="ConnectingRod" material="ConnectingRod" contype="0" conaffinity="0" />
-          <joint type="hinge" name="Revolute002" pos="0.06477861870017405 3.552713678800501e-18 0.022163884888379136" axis="0.02104796772608147 5.507747036226361e-17 0.9997784669888634" />
+          <joint type="hinge" name="Revolute002" pos="0.061326602435736774 -8.881784197001253e-18 0.022236558914998858" axis="0.021047967726081376 -8.673617379884035e-19 0.9997784669888635" />
         </body>
       </body>
       <body name="Crank" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
         <geom type="mesh" name="Crank geom" mesh="Crank" material="Crank" contype="0" conaffinity="0" />
-        <joint type="hinge" name="Revolute" pos="0.12 1.3096492309053453e-20 0.015" axis="0.021047967726081435 -8.673617379884035e-18 0.9997784669888634" />
+        <joint type="hinge" name="Revolute" pos="0.11999999999999998 -1.908195828859478e-17 0.014999999999999998" axis="0.02104796772608136 0.0 0.9997784669888634" />
       </body>
     </body>
   </worldbody>
   <contact />
   <equality>
-    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_1" anchor="0.11299525273490786 0.013195673559064217 0.021148797856068942" />
-    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_2" anchor="0.11320573241216868 0.013195673559064217 0.031146582525957575" />
+    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_1" anchor="0.11006321641596123 0.011121587657231726 0.021210524936467814" />
+    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_2" anchor="0.11027369609322205 0.011121587657231726 0.031208309606356448" />
   </equality>
   <tendon />
   <actuator>

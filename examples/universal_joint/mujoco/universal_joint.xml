@@ -36,10 +36,10 @@
         <joint type="hinge" name="Revolute" pos="0.0 0.0 0.005" axis="0.0 0.0 1.0" />
         <body name="Cross001" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
           <geom type="mesh" name="Cross001 geom" mesh="Cross001" material="Cross001" contype="0" conaffinity="0" />
-          <joint type="hinge" name="Revolute001" pos="0.003850479124911489 0.03981424130268742 0.085" axis="-0.09626197812278725 -0.9953560325671856 -2.7755575615628914e-16" />
+          <joint type="hinge" name="Revolute001" pos="-5.315367944088437e-05 0.03999996468356397 0.08499999999999999" axis="0.0013288419860217964 -0.9999991170890984 3.33066907387547e-16" />
           <body name="Fork002" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
             <geom type="mesh" name="Fork002 geom" mesh="Fork002" material="Fork002" contype="0" conaffinity="0" />
-            <joint type="hinge" name="Revolute002" pos="0.03865657856700109 -0.0037385202867772226 0.09457561483971798" axis="-0.9664144641750273 0.09346300716942983 -0.23939037099294935" />
+            <joint type="hinge" name="Revolute002" pos="0.039924162152154906 5.305294976556542e-05 0.08253860571363231" axis="-0.9981040538038725 -0.0013263237441388388 0.061534857159191866" />
           </body>
         </body>
       </body>
