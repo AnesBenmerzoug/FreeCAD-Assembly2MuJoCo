@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.3.0) - 2025-11-18
+
+### Added
+
+- Allow configuring the weights assigned to the different joints in order to handle kinematic loops. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
+- Allow exporting assemblies with disconnected parts.
+- Handle conversion of revolute joints in kinematic loops.
+
+### Changed
+
+- Change handling of kinematic loops by adding dummy bodies and weld constraints. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
+- Use collapsible sections for the different configuration options in the task panel. ([#9](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/9))
+- Use part and joint labels instead of names in exported MJCF and mesh files.
+
+### Fixed
+
+- Fix workbench icon path in package metadata ([#11](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/11))
+- Fix exporting part appearance.
+
 ## [0.2.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.2.0) - 2025-06-08
 
 ### Added

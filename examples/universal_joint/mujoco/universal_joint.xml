@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco>
+  <option integrator="implicitfast" timestep="0.002" solver="Newton" iterations="200" tolerance="1e-10" />
+  <compiler meshdir="meshes" autolimits="true" inertiafromgeom="true" angle="radian" />
+  <default>
+    <joint damping="10.0" armature="1.0" />
+    <geom conaffinity="0" condim="3" friction="1 0.5 0.5" margin="0" />
+  </default>
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.1" />
+    <!--Part Meshes-->
+    <mesh name="Base001" file="Base001.obj" scale="0.001 0.001 0.001" />
+    <material name="Base001" rgba="0.5490196347236633 0.7019608020782471 0.7019608020782471 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="Fork001" file="Fork001.obj" scale="0.001 0.001 0.001" />
+    <material name="Fork001" rgba="0.800000011920929 0.6000000238418579 0.14901961386203766 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="Cross001" file="Cross001.obj" scale="0.001 0.001 0.001" />
+    <material name="Cross001" rgba="0.5490196347236633 0.7019608020782471 0.7019608020782471 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="Fork002" file="Fork002.obj" scale="0.001 0.001 0.001" />
+    <material name="Fork002" rgba="0.800000011920929 0.6000000238418579 0.14901961386203766 1.0" shininess="0.8999999761581421" />
+  </asset>
+  <worldbody>
+    <!--Lighting and floor-->
+    <light diffuse=".8 .8 .8" pos="0 0 4" dir="0 0 -1" />
+    <light diffuse=".6 .6 .6" pos="4 4 4" dir="-1 -1 -1" />
+    <geom name="floor" pos="0 0 -0.001" size="0 0 1" type="plane" material="groundplane" />
+    <!--Assembly-->
+    <body name="Base001" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+      <geom type="mesh" name="Base001 geom" mesh="Base001" material="Base001" contype="0" conaffinity="0" />
+      <body name="Fork001" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+        <geom type="mesh" name="Fork001 geom" mesh="Fork001" material="Fork001" contype="0" conaffinity="0" />
+        <joint type="hinge" name="Revolute" pos="0.0 0.0 0.005" axis="0.0 0.0 1.0" />
+        <body name="Cross001" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+          <geom type="mesh" name="Cross001 geom" mesh="Cross001" material="Cross001" contype="0" conaffinity="0" />
+          <joint type="hinge" name="Revolute001" pos="-5.315367944088437e-05 0.03999996468356397 0.08499999999999999" axis="0.0013288419860217964 -0.9999991170890984 3.33066907387547e-16" />
+          <body name="Fork002" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+            <geom type="mesh" name="Fork002 geom" mesh="Fork002" material="Fork002" contype="0" conaffinity="0" />
+            <joint type="hinge" name="Revolute002" pos="0.039924162152154906 5.305294976556542e-05 0.08253860571363231" axis="-0.9981040538038725 -0.0013263237441388388 0.061534857159191866" />
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <contact />
+  <equality />
+  <tendon />
+  <actuator>
+    <position name="Revolute" joint="Revolute" kp="100" />
+    <position name="Revolute001" joint="Revolute001" kp="100" />
+    <position name="Revolute002" joint="Revolute002" kp="100" />
+  </actuator>
+  <sensor>
+    <jointpos name="Revolute_pos" joint="Revolute" />
+    <jointpos name="Revolute001_pos" joint="Revolute001" />
+    <jointpos name="Revolute002_pos" joint="Revolute002" />
+  </sensor>
+</mujoco>

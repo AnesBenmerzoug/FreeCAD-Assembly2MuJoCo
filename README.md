@@ -9,11 +9,11 @@
 
 ![Assembly2MuJoCo Icon](resources/icons/assembly2mujoco-icon.svg)
 
-This is a [FreeCAD](https://www.freecad.org/) workbench to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) for simulation in [MuJoCo](https://mujoco.org/).
+A [FreeCAD](https://www.freecad.org/) workbench to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) for simulation in [MuJoCo](https://mujoco.org/).
 
-![Export of universal joint assembly to MuJoCo](examples/universal_joint/output.gif)
-
-*Export of universal joint assembly to MuJoCo*
+| FreeCAD | MuJoCo |
+|---|---|
+| ![Export of universal joint assembly to MuJoCo](examples/universal_joint/universal_joint_freecad.gif) | ![Simulation of universal joint assembly in MuJoCo](examples/universal_joint/universal_joint_mujoco.gif) |
 
 If you find any bugs while using the macro, please feel free to open an [issue](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues).
 
@@ -32,7 +32,7 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
 2. Select the assembly you want to export.
 3. Execute the export command which will open a task panel
    for configuring parts of the export.
-4. Click Ok and if no error was raised, a dialog box will pop-up informing you of the location of the export.
+4. Click `Ok` and if no error was raised, a dialog box will pop-up informing you of the location of the export.
 
 ## Simulating the export with MuJoCo
 
@@ -57,7 +57,7 @@ A log of all notables changes made to the macro can be found [here.](CHANGELOG.m
 
 ## Examples
 
-Please refer to the [examples](examples/) directory for some examples showcasing the use of this macro.
+Please refer to the [examples](examples/) directory for some examples showcasing the use of this workbench.
 
 ## Troubleshooting
 
@@ -72,13 +72,16 @@ Please refer to the [examples](examples/) directory for some examples showcasing
 
 ## Installation
 
-### Addon Manager
+### Addon Manager (Recommended)
 
 - Open the Addon manager by going to Tools -> Addon manager
 - Type `Assembly2MuJoCo` in the search bar.
 - Select the workbench and click on install.
 
 ### Manual Installation
+
+<details>
+   <summary>Click to expand Manual Installation instructions</summary>
 
 - Find FreeCAD's Mod directory which is located inside the FreeCAD's data directory. The latter can be found by executing the following in the python console:
 
@@ -91,16 +94,18 @@ Please refer to the [examples](examples/) directory for some examples showcasing
   - Clone the repository into the Mod directory.
   - Download the repository as a zip file from Github and extract its contents into the Mod directory.
 
+</details>
+
 ## Roadmap
 
-Here are some of the planned developments for this Macro:
+Here are some of the planned developments for this Workbench:
 
 - [ ] Support, if possible, all assembly joint types:
   - [X] Grounded
   - [X] Fixed
   - [X] Revolute
   - [ ] Cylindrical
-  - [ ] Slider
+  - [X] Slider
   - [ ] Ball
   - [ ] Distance
   - [ ] Parallel
@@ -111,47 +116,29 @@ Here are some of the planned developments for this Macro:
   - [ ] Gear
   - [ ] Bolt
 - [ ] Add, if possible, all examples from the Assembly Workbench [wiki page](https://wiki.freecad.org/Assembly_Workbench):
-  - [ ] Crank and Slider
+  - [X] Crank and Slider
   - [X] Universal Joint
   - [ ] Vise
   - [ ] Shock Absorber
 - [ ] Extract properties from part material (e.g. density).
 - [ ] Handle nested assemblies.
 
-## Development
-
-### Setup
-
-- Create and activate a virtual environment:
-
-  ```shell
-  python -m venv .venv
-  source .venv/bin/activate
-  ```
-
-- Install development dependencies:
-
-  ```shelll
-  pip install .[dev]
-  ```
-
-- Install pre-commit hooks:
-
-  ```shell
-  pre-commit install
-  ```
-
 ## Icon
 
 The project's icon combines the FreeCAD Assembly Workbench icon with the MuJoCo logo.
-
 **FreeCAD Component**: Assembly Workbench icon from FreeCAD Artwork, licensed under LGPL-2.1+
-
 **MuJoCo Component**: MuJoCo logo owned by DeepMind, used to indicate compatibility with MuJoCo.
 
 This project is independent and not affiliated with FreeCAD or MuJoCo/DeepMind. Logo elements are used solely to indicate integration between these platforms.
-
 The project icon, including the arrangement and connecting elements, is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Any derivative works must maintain proper attribution to both FreeCAD and MuJoCo as outlined above.
+
+## Contribution
+
+Read the [contributing guide](Contributing.md) for information about setting your development environment
+and contributing features or bug fixes.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you shall be license under the LGPL-2.1 license.
 
 
 ## License

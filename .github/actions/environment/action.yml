@@ -1,0 +1,23 @@
+name: Setup Python Environment
+
+inputs:
+  python_version:
+    required: true
+    type: string
+  freecad_version:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+  - name: Setup and Cache Conda Environment with FreeCAD
+    uses: mamba-org/setup-micromamba@v2
+    with:
+      environment-file: environment.yml
+      create-args: >-
+        python=${{ inputs.python_version }}
+        freecad=${{ inputs.freecad_version }}
+      init-shell: bash
+      cache-environment: true
+      post-cleanup: 'all'

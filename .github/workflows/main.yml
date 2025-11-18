@@ -4,9 +4,11 @@ on:
   pull_request:
     branches:
     - main
+    - dev
   push:
     branches:
     - main
+    - dev
   workflow_dispatch:
     inputs:
       reason:
@@ -18,23 +20,31 @@ env:
   GITHUB_BOT_USERNAME: github-actions[bot]
   GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
   PY_COLORS: 1
-  PYTHON_VERSION: '3.10'
+  PYTHON_VERSION: '3.11'
+  FREECAD_VERSION: '1.0.2'
 
 defaults:
   run:
-    shell: bash
+    shell: bash -el {0}
 
 jobs:
   code-quality:
     name: Lint and format code
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup Virtual Environment
-      uses: ./.github/actions/python
+    - uses: actions/checkout@v5
+    - name: Setup Environment
+      uses: ./.github/actions/environment
       with:
         python_version: ${{ env.PYTHON_VERSION }}
-        optional_dependencies: dev
+        freecad_version: ${{ env.FREECAD_VERSION }}
+    - name: Cache pre-commit environments
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+        restore-keys: |
+          pre-commit-${{ runner.os }}-
     - name: Run pre-commit
       run: pre-commit run --all-files --verbose --show-diff-on-failure
     - name: Add mypy PR annotator
@@ -42,3 +52,18 @@ jobs:
     - name: Run mypy
       run: mypy freecad/
       continue-on-error: true
+
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Environment
+        uses: ./.github/actions/environment
+        with:
+          python_version: ${{ env.PYTHON_VERSION }}
+          freecad_version: ${{ env.FREECAD_VERSION }}
+      - name: Run pytest
+        id: pytest
+        run: |
+          pytest --verbose --color=yes --tb=short

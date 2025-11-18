@@ -5,24 +5,21 @@ readme = "README.md"
 license = "LGPL-2.1-or-later"
 license-files = ["LICENSE"]
 keywords = ["FreeCAD", "Assembly", "MuJoCo", "Export", "Simulation"]
-version = "0.2.0"
+version = "0.3.0"
 requires-python = ">= 3.10"
 authors = [{ name = "Anes Benmerzoug", email = "anes.benmerzoug@gmail.com" }]
 maintainers = [
     { name = "Anes Benmerzoug", email = "anes.benmerzoug@gmail.com" },
 ]
 
-[tool.setuptools]
-packages = []
-
 [project.urls]
 Repository = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo"
 Issues = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/issues"
 Changelog = "https://github.com/AnesBenmerzoug/FreeCAD-Macro-AssemblyExportToMuJoCo/blob/main/CHANGELOG.md"
 
-
-[project.optional-dependencies]
-dev = ["pre-commit==4.2.*", "mypy==1.16.*"]
+[tool.setuptools.packages.find]
+where = [""]
+include = ["freecad.*"]
 
 [build-system]
 requires = ["setuptools >= 77.0.3"]
@@ -31,3 +28,24 @@ build-backend = "setuptools.build_meta"
 [tool.mypy]
 explicit_package_bases = true
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "-vv --failed-first --durations=10 --cov=freecad.assembly2mujoco --cov-report=term-missing --cov-report=xml"
+testpaths = ["tests"]
+timeout = 300
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli = true
+log_level = "INFO"
+
+[tool.coverage.run]
+source_pkgs = ["assembly2mujoco", "tests"]
+branch = true
+parallel = true
+
+[tool.coverage.paths]
+assembly2mujoco = ["freecad/assembly2mujoco", "*/freecad/assembly2mujoco"]
+tests = ["tests", "*/assembly2mujoco/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]

@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco>
+  <option integrator="implicitfast" timestep="0.002" solver="Newton" iterations="200" tolerance="1e-10" />
+  <compiler meshdir="meshes" autolimits="true" inertiafromgeom="true" angle="radian" />
+  <default>
+    <joint damping="10.0" armature="1.0" />
+    <geom conaffinity="0" condim="3" friction="1 0.5 0.5" margin="0" />
+  </default>
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.1" />
+    <!--Part Meshes-->
+    <mesh name="Base" file="Base.obj" scale="0.001 0.001 0.001" />
+    <material name="Base" rgba="0.800000011920929 0.6000000238418579 0.14901961386203766 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="SliderRod" file="SliderRod.obj" scale="0.001 0.001 0.001" />
+    <material name="SliderRod" rgba="0.5490196347236633 0.7019608020782471 0.7019608020782471 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="Crank" file="Crank.obj" scale="0.001 0.001 0.001" />
+    <material name="Crank" rgba="0.7019608020782471 0.3019607961177826 0.20000000298023224 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="ConnectingRod" file="ConnectingRod.obj" scale="0.001 0.001 0.001" />
+    <material name="ConnectingRod" rgba="0.5490196347236633 0.7019608020782471 0.0 1.0" shininess="0.8999999761581421" />
+  </asset>
+  <worldbody>
+    <!--Lighting and floor-->
+    <light diffuse=".8 .8 .8" pos="0 0 4" dir="0 0 -1" />
+    <light diffuse=".6 .6 .6" pos="4 4 4" dir="-1 -1 -1" />
+    <geom name="floor" pos="0 0 -0.001" size="0 0 1" type="plane" material="groundplane" />
+    <!--Assembly-->
+    <body name="Base" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+      <geom type="mesh" name="Base geom" mesh="Base" material="Base" contype="0" conaffinity="0" />
+      <body name="SliderRod" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+        <geom type="mesh" name="SliderRod geom" mesh="SliderRod" material="SliderRod" contype="0" conaffinity="0" />
+        <joint type="slide" name="Slider" pos="0.005212720478003966 0.0 0.01741657430572624" axis="-0.9997784669888635 0.0 0.02104796772608125" />
+        <body name="ConnectingRod" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+          <geom type="mesh" name="ConnectingRod geom" mesh="ConnectingRod" material="ConnectingRod" contype="0" conaffinity="0" />
+          <joint type="hinge" name="Revolute002" pos="0.061326602435736774 -8.881784197001253e-18 0.022236558914998858" axis="0.021047967726081376 -8.673617379884035e-19 0.9997784669888635" />
+        </body>
+      </body>
+      <body name="Crank" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+        <geom type="mesh" name="Crank geom" mesh="Crank" material="Crank" contype="0" conaffinity="0" />
+        <joint type="hinge" name="Revolute" pos="0.11999999999999998 -1.908195828859478e-17 0.014999999999999998" axis="0.02104796772608136 0.0 0.9997784669888634" />
+      </body>
+    </body>
+  </worldbody>
+  <contact />
+  <equality>
+    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_1" anchor="0.11006321641596123 0.011121587657231726 0.021210524936467814" />
+    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_2" anchor="0.11027369609322205 0.011121587657231726 0.031208309606356448" />
+  </equality>
+  <tendon />
+  <actuator>
+    <position name="Slider" joint="Slider" kp="100" />
+    <position name="Revolute" joint="Revolute" kp="100" />
+    <position name="Revolute002" joint="Revolute002" kp="100" />
+  </actuator>
+  <sensor>
+    <jointpos name="Slider_pos" joint="Slider" />
+    <jointpos name="Revolute_pos" joint="Revolute" />
+    <jointpos name="Revolute002_pos" joint="Revolute002" />
+  </sensor>
+</mujoco>

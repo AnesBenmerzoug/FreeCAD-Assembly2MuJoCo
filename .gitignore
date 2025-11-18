@@ -8,6 +8,9 @@
 # ruff
 .ruff_cache
 
+# Conda environment
+.conda_env
+
 ###########################################################################
 # Taken from https://github.com/github/gitignore/blob/main/Python.gitignore
 ###########################################################################

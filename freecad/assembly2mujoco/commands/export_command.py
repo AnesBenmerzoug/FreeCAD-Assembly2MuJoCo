@@ -1,12 +1,15 @@
 import os
+import traceback
 
 import FreeCAD as App
 import FreeCADGui as Gui
+
 from PySide import QtWidgets
 
-from freecad.assembly2mujoco.core.mujoco_exporter import MuJoCoExporter
+from freecad.assembly2mujoco.core.assembly import AssemblyGraph
+from freecad.assembly2mujoco.core.mujoco import MuJoCoExporter
 from freecad.assembly2mujoco.commands.base import BaseCommand
-from freecad.assembly2mujoco.commands.export_panel import (
+from freecad.assembly2mujoco.ui.export_panel import (
     ExportTaskPanel,
     ExportParamsDict,
 )
@@ -49,25 +52,35 @@ class MuJoCoExportCommand(BaseCommand):
             )
             return
 
+        # Create graph connecting parts with joints
+        assembly_graph = AssemblyGraph.from_assembly(selected_obj)
+
         # Show export dialog
         def on_accept_callback(export_params: ExportParamsDict) -> bool:
             try:
+                export_dir = export_params.pop("export_dir")  # type: ignore
+                mujoco_xml_file = export_dir.joinpath(
+                    App.activeDocument().Name
+                ).with_suffix(".xml")
                 # Perform the export
-                exporter = MuJoCoExporter(**export_params)
-                exporter.export_assembly(selected_obj)
-
-                export_dir = export_params["export_dir"]
+                exporter = MuJoCoExporter(**export_params)  # type: ignore
+                mujoco_xml = exporter.export_assembly(
+                    assembly_graph, export_dir=export_dir
+                )
+                exporter.write_xml(mujoco_xml, mujoco_xml_file)
                 QtWidgets.QMessageBox.information(
                     None, "Export Successful", f"Assembly exported to: {export_dir}"
                 )
                 return True
             except Exception as e:
                 QtWidgets.QMessageBox.critical(
-                    None, "Export Failed", f"Failed to export assembly: {str(e)}"
+                    None,
+                    "Export Failed",
+                    f"Failed to export assembly: {str(e)}\n\n Stack trace:\n{traceback.format_exc()}",
                 )
                 return False
 
-        panel = ExportTaskPanel(on_accept_callback=on_accept_callback)
+        panel = ExportTaskPanel(assembly_graph, on_accept_callback=on_accept_callback)
         Gui.Control.showDialog(panel)
 
     def IsActive(self) -> bool:

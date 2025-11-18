@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
+from typing import Type
 
 __all__ = ["BaseCommand"]
 
-commands: dict[str, "BaseCommand"] = {}
+commands: dict[str, Type["BaseCommand"]] = {}
 
 
-def get_all_commands() -> dict[str, "BaseCommand"]:
+def get_all_commands() -> dict[str, Type["BaseCommand"]]:
     return commands
 
 

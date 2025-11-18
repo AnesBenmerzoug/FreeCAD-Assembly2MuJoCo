@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco>
+  <option integrator="implicitfast" timestep="0.002" solver="Newton" iterations="200" tolerance="1e-10" />
+  <compiler meshdir="meshes" autolimits="true" inertiafromgeom="true" angle="radian" />
+  <default>
+    <joint damping="10.0" armature="1.0" />
+    <geom conaffinity="0" condim="3" friction="1 0.5 0.5" margin="0" />
+  </default>
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.1" />
+    <!--Part Meshes-->
+    <mesh name="BaseLink" file="BaseLink.obj" scale="0.001 0.001 0.001" />
+    <material name="BaseLink" rgba="0.7137255072593689 0.7137255072593689 0.7137255072593689 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="ServoMotor 1 - Body Link" file="ServoMotor 1 - Body Link.obj" scale="0.001 0.001 0.001" />
+    <material name="ServoMotor 1 - Body Link" rgba="0.4470588266849518 0.4745098054409027 0.501960813999176 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="ServoMotor 1 - Output Shaft Link" file="ServoMotor 1 - Output Shaft Link.obj" scale="0.001 0.001 0.001" />
+    <material name="ServoMotor 1 - Output Shaft Link" rgba="0.4470588266849518 0.4745098054409027 0.501960813999176 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="FirstJointLink" file="FirstJointLink.obj" scale="0.001 0.001 0.001" />
+    <material name="FirstJointLink" rgba="0.7137255072593689 0.7137255072593689 0.7137255072593689 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="ServoMotor 2 - Body Link" file="ServoMotor 2 - Body Link.obj" scale="0.001 0.001 0.001" />
+    <material name="ServoMotor 2 - Body Link" rgba="0.4470588266849518 0.4745098054409027 0.501960813999176 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="ServoMotor 2 - Output Shaft Link" file="ServoMotor 2 - Output Shaft Link.obj" scale="0.001 0.001 0.001" />
+    <material name="ServoMotor 2 - Output Shaft Link" rgba="0.4470588266849518 0.4745098054409027 0.501960813999176 1.0" shininess="0.8999999761581421" />
+    <!--Part Meshes-->
+    <mesh name="SecondJointLink" file="SecondJointLink.obj" scale="0.001 0.001 0.001" />
+    <material name="SecondJointLink" rgba="0.7137255072593689 0.7137255072593689 0.7137255072593689 1.0" shininess="0.8999999761581421" />
+  </asset>
+  <worldbody>
+    <!--Lighting and floor-->
+    <light diffuse=".8 .8 .8" pos="0 0 4" dir="0 0 -1" />
+    <light diffuse=".6 .6 .6" pos="4 4 4" dir="-1 -1 -1" />
+    <geom name="floor" pos="0 0 -0.001" size="0 0 1" type="plane" material="groundplane" />
+    <!--Assembly-->
+    <body name="BaseLink" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+      <geom type="mesh" name="BaseLink geom" mesh="BaseLink" material="BaseLink" contype="0" conaffinity="0" />
+      <body name="ServoMotor 1 - Body Link" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+        <geom type="mesh" name="ServoMotor 1 - Body Link geom" mesh="ServoMotor 1 - Body Link" material="ServoMotor 1 - Body Link" contype="0" conaffinity="0" />
+        <body name="ServoMotor 1 - Output Shaft Link" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+          <geom type="mesh" name="ServoMotor 1 - Output Shaft Link geom" mesh="ServoMotor 1 - Output Shaft Link" material="ServoMotor 1 - Output Shaft Link" contype="0" conaffinity="0" />
+          <joint type="hinge" name="Revolute" pos="-0.0021311673132399633 0.01020483958144261 0.04345000000000001" axis="-2.1535392881701405e-16 -4.497427423623918e-17 1.0" />
+          <body name="FirstJointLink" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+            <geom type="mesh" name="FirstJointLink geom" mesh="FirstJointLink" material="FirstJointLink" contype="0" conaffinity="0" />
+            <body name="ServoMotor 2 - Body Link" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+              <geom type="mesh" name="ServoMotor 2 - Body Link geom" mesh="ServoMotor 2 - Body Link" material="ServoMotor 2 - Body Link" contype="0" conaffinity="0" />
+              <body name="ServoMotor 2 - Output Shaft Link" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+                <geom type="mesh" name="ServoMotor 2 - Output Shaft Link geom" mesh="ServoMotor 2 - Output Shaft Link" material="ServoMotor 2 - Output Shaft Link" contype="0" conaffinity="0" />
+                <joint type="hinge" name="Revolute001" pos="0.013782052846487392 0.0372489922364371 0.060854893964110666" axis="-0.28451414240304984 0.9586718431103822 -5.447031714567174e-16" />
+                <body name="SecondJointLink" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
+                  <geom type="mesh" name="SecondJointLink geom" mesh="SecondJointLink" material="SecondJointLink" contype="0" conaffinity="0" />
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <contact />
+  <equality />
+  <tendon />
+  <actuator>
+    <position name="Revolute" joint="Revolute" kp="100" />
+    <position name="Revolute001" joint="Revolute001" kp="100" />
+  </actuator>
+  <sensor>
+    <jointpos name="Revolute_pos" joint="Revolute" />
+    <jointpos name="Revolute001_pos" joint="Revolute001" />
+  </sensor>
+</mujoco>

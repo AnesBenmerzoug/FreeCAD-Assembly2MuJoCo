@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
+  <name>Assembly2MuJoCo</name>
+  <description>An addon for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
+  <version>0.3.0</version>
+  <date>2025-11-18</date>
+  <author email="anes.benmerzoug@gmail.com">Anes Benmerzoug</author>
+  <maintainer email="anes.benmerzoug@gmail.com">Anes Benmerzoug</maintainer>
+  <license file="LICENSE">LGPL-2.1-or-later</license>
+  <pythonmin>3.10.0</pythonmin>
 
-    <name>Assembly2MuJoCo</name>
-    <description>An addon for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
-    <icon>freecad/assembly2mujoco/resources/icons/assembly2mujoco-icon.svg</icon>
-    <version>0.2.0</version>
-    <date>2025-06-08</date>
+  <url branch="main" type="repository">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo</url>
+  <url type="bugtracker">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues</url>
+  <url type="readme">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/blob/main/README.md</url>
 
-    <author email="anes.benmerzoug@gmail.com">Anes Benmerzoug</author>
-    <maintainer email="anes.benmerzoug@gmail.com">Anes Benmerzoug</maintainer>
-    <license file="LICENSE">LGPL-2.1-or-later</license>
+  <icon>resources/icons/assembly2mujoco-icon.svg</icon>
 
-    <url branch="main" type="repository">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo</url>
-    <url type="bugtracker">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues</url>
-    <url type="readme">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/blob/main/README.md</url>
-
-    <content>
-        <workbench>
-            <name>AssemblyToMuJoCo</name>
-            <freecadmin>1.0.0</freecadmin>
-            <python_min>3.10.0</python_min>
-            <subdirectory>freecad/assembly2mujoco</subdirectory>
-            <classname>AssemblyExportToMuJoCoWorkbench</classname>
-            <tag>Assembly</tag>
-            <tag>MuJoCo</tag>
-            <tag>export</tag>
-            <tag>simulation</tag>
-        </workbench>
-    </content>
+  <content>
+    <workbench>
+      <name>AssemblyToMuJoCo</name>
+      <freecadmin>1.0.0</freecadmin>
+      <tag>Assembly</tag>
+      <tag>MuJoCo</tag>
+      <tag>export</tag>
+      <tag>simulation</tag>
+      <classname>AssemblyExportToMuJoCoWorkbench</classname>
+      <subdirectory>freecad/assembly2mujoco</subdirectory>
+      <python_min>3.10.0</python_min>
+    </workbench>
+  </content>
 
 </package>
