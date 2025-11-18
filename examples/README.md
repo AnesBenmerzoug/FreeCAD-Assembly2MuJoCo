@@ -24,3 +24,14 @@ the [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) page of th
 | FreeCAD | MuJoCo |
 |---|---|
 | ![Export of crank and slider assembly to MuJoCo](crank_and_slider/crank_and_slider_freecad.gif) | ![Simulation of crank and slider assembly in MuJoCo](crank_and_slider/crank_and_slider_mujoco.gif) |
+
+
+## Pan Tilt Mechanism
+
+A pan tilt mechanism allows for the horizontal (pan) and vertical (tilt) movement of cameras or sensors, commonly used in robotics, surveillance, and photography.
+
+This example was created for another project but was deemed useful enough to be shared here as an example.
+
+| FreeCAD | MuJoCo |
+|---|---|
+| ![Export of pan tilt assembly to MuJoCo](pan_tilt/pan_tilt_freecad.gif) | ![Simulation of pan tilt assembly in MuJoCo](pan_tilt/pan_tilt_mujoco.gif) |
