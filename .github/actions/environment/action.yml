@@ -1,4 +1,4 @@
-ame: Setup Python Environment
+name: Setup Python Environment
 
 inputs:
   python_version:
