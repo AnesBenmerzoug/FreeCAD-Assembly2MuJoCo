@@ -14,7 +14,7 @@ def examples_dir() -> Path:
 
 @pytest.fixture(scope="session")
 def universal_joint_assembly(examples_dir: Path) -> app.DocumentObject:
-    assembly_file = examples_dir / "universal_joint" / "universal_joint_assembly.FCStd"
+    assembly_file = examples_dir / "universal_joint" / "universal_joint.FCStd"
     assert assembly_file.is_file()
     document = app.openDocument(os.fspath(assembly_file))
     assemblies = list(
@@ -26,9 +26,7 @@ def universal_joint_assembly(examples_dir: Path) -> app.DocumentObject:
 
 @pytest.fixture(scope="session")
 def crank_and_slider_assembly(examples_dir: Path) -> app.DocumentObject:
-    assembly_file = (
-        examples_dir / "crank_and_slider" / "crank_and_slider_assembly.FCStd"
-    )
+    assembly_file = examples_dir / "crank_and_slider" / "crank_and_slider.FCStd"
     assert assembly_file.is_file()
     document = app.openDocument(os.fspath(assembly_file))
     assemblies = list(
