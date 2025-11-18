@@ -2,7 +2,7 @@
 <package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
   <name>Assembly2MuJoCo</name>
   <description>An addon for exporting FreeCAD builtin Assemblies to MuJoCo.</description>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <date>2025-11-18</date>
   <author email="anes.benmerzoug@gmail.com">Anes Benmerzoug</author>
   <maintainer email="anes.benmerzoug@gmail.com">Anes Benmerzoug</maintainer>
