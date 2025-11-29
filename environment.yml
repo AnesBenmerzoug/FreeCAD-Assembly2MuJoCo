@@ -1,10 +1,10 @@
 name: freecad
 channels:
-- conda-forge
 - freecad
+- conda-forge
 dependencies:
-- python=3.11
-- freecad=1.0.2
+- python
+- freecad
 - pre-commit=4.2.*
 - mypy=1.16.*
 - pytest==8.4.*

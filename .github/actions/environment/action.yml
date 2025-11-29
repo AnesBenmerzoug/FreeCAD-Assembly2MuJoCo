@@ -17,7 +17,7 @@ runs:
       environment-file: environment.yml
       create-args: >-
         python=${{ inputs.python_version }}
-        freecad::freecad=${{ inputs.freecad_version }}
+        freecad=${{ inputs.freecad_version }}
       init-shell: bash
       cache-environment: true
       post-cleanup: 'all'
