@@ -11,7 +11,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - name: Setup and Cache Conda Environment with FreeCAD
+  - name: Setup and Cache Conda Environment with Python=${{ inputs.python_version }} and FreeCAD=${{ inputs.freecad_version }}
     uses: mamba-org/setup-micromamba@v2
     with:
       environment-file: environment.yml

@@ -21,7 +21,7 @@ env:
   GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
   PY_COLORS: 1
   PYTHON_VERSIONS: '["3.11", "3.12"]'
-  FREECAD_VERSION: '["1.0.2", "1.1dev"]'
+  FREECAD_VERSIONS: '["1.0.2", "1.1dev"]'
 
 defaults:
   run:
