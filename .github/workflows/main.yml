@@ -20,8 +20,8 @@ env:
   GITHUB_BOT_USERNAME: github-actions[bot]
   GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
   PY_COLORS: 1
-  PYTHON_VERSION: '3.11'
-  FREECAD_VERSION: '1.0.2'
+  PYTHON_VERSIONS: ['3.11', '3.12']
+  FREECAD_VERSIONS: ['1.0.2', '1.1dev']
 
 defaults:
   run:
@@ -36,8 +36,8 @@ jobs:
     - name: Setup Environment
       uses: ./.github/actions/environment
       with:
-        python_version: ${{ env.PYTHON_VERSION }}
-        freecad_version: ${{ env.FREECAD_VERSION }}
+        python_version: ${{ env.PYTHON_VERSIONS[0] }}
+        freecad_version: ${{ env.FREECAD_VERSIONS[0] }}
     - name: Cache pre-commit environments
       uses: actions/cache@v4
       with:
@@ -56,13 +56,17 @@ jobs:
   tests:
     name: Run tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ${{ env.PYTHON_VERSIONS }}
+        freecad_version: ${{ env.FREECAD_VERSIONS }}
     steps:
       - uses: actions/checkout@v5
       - name: Setup Environment
         uses: ./.github/actions/environment
         with:
-          python_version: ${{ env.PYTHON_VERSION }}
-          freecad_version: ${{ env.FREECAD_VERSION }}
+          python_version: ${{ matrix.python_version }}
+          freecad_version: ${{ matrix.freecad_version }}
       - name: Run pytest
         id: pytest
         run: |
