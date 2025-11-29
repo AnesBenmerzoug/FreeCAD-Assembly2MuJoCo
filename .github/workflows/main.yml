@@ -32,13 +32,30 @@ jobs:
     name: Matrix Variables Setup
     runs-on: ubuntu-latest
     outputs:
-      python_versions: ${{ steps.set-matrix.outputs.python_versions }}
-      freecad_versions: ${{ steps.set-matrix.outputs.freecad_versions }}
+      python_versions: ${{ steps.set_matrix.outputs.python_versions }}
+      freecad_versions: ${{ steps.set_matrix.outputs.freecad_versions }}
     steps:
-      - id: set-matrix
+      - name: Create Matrix
+        id: set_matrix
         run: |
           echo 'python_versions=${{ env.PYTHON_VERSIONS }}' >> $GITHUB_OUTPUT
           echo 'freecad_versions=${{ env.FREECAD_VERSIONS }}' >> $GITHUB_OUTPUT
+      - name: Generate Summary
+        run: |
+          echo "## Matrix Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Python Versions" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.set_matrix.outputs.python_versions }}' | jq -r '.[]' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### FreeCAD Versions" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.set_matrix.outputs.freecad_versions }}' | jq -r '.[]' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Total combinations:** $(($(echo '${{ steps.set_matrix.outputs.python_versions }}' | jq length) * $(echo '${{ steps.set_matrix.outputs.freecad_versions }}' | jq length)))" >> $GITHUB_STEP_SUMMARY
+
 
   code-quality:
     name: Lint and format code
@@ -73,7 +90,7 @@ jobs:
     strategy:
       matrix:
         python_version: ${{ fromJson(needs.setup.outputs.python_versions) }}
-        freecad_version: ${{ fromJson(needs.setup.outputs.python_versions) }}
+        freecad_version: ${{ fromJson(needs.setup.outputs.freecad_versions) }}
     steps:
       - uses: actions/checkout@v5
       - name: Setup Environment
