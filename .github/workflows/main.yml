@@ -89,6 +89,7 @@ jobs:
     needs: setup
     strategy:
       matrix:
+        fail-fast: false
         python_version: ${{ fromJson(needs.setup.outputs.python_versions) }}
         freecad_version: ${{ fromJson(needs.setup.outputs.freecad_versions) }}
     steps:
