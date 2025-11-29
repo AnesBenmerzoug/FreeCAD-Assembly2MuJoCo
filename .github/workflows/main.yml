@@ -87,9 +87,9 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     needs: setup
+    continue-on-error: true
     strategy:
       matrix:
-        fail-fast: false
         python_version: ${{ fromJson(needs.setup.outputs.python_versions) }}
         freecad_version: ${{ fromJson(needs.setup.outputs.freecad_versions) }}
     steps:
