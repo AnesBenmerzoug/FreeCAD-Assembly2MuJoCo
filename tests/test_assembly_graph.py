@@ -158,3 +158,48 @@ def test_cylindrical_joint_position_and_axis(new_document_with_assembly: app.Doc
     assert isinstance(pos, app.Vector)
     assert isinstance(axis, app.Vector)
     assert abs(axis.Length - 1.0) < 1e-6  # Axis should be normalized
+
+
+def test_ball_joint_is_ball_property(new_document_with_assembly: app.Document):
+    """Test that ball joints are correctly identified."""
+    assembly = new_document_with_assembly.Objects[0]
+
+    # Create a ball joint
+    ball_joint = assembly.newObject("App::FeaturePython", "BallJoint")
+    JointObject.Joint(ball_joint, 0)
+    ball_joint.JointType = "Ball"
+
+    edge = AssemblyGraphEdge(ball_joint, weight=1.0)
+    assert edge.is_ball == True
+
+    # Create a revolute joint for comparison
+    rev_joint = assembly.newObject("App::FeaturePython", "RevoluteJoint")
+    JointObject.Joint(rev_joint, 0)
+    rev_joint.JointType = "Revolute"
+
+    rev_edge = AssemblyGraphEdge(rev_joint, weight=1.0)
+    assert rev_edge.is_ball == False
+
+
+def test_ball_joint_position_and_axis(new_document_with_assembly: app.Document):
+    """Test that ball joints extract position correctly (axis is zero vector)."""
+    assembly = new_document_with_assembly.Objects[0]
+
+    # Create a ball joint
+    ball_joint = assembly.newObject("App::FeaturePython", "BallJoint")
+    JointObject.Joint(ball_joint, 0)
+    ball_joint.JointType = "Ball"
+
+    # Set up basic placement
+    ball_joint.Placement1 = app.Placement()
+    ball_joint.Reference1 = None
+
+    edge = AssemblyGraphEdge(ball_joint, weight=1.0)
+
+    # Should not raise NotImplementedError
+    pos, axis = edge.joint_position_and_axis
+
+    assert isinstance(pos, app.Vector)
+    assert isinstance(axis, app.Vector)
+    # Ball joints return zero vector for axis (not needed for ball joints)
+    assert abs(axis.Length) < 1e-6

@@ -137,6 +137,14 @@ class AssemblyGraphEdge:
             pos_vector = global_plc.Base
             axis_vector = global_plc.Rotation.multVec(App.Vector(0, 0, 1))
 
+        elif self.joint.JointType == "Ball":
+            # Ball joint has 3-DOF rotation around a single point
+            # Only position is needed; no axis required
+            pos_vector = global_plc.Base
+            # Ball joints don't have a single axis in MuJoCo
+            # Return zero vector as placeholder
+            axis_vector = App.Vector(0, 0, 0)
+
         else:
             raise NotImplementedError(
                 f"{WORKBENCH_NAME}: Getting joint axis not implemented for joint type: {self.joint.JointType}"
@@ -152,6 +160,11 @@ class AssemblyGraphEdge:
     def is_cylindrical(self) -> bool:
         """Check if this is a cylindrical joint"""
         return self.joint.JointType == "Cylindrical"
+
+    @property
+    def is_ball(self) -> bool:
+        """Check if this is a ball joint"""
+        return self.joint.JointType == "Ball"
 
     @property
     def joint_range(self) -> str | None:
