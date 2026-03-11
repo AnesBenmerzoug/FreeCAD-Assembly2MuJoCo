@@ -131,6 +131,12 @@ class AssemblyGraphEdge:
             # You may need to adjust this based on your FreeCAD assembly convention:
             # axis_vector = global_plc.Rotation.multVec(App.Vector(1, 0, 0))
 
+        elif self.joint.JointType == "Cylindrical":
+            # Cylindrical joint combines rotation and translation along the same axis
+            # The Z-axis of the placement is the axis for both rotation and translation
+            pos_vector = global_plc.Base
+            axis_vector = global_plc.Rotation.multVec(App.Vector(0, 0, 1))
+
         else:
             raise NotImplementedError(
                 f"{WORKBENCH_NAME}: Getting joint axis not implemented for joint type: {self.joint.JointType}"
@@ -141,6 +147,11 @@ class AssemblyGraphEdge:
         # Normalize axis
         axis_vector = axis_vector.normalize()
         return pos_vector, axis_vector
+
+    @property
+    def is_cylindrical(self) -> bool:
+        """Check if this is a cylindrical joint"""
+        return self.joint.JointType == "Cylindrical"
 
     @property
     def joint_range(self) -> str | None:

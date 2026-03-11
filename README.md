@@ -104,7 +104,7 @@ Here are some of the planned developments for this Workbench:
   - [X] Grounded
   - [X] Fixed
   - [X] Revolute
-  - [ ] Cylindrical
+  - [X] Cylindrical
   - [X] Slider
   - [ ] Ball
   - [ ] Distance
