@@ -152,8 +152,9 @@ class AssemblyGraphEdge:
 
         # Convert mm to m
         pos_vector = pos_vector / 1000
-        # Normalize axis
-        axis_vector = axis_vector.normalize()
+        # Normalize axis (skip for Ball joints which have zero axis)
+        if axis_vector.Length > 1e-10:
+            axis_vector = axis_vector.normalize()
         return pos_vector, axis_vector
 
     @property
