@@ -412,7 +412,7 @@ class MuJoCoExporter:
         # Special handling for Cylindrical joints
         if edge.is_cylindrical:
             return self._add_cylindrical_joint_to_body(body, edge)
-        
+
         # Special handling for Ball joints
         if edge.is_ball:
             return self._add_ball_joint_to_body(body, edge)
@@ -442,8 +442,8 @@ class MuJoCoExporter:
         actuator_element = ET.SubElement(
             self.actuator,
             "position",
-            name=joint_element.get("name"), # type: ignore
-            joint=joint_element.get("name"), # type: ignore
+            name=joint_element.get("name"),  # type: ignore
+            joint=joint_element.get("name"),  # type: ignore
             kp="100",
         )
         if joint_range is not None:
@@ -453,8 +453,8 @@ class MuJoCoExporter:
         ET.SubElement(
             self.sensor,
             "jointpos",
-            name=joint_element.get("name") + "_pos", # type: ignore
-            joint=joint_element.get("name"), # type: ignore
+            name=joint_element.get("name") + "_pos",  # type: ignore
+            joint=joint_element.get("name"),  # type: ignore
         )
         return joint_element
 
@@ -574,12 +574,12 @@ class MuJoCoExporter:
             actuator_element.set("ctrlrange", joint_range)
 
         # Create sensor element
-        ET.SubElement(
-            self.sensor,
-            "jointpos",
-            name=ball_joint.get("name") + "_pos",  # type: ignore
-            joint=ball_joint.get("name"),  # type: ignore
-        )
+        # ET.SubElement(
+        #     self.sensor,
+        #     "jointpos",
+        #     name=ball_joint.get("name") + "_pos",  # type: ignore
+        #     joint=ball_joint.get("name"),  # type: ignore
+        # )
         return ball_joint
 
     def process_kinematic_loops(
@@ -637,9 +637,7 @@ class MuJoCoExporter:
                 # For other joint types we insert dummy bodies and add weld constraints
                 found_bodies = self.worldbody.findall(f".//body[@name='{u.label}']")
                 if not found_bodies:
-                    raise ValueError(
-                        f"Could not find body with name '{u.label}' in MJCF"
-                    )
+                    raise ValueError(f"Could not find body with name '{u.label}' in MJCF")
 
                 parent_body = found_bodies[0]
 
@@ -654,8 +652,8 @@ class MuJoCoExporter:
                     dummy_body,
                     "inertial",
                     pos=joint_pos,
-                    mass="1e-6", # Much larger than mjMINVAL (1e-15)
-                    diaginertia="1e-9 1e-9 1e-9", # Much larger than mjMINVAL
+                    mass="1e-6",  # Much larger than mjMINVAL (1e-15)
+                    diaginertia="1e-9 1e-9 1e-9",  # Much larger than mjMINVAL
                 )
                 # Insert joint between parent and dummy body
                 self.add_joint_to_body(dummy_body, edge)
@@ -665,7 +663,7 @@ class MuJoCoExporter:
                     self.equality,
                     "weld",
                     name=f"loop_weld_{edge.label}",
-                    body1=dummy_body.get("name"), # type: ignore
+                    body1=dummy_body.get("name"),  # type: ignore
                     body2=v.label,
                     solref="0.01 1",
                     solimp="0.9 0.95 0.001",
@@ -742,9 +740,7 @@ class MuJoCoExporter:
         # Find parent body
         found_bodies = self.worldbody.findall(f".//body[@name='{u.label}']")
         if not found_bodies:
-            raise ValueError(
-                f"Could not find body with name '{u.label}' in MJCF"
-            )
+            raise ValueError(f"Could not find body with name '{u.label}' in MJCF")
 
         parent_body = found_bodies[0]
 
