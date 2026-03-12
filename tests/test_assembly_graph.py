@@ -116,7 +116,9 @@ def test_converting_graph_to_directed_tree(new_document_with_assembly: app.Docum
     assert len(unused_edges) == 1
 
 
-def test_cylindrical_joint_is_cylindrical_property(new_document_with_assembly: app.Document):
+def test_cylindrical_joint_is_cylindrical_property(
+    new_document_with_assembly: app.Document,
+):
     """Test that cylindrical joints are correctly identified."""
     assembly = new_document_with_assembly.Objects[0]
 
