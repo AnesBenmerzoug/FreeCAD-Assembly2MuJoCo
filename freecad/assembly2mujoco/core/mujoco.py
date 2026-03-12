@@ -637,7 +637,9 @@ class MuJoCoExporter:
                 # For other joint types we insert dummy bodies and add weld constraints
                 found_bodies = self.worldbody.findall(f".//body[@name='{u.label}']")
                 if not found_bodies:
-                    raise ValueError(f"Could not find body with name '{u.label}' in MJCF")
+                    raise ValueError(
+                        f"Could not find body with name '{u.label}' in MJCF"
+                    )
 
                 parent_body = found_bodies[0]
 
@@ -686,9 +688,7 @@ class MuJoCoExporter:
         # Find parent body
         found_bodies = self.worldbody.findall(f".//body[@name='{u.label}']")
         if not found_bodies:
-            raise ValueError(
-                f"Could not find body with name '{u.label}' in MJCF"
-            )
+            raise ValueError(f"Could not find body with name '{u.label}' in MJCF")
 
         parent_body = found_bodies[0]
 
