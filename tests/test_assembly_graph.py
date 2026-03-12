@@ -126,7 +126,7 @@ def test_cylindrical_joint_is_cylindrical_property(new_document_with_assembly: a
     cylinder_joint.JointType = "Cylindrical"
 
     edge = AssemblyGraphEdge(cylinder_joint, weight=1.0)
-    assert edge.is_cylindrical == True
+    assert edge.is_cylindrical
 
     # Create a revolute joint for comparison
     rev_joint = assembly.newObject("App::FeaturePython", "RevoluteJoint")
@@ -134,7 +134,7 @@ def test_cylindrical_joint_is_cylindrical_property(new_document_with_assembly: a
     rev_joint.JointType = "Revolute"
 
     rev_edge = AssemblyGraphEdge(rev_joint, weight=1.0)
-    assert rev_edge.is_cylindrical == False
+    assert not rev_edge.is_cylindrical
 
 
 def test_cylindrical_joint_position_and_axis(new_document_with_assembly: app.Document):
@@ -170,7 +170,7 @@ def test_ball_joint_is_ball_property(new_document_with_assembly: app.Document):
     ball_joint.JointType = "Ball"
 
     edge = AssemblyGraphEdge(ball_joint, weight=1.0)
-    assert edge.is_ball == True
+    assert edge.is_ball
 
     # Create a revolute joint for comparison
     rev_joint = assembly.newObject("App::FeaturePython", "RevoluteJoint")
@@ -178,7 +178,7 @@ def test_ball_joint_is_ball_property(new_document_with_assembly: app.Document):
     rev_joint.JointType = "Revolute"
 
     rev_edge = AssemblyGraphEdge(rev_joint, weight=1.0)
-    assert rev_edge.is_ball == False
+    assert not rev_edge.is_ball
 
 
 def test_ball_joint_position_and_axis(new_document_with_assembly: app.Document):

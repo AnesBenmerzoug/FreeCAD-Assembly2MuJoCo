@@ -487,7 +487,7 @@ class MuJoCoExporter:
         )
 
         # Create slide joint for translation
-        slide_joint = ET.SubElement(
+        _slide_joint = ET.SubElement(
             body,
             "joint",
             type="slide",
