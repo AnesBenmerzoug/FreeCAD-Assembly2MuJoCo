@@ -188,6 +188,10 @@ class MuJoCoExporter:
 
         self.worldbody.append(ET.Comment("Assembly"))
         for graph in assembly_subgraphs:
+            if len(graph.get_nodes()) == 0:
+                log_message("Subgraph is empty. This should not happen")
+                raise RuntimeError("Subgraph is empty")
+
             # Handle graphs with a single node
             if len(graph.get_nodes()) == 1:
                 self.process_single_node_tree(graph, self.worldbody)
@@ -328,6 +332,9 @@ class MuJoCoExporter:
             if (parent_body := body_elements.get(parent_node)) is None:
                 parent_body = self.add_body(parent_node, worldbody)
                 body_elements[parent_node] = parent_body
+
+            if child_node is None or edge is None:
+                continue
 
             if (child_body := body_elements.get(child_node)) is None:
                 child_body = self.add_body(child_node, parent_body)
