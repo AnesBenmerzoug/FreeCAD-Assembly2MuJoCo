@@ -404,10 +404,8 @@ class MuJoCoExporter:
         self,
         body: ET.Element,
     ) -> ET.Element:
-        joint_element = ET.SubElement(
-            body,
-            "freejoint",
-        )
+        # TODO: Check whether align="true" is always the right choice
+        joint_element = ET.SubElement(body, "freejoint", align="true")
         return joint_element
 
     def add_joint_to_body(
