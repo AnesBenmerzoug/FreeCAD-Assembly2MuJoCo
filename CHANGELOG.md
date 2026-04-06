@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Set `align="true"` property of MuJoCo [freejoint](https://mujoco.readthedocs.io/en/latest/XMLreference.html#body-freejoint) ([#15](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/15))
+
+
+### Fixed
+
+- Fix depth first traversal of graph ([#15](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/15))
+
+
 ## [0.3.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.3.0) - 2025-11-18
 
 ### Added
