@@ -251,6 +251,7 @@ class AssemblyGraph:
 
         # Then get all disconnected parts that are still part of the assembly
         for object in assembly.OutList:
+            # TODO: Handle other cases
             if object.TypeId == "PartDesign::Body" or UtilsAssembly.isLink(object):
                 node = AssemblyGraphNode(
                     object, is_grounded=assembly.isPartGrounded(object)

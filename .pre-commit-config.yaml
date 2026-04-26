@@ -22,4 +22,4 @@ repos:
     hooks:
     - id: mypy
       types_or: [file, python]
-      files: .*\.(FCMacro|py)$
+      files: freecad/.*\.(FCMacro|py)$
