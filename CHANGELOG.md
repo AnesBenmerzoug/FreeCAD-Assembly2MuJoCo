@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Handle conversion of cylindrical and ball joints ([#14](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/14))
+
 ### Changed
 
 - Set `align="true"` property of MuJoCo [freejoint](https://mujoco.readthedocs.io/en/latest/XMLreference.html#body-freejoint) ([#15](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/15))

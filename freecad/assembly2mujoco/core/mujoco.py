@@ -414,6 +414,14 @@ class MuJoCoExporter:
         edge: AssemblyGraphEdge,
     ) -> ET.Element | None:
         """Add a joint to a body element"""
+        # Special handling for Cylindrical joints
+        if edge.is_cylindrical:
+            return self._add_cylindrical_joint_to_body(body, edge)
+
+        # Special handling for Ball joints
+        if edge.is_ball:
+            return self._add_ball_joint_to_body(body, edge)
+
         joint_type = edge.mujoco_joint_type
         if joint_type is None:
             return None
@@ -455,6 +463,130 @@ class MuJoCoExporter:
         )
         return joint_element
 
+    def _add_cylindrical_joint_to_body(
+        self,
+        body: ET.Element,
+        edge: AssemblyGraphEdge,
+    ) -> ET.Element:
+        """Add both hinge and slide joints for a cylindrical joint.
+
+        A Cylindrical joint in FreeCAD combines rotation and translation
+        along the same axis. MuJoCo doesn't have a native cylindrical joint,
+        so we represent it as two joints on the same body:
+        1. A hinge joint for rotation
+        2. A slide joint for translation
+        Both share the same axis.
+        """
+        joint_pos_vector, joint_axis_vector = edge.joint_position_and_axis
+        joint_pos = " ".join(str(x) for x in joint_pos_vector)
+        joint_axis = " ".join(str(x) for x in joint_axis_vector)
+
+        # Create hinge joint for rotation
+        hinge_joint = ET.SubElement(
+            body,
+            "joint",
+            type="hinge",
+            name=f"{edge.label}_rotation",
+            pos=joint_pos,
+            axis=joint_axis,
+        )
+
+        # Create slide joint for translation
+        _slide_joint = ET.SubElement(
+            body,
+            "joint",
+            type="slide",
+            name=f"{edge.label}_translation",
+            pos=joint_pos,
+            axis=joint_axis,
+        )
+
+        # Handle joint limits if present
+        # Note: Cylindrical joints may have separate limits for rotation and translation
+        joint_range = edge.joint_range
+        if joint_range is not None:
+            hinge_joint.set("range", joint_range)
+            # TODO: slide_joint would need separate translation limits if available
+
+        # Create actuators for both joints
+        ET.SubElement(
+            self.actuator,
+            "position",
+            name=f"{edge.label}_rotation",
+            joint=f"{edge.label}_rotation",
+            kp="100",
+        )
+        ET.SubElement(
+            self.actuator,
+            "position",
+            name=f"{edge.label}_translation",
+            joint=f"{edge.label}_translation",
+            kp="100",
+        )
+
+        # Create sensors for both joints
+        ET.SubElement(
+            self.sensor,
+            "jointpos",
+            name=f"{edge.label}_rotation_pos",
+            joint=f"{edge.label}_rotation",
+        )
+        ET.SubElement(
+            self.sensor,
+            "jointpos",
+            name=f"{edge.label}_translation_pos",
+            joint=f"{edge.label}_translation",
+        )
+
+        return hinge_joint  # Return primary joint
+
+    def _add_ball_joint_to_body(
+        self,
+        body: ET.Element,
+        edge: AssemblyGraphEdge,
+    ) -> ET.Element:
+        """Add a ball joint to a body element.
+
+        A Ball joint in FreeCAD provides 3-DOF rotation around a single point.
+        MuJoCo has native support for ball joints using quaternion representation.
+        """
+        joint_pos_vector, _ = edge.joint_position_and_axis
+        joint_pos = " ".join(str(x) for x in joint_pos_vector)
+
+        # Create ball joint element (no axis attribute needed)
+        ball_joint = ET.SubElement(
+            body,
+            "joint",
+            type="ball",
+            name=edge.label,
+            pos=joint_pos,
+        )
+
+        # Handle joint limits if present
+        joint_range = edge.joint_range
+        if joint_range is not None:
+            ball_joint.set("range", joint_range)
+
+        # Create actuator element
+        actuator_element = ET.SubElement(
+            self.actuator,
+            "position",
+            name=ball_joint.get("name"),  # type: ignore
+            joint=ball_joint.get("name"),  # type: ignore
+            kp="100",
+        )
+        if joint_range is not None:
+            actuator_element.set("ctrlrange", joint_range)
+
+        # Create sensor element
+        # ET.SubElement(
+        #     self.sensor,
+        #     "jointpos",
+        #     name=ball_joint.get("name") + "_pos",  # type: ignore
+        #     joint=ball_joint.get("name"),  # type: ignore
+        # )
+        return ball_joint
+
     def process_kinematic_loops(
         self,
         unused_edges: list[
@@ -474,6 +606,12 @@ class MuJoCoExporter:
                     solref="0.01 1",
                     solimp="0.9 0.95 0.001",
                 )
+            elif edge.is_ball:
+                # Ball joints in loops need special handling
+                self._process_ball_loop(u, v, edge)
+            elif edge.is_cylindrical:
+                # Cylindrical joints in loops need special handling with dummy bodies
+                self._process_cylindrical_loop(u, v, edge)
             elif edge.mujoco_joint_type == "hinge":
                 joint_position, joint_axis = edge.joint_position_and_axis
                 offset_joint_position = joint_position + joint_axis.scale(
@@ -525,7 +663,14 @@ class MuJoCoExporter:
                     diaginertia="1e-9 1e-9 1e-9",  # Much larger than mjMINVAL
                 )
                 # Insert joint between parent and dummy body
-                self.add_joint_to_body(dummy_body, edge)
+                if edge.is_ball:
+                    # Ball joints in loops need special handling
+                    self._process_ball_loop(u, v, edge)
+                elif edge.is_cylindrical:
+                    # Cylindrical joints in loops need special handling with dummy bodies
+                    self._process_cylindrical_loop(u, v, edge)
+                else:
+                    self.add_joint_to_body(dummy_body, edge)
 
                 # Insert weld constraint between dummy body and child body
                 ET.SubElement(
@@ -537,6 +682,110 @@ class MuJoCoExporter:
                     solref="0.01 1",
                     solimp="0.9 0.95 0.001",
                 )
+
+    def _process_cylindrical_loop(
+        self,
+        u: AssemblyGraphNode,
+        v: AssemblyGraphNode,
+        edge: AssemblyGraphEdge,
+    ) -> None:
+        """Handle cylindrical joint in kinematic loop.
+
+        Creates a dummy body with both hinge and slide joints,
+        then connects it to the child body via weld constraint.
+        """
+        joint_pos_vector, joint_axis_vector = edge.joint_position_and_axis
+        joint_pos = " ".join(str(x) for x in joint_pos_vector)
+
+        # Find parent body
+        found_bodies = self.worldbody.findall(f".//body[@name='{u.label}']")
+        if not found_bodies:
+            raise ValueError(f"Could not find body with name '{u.label}' in MJCF")
+
+        parent_body = found_bodies[0]
+
+        # Create dummy body for the cylindrical joint
+        dummy_body = ET.SubElement(
+            parent_body,
+            "body",
+            name=f"dummy_{u.label}_{v.label}",
+            pos=joint_pos,
+        )
+
+        # Add minimal inertia
+        ET.SubElement(
+            dummy_body,
+            "inertial",
+            pos=joint_pos,
+            mass="1e-6",  # Much larger than mjMINVAL (1e-15)
+            diaginertia="1e-9 1e-9 1e-9",  # Much larger than mjMINVAL
+        )
+
+        # Add both hinge and slide joints using the cylindrical handler
+        self._add_cylindrical_joint_to_body(dummy_body, edge)
+
+        # Connect dummy body to child via weld constraint
+        ET.SubElement(
+            self.equality,
+            "weld",
+            name=f"loop_weld_{edge.label}",
+            body1=dummy_body.get("name"),  # type: ignore
+            body2=v.label,
+            solref="0.01 1",
+            solimp="0.9 0.95 0.001",
+        )
+
+    def _process_ball_loop(
+        self,
+        u: AssemblyGraphNode,
+        v: AssemblyGraphNode,
+        edge: AssemblyGraphEdge,
+    ) -> None:
+        """Handle ball joint in kinematic loop.
+
+        Creates a dummy body with a ball joint,
+        then connects it to the child body via weld constraint.
+        """
+        joint_pos_vector, _ = edge.joint_position_and_axis
+        joint_pos = " ".join(str(x) for x in joint_pos_vector)
+
+        # Find parent body
+        found_bodies = self.worldbody.findall(f".//body[@name='{u.label}']")
+        if not found_bodies:
+            raise ValueError(f"Could not find body with name '{u.label}' in MJCF")
+
+        parent_body = found_bodies[0]
+
+        # Create dummy body for the ball joint
+        dummy_body = ET.SubElement(
+            parent_body,
+            "body",
+            name=f"dummy_{u.label}_{v.label}",
+            pos=joint_pos,
+        )
+
+        # Add minimal inertia
+        ET.SubElement(
+            dummy_body,
+            "inertial",
+            pos=joint_pos,
+            mass="1e-6",  # Much larger than mjMINVAL (1e-15)
+            diaginertia="1e-9 1e-9 1e-9",  # Much larger than mjMINVAL
+        )
+
+        # Add ball joint using the ball handler
+        self._add_ball_joint_to_body(dummy_body, edge)
+
+        # Connect dummy body to child via weld constraint
+        ET.SubElement(
+            self.equality,
+            "weld",
+            name=f"loop_weld_{edge.label}",
+            body1=dummy_body.get("name"),  # type: ignore
+            body2=v.label,
+            solref="0.01 1",
+            solimp="0.9 0.95 0.001",
+        )
 
     def write_xml(
         self,
