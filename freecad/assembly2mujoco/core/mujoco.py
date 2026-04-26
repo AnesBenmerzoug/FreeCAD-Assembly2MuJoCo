@@ -663,15 +663,14 @@ class MuJoCoExporter:
                     diaginertia="1e-9 1e-9 1e-9",  # Much larger than mjMINVAL
                 )
                 # Insert joint between parent and dummy body
-# Insert joint between parent and dummy body
-if edge.is_ball:
-    # Ball joints in loops need special handling
-    self._process_ball_loop(u, v, edge)
-elif edge.is_cylindrical:
-    # Cylindrical joints in loops need special handling with dummy bodies
-    self._process_cylindrical_loop(u, v, edge)
-else:
-    self.add_joint_to_body(dummy_body, edge)
+                if edge.is_ball:
+                    # Ball joints in loops need special handling
+                    self._process_ball_loop(u, v, edge)
+                elif edge.is_cylindrical:
+                    # Cylindrical joints in loops need special handling with dummy bodies
+                    self._process_cylindrical_loop(u, v, edge)
+                else:
+                    self.add_joint_to_body(dummy_body, edge)
 
                 # Insert weld constraint between dummy body and child body
                 ET.SubElement(
