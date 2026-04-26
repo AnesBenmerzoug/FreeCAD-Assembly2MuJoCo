@@ -86,6 +86,30 @@ def test_depth_first_traversal(new_document_with_assembly: app.Document):
     assert traversed_edges == set(edges)
 
 
+def test_depth_first_traversal_single_node(new_document_with_assembly: app.Document):
+    graph = AssemblyGraph()
+
+    node = AssemblyGraphNode(
+        new_document_with_assembly.addObject("PartDesign::Body", "Body")
+    )
+    graph.add_node(node)
+    nodes = [node]
+
+    traversed_nodes = set()
+    traversed_edges = set()
+    for current_node, next_node, edge in depth_first_traversal(
+        graph, root_node=nodes[0]
+    ):
+        traversed_nodes.add(current_node)
+        if next_node is None:
+            continue
+        traversed_nodes.add(next_node)
+        traversed_edges.add(edge)
+
+    assert traversed_nodes == set(nodes)
+    assert traversed_edges == set()
+
+
 def test_converting_graph_to_directed_tree(new_document_with_assembly: app.Document):
     graph = AssemblyGraph()
 

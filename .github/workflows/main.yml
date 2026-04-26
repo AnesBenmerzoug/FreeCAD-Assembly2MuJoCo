@@ -32,14 +32,14 @@ jobs:
     name: Lint and format code
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Setup Environment
       uses: ./.github/actions/environment
       with:
         python_version: ${{ env.PYTHON_VERSION }}
         freecad_version: ${{ env.FREECAD_VERSION }}
     - name: Cache pre-commit environments
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.cache/pre-commit
         key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
