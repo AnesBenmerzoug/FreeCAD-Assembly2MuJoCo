@@ -131,13 +131,13 @@ class AssemblyGraphEdge:
             # You may need to adjust this based on your FreeCAD assembly convention:
             # axis_vector = global_plc.Rotation.multVec(App.Vector(1, 0, 0))
 
-        elif self.joint.JointType == "Cylindrical":
+        elif self.is_cylindrical():
             # Cylindrical joint combines rotation and translation along the same axis
             # The Z-axis of the placement is the axis for both rotation and translation
             pos_vector = global_plc.Base
             axis_vector = global_plc.Rotation.multVec(App.Vector(0, 0, 1))
 
-        elif self.joint.JointType == "Ball":
+        elif self.is_ball():
             # Ball joint has 3-DOF rotation around a single point
             # Only position is needed; no axis required
             pos_vector = global_plc.Base
