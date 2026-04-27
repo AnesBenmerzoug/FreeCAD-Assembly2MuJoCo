@@ -1,16 +1,16 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}/.conda_env/bin/python",
+    "python.defaultInterpreterPath": "${workspaceFolder}/freecad_versions/FreeCAD_default/usr/bin/python",
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/.conda_env/lib",
-        "${workspaceFolder}/.conda_env/Ext",
-        "${workspaceFolder}/.conda_env/Mod/Assembly"
+        "${workspaceFolder}/freecad_versions/FreeCAD_default/usr/lib",
+        "${workspaceFolder}/freecad_versions/FreeCAD_default/usr/Ext",
+        "${workspaceFolder}/freecad_versions/FreeCAD_default/usr/Mod/Assembly"
     ],
     "python.autoComplete.extraPaths": [
-        "${workspaceFolder}/.conda_env/lib",
-        "${workspaceFolder}/.conda_env/Ext",
-        "${workspaceFolder}/.conda_env/Mod/Assembly"
+        "${workspaceFolder}/freecad_versions/FreeCAD_default/usr/lib",
+        "${workspaceFolder}/freecad_versions/FreeCAD_default/usr/Ext",
+        "${workspaceFolder}/freecad_versions/FreeCAD_default/usr/Mod/Assembly"
     ],
     "terminal.integrated.env.linux": {
-        "PYTHONPATH": "${workspaceFolder}/.conda_env/lib:${workspaceFolder}/.conda_env/Ext:${workspaceFolder}/.conda_env/Mod:${env:PYTHONPATH}"
+        "PYTHONPATH": "${workspaceFolder}/freecad_versions/FreeCAD_default/usr/lib:${workspaceFolder}/freecad_versions/FreeCAD_default/usr/Ext:${workspaceFolder}/freecad_versions/FreeCAD_default/usr/Mod:${env:PYTHONPATH}"
     }
 }
