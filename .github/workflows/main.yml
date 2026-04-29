@@ -76,11 +76,13 @@ jobs:
     steps:
       - name: Set environment variables
         run: |
+          FREECAD_VERSION="${{ matrix.version }}"
           DOWNLOAD_DIR="freecad_versions/"
-          EXTRACT_DIR="${DOWNLOAD_DIR}/FreeCAD_${{ matrix.version }}"
+          EXTRACT_DIR="${DOWNLOAD_DIR}/FreeCAD_${FREECAD_VERSION}"
           PYTHON_BIN="${EXTRACT_DIR}/usr/bin/python"
           PATH_TO_FREECAD_LIBDIR="${EXTRACT_DIR}/usr/lib"
 
+          echo "FREECAD_VERSION=${FREECAD_VERSION}" >> $GITHUB_ENV
           echo "DOWNLOAD_DIR=${DOWNLOAD_DIR}" >> $GITHUB_ENV
           echo "EXTRACT_DIR=${EXTRACT_DIR}" >> $GITHUB_ENV
           echo "PYTHON_BIN=${PYTHON_BIN}" >> $GITHUB_ENV
