@@ -4,15 +4,11 @@ set -euo pipefail
 # Log helper that writes to stderr so it doesn't interfere with stdout data capture needed for CI
 log() { echo -e "$*" >&2; }
 
-PYTHON_BIN="${PYTHON_BIN:?Error: PYTHON_BIN not set}"
-TEST_DIR="tests"
+PYTHON_BIN="${1:-${PYTHON_BIN:?Error: Provide version via \$1 or export PYTHON_BIN}}"
+PATH_TO_FREECAD_LIBDIR="${2:-${PATH_TO_FREECAD_LIBDIR:?Error: Provide version via \$2 or export PATH_TO_FREECAD_LIBDIR}}"
 
-echo ${PYTHON_BIN}
+export PATH_TO_FREECAD_LIBDIR=${PATH_TO_FREECAD_LIBDIR}
+export QT_QPA_PLATFORM=offscreen
+export QT_X11_NO_MITSHM=1
 
-log "Running tests in: $TEST_DIR"
-if [[ ! -d "$TEST_DIR" ]]; then
-    log "❌ Test directory '$TEST_DIR' not found."
-    exit 1
-fi
-
-"${PYTHON_BIN}" -m pytest "$TEST_DIR"
+"${PYTHON_BIN}" -m pytest

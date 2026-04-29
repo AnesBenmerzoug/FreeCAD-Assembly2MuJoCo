@@ -4,11 +4,12 @@ set -euo pipefail
 # Log helper that writes to stderr so it doesn't interfere with stdout data capture needed for CI
 log() { echo -e "$*" >&2; }
 
-FREECAD_VERSION="${FREECAD_VERSION:?Error: FREECAD_VERSION not set}"
-DOWNLOAD_DIR="${DOWNLOAD_DIR:?Error: DOWNLOAD_DIR not set}"
+FREECAD_VERSION="${1:-${FREECAD_VERSION:?Error: Provide version via \$1 or export FREECAD_VERSION}}"
+DOWNLOAD_DIR="${2:-${DOWNLOAD_DIR:?Error: Provide version via \$2 or export DOWNLOAD_DIR}}"
 APPIMAGE_FILE="${DOWNLOAD_DIR}/FreeCAD_${FREECAD_VERSION}.AppImage"
 EXTRACT_DIR="${DOWNLOAD_DIR}/FreeCAD_${FREECAD_VERSION}"
 DEFAULT_VERSION_DIR="${DOWNLOAD_DIR}/FreeCAD_default"
+
 
 if [[ -d "$EXTRACT_DIR" ]]; then
     log "✅ Already extracted: $EXTRACT_DIR"
@@ -68,4 +69,3 @@ else
 fi
 
 log "✅ Extraction complete."
-echo "EXTRACT_DIR=$EXTRACT_DIR"
