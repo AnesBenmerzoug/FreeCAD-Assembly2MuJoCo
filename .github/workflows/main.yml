@@ -21,6 +21,7 @@ env:
   GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
   PY_COLORS: 1
   PYTHON_VERSION: '3.11'
+  PYTEST_ARGS: '--verbose --color=yes --tb=short'
 
 defaults:
   run:
@@ -69,9 +70,6 @@ jobs:
       matrix:
         version: ['1.0.2', '1.1.0', '1.1.1']
 
-    env:
-      PYTEST_ARGS: "--verbose --color=yes --tb=short"
-
     steps:
       - name: Set environment variables
         run: |
@@ -96,7 +94,6 @@ jobs:
           path: freecad_versions/FreeCAD_${{ matrix.version }}
           key: freecad-${{ runner.os }}-${{ matrix.version }}
           restore-keys: |
-            freecad-${{ runner.os }}-${{ matrix.version }}
             freecad-${{ runner.os }}-
 
       - name: Download and extract FreeCAD

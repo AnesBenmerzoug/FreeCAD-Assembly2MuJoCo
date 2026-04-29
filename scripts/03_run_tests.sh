@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -xeuo pipefail
 
 # Log helper that writes to stderr so it doesn't interfere with stdout data capture needed for CI
 log() { echo -e "$*" >&2; }
@@ -11,4 +11,11 @@ export PATH_TO_FREECAD_LIBDIR=${PATH_TO_FREECAD_LIBDIR}
 export QT_QPA_PLATFORM=offscreen
 export QT_X11_NO_MITSHM=1
 
-"${PYTHON_BIN}" -m pytest
+# Safely parse extra pytest arguments from env var
+PYTEST_EXTRA_ARGS=()
+if [[ -n "${PYTEST_ARGS:-}" ]]; then
+    eval "set -- $PYTEST_ARGS"
+    PYTEST_EXTRA_ARGS=("$@")
+fi
+
+"${PYTHON_BIN}" -m pytest "${PYTEST_EXTRA_ARGS[@]}"
