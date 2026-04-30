@@ -398,6 +398,11 @@ class MuJoCoExporter:
             contype="0",
             conaffinity="0",
         )
+        # Add invisible site to body for potential use in mounting sensors
+        pos, quat = node.absolute_position
+        ET.SubElement(
+            body, "site", name=f"{node.label} site", pos=pos, quat=quat, rgba="0 0 0 0"
+        )
         return body
 
     def add_free_joint_to_body(

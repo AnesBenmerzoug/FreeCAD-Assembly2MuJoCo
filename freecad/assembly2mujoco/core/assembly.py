@@ -45,8 +45,24 @@ class AssemblyGraphNode:
         super().__init__()
         self.part = part
         self.is_grounded = is_grounded
+        # We position the node in MuJoCo at the origin.
+        # The corresponding exported mesh will have the actual position information.
         self.pos = "0 0 0"
         self.quat = "1.0 0.0 0.0 0.0"
+
+    @property
+    def absolute_position(self) -> tuple[str, str]:
+        """Get absolute position of body.
+
+        This is used for position MuJoCo site tags.
+        """
+        # Use global position and orientation
+        pos = self.part.Placement.Base
+        quat = self.part.Placement.Rotation.Q
+        # Convert mm to m and convert both vectors to strings
+        pos = f"{pos.x / 1000} {pos.y / 1000} {pos.z / 1000}"
+        quat = f"{quat[0]} {quat[1]} {quat[2]} {quat[3]}"
+        return pos, quat
 
     @property
     def body_appearance(self) -> AppearanceDict:

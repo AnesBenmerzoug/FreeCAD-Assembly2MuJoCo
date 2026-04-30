@@ -5,6 +5,7 @@
 ### Added
 
 - Handle conversion of cylindrical and ball joints ([#14](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/14))
+- Add invisible [site](https://mujoco.readthedocs.io/en/latest/XMLreference.html#body-site) element to each exported body ([#17](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/17))
 
 ### Changed
 
