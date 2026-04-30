@@ -8,6 +8,7 @@
   <maintainer email="anes.benmerzoug@gmail.com">Anes Benmerzoug</maintainer>
   <license file="LICENSE">LGPL-2.1-or-later</license>
   <pythonmin>3.10.0</pythonmin>
+  <freecadmin>1.0.0</freecadmin>
 
   <url branch="main" type="repository">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo</url>
   <url type="bugtracker">https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues</url>
@@ -18,14 +19,12 @@
   <content>
     <workbench>
       <name>AssemblyToMuJoCo</name>
-      <freecadmin>1.0.0</freecadmin>
       <tag>Assembly</tag>
       <tag>MuJoCo</tag>
       <tag>export</tag>
       <tag>simulation</tag>
       <classname>AssemblyExportToMuJoCoWorkbench</classname>
       <subdirectory>freecad/assembly2mujoco</subdirectory>
-      <python_min>3.10.0</python_min>
     </workbench>
   </content>
 
