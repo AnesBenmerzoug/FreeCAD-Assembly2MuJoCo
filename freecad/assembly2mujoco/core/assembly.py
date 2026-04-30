@@ -1,3 +1,4 @@
+import inspect
 import math
 from ast import literal_eval
 from collections import defaultdict
@@ -16,6 +17,23 @@ from freecad.assembly2mujoco.utils.types import AppearanceDict
 
 
 __all__ = ["AssemblyGraph", "AssemblyGraphNode", "AssemblyGraphEdge"]
+
+
+def get_moving_part(assembly, ref):
+    """Wrapper for the builtin Assembly's getMovingPart function.
+
+    In versions priori to 1.1, it expects 2 arguments: assembly, ref
+    and in version 1.1, it expects only 1 argument: ref
+    """
+    signature = inspect.signature(UtilsAssembly.getMovingPart)
+    if len(signature.parameters) == 1:
+        return UtilsAssembly.getMovingPart(ref)
+    elif len(signature.parameters) == 2:
+        return UtilsAssembly.getMovingPart(assembly, ref)
+    else:
+        raise RuntimeError(
+            f"Unexpected number of arguments, {len(signature.parameters)}, for getMovingPart()"
+        )
 
 
 class AssemblyGraphNode:
@@ -239,8 +257,8 @@ class AssemblyGraph:
                 graph.add_node(node)
                 continue
 
-            part1 = UtilsAssembly.getMovingPart(assembly, joint.Reference1)
-            part2 = UtilsAssembly.getMovingPart(assembly, joint.Reference2)
+            part1 = get_moving_part(assembly, joint.Reference1)
+            part2 = get_moving_part(assembly, joint.Reference2)
             node1 = AssemblyGraphNode(part1, is_grounded=assembly.isPartGrounded(part1))
             node2 = AssemblyGraphNode(part2, is_grounded=assembly.isPartGrounded(part2))
             # Assign weights to prioritize which joints to keep in the tree                 ..

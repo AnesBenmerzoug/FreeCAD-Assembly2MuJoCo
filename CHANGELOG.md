@@ -14,6 +14,7 @@
 ### Fixed
 
 - Fix depth first traversal of graph ([#15](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/15))
+- Fix error with FreeCAD version 1.1 due to a breaking change in the Assembly workbench's `getMovingPart` function ([#16](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/16))
 
 
 ## [0.3.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.3.0) - 2025-11-18
