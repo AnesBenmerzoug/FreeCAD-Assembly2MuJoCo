@@ -9,14 +9,19 @@ from freecad.assembly2mujoco.core.mujoco import MuJoCoExporter
 
 
 @pytest.mark.parametrize(
-    "assembly_fixture_name", ["universal_joint_assembly", "crank_and_slider_assembly"]
+    "assembly_fixture_name",
+    ["universal_joint_assembly", "crank_and_slider_assembly", "pan_tilt_assembly"],
 )
+@pytest.mark.parametrize("mjcf_add_sites", [True, False])
 def test_mujoco_export(
-    request: FixtureRequest, tmp_path: Path, assembly_fixture_name: str
+    request: FixtureRequest,
+    tmp_path: Path,
+    assembly_fixture_name: str,
+    mjcf_add_sites: bool,
 ):
     assembly: app.DocumentObject = request.getfixturevalue(assembly_fixture_name)
     graph = AssemblyGraph.from_assembly(assembly)
-    exporter = MuJoCoExporter()
+    exporter = MuJoCoExporter(mjcf_add_sites=mjcf_add_sites)
     mujoco_xml = exporter.export_assembly(graph)
     assert len(mujoco_xml.findall("*")) > 0
     worldbody = mujoco_xml.find("worldbody")

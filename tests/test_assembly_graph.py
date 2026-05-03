@@ -15,7 +15,8 @@ from pytest import FixtureRequest
 
 
 @pytest.mark.parametrize(
-    "assembly_fixture_name", ["universal_joint_assembly", "crank_and_slider_assembly"]
+    "assembly_fixture_name",
+    ["universal_joint_assembly", "crank_and_slider_assembly", "pan_tilt_assembly"],
 )
 def test_assembly_graph(request: FixtureRequest, assembly_fixture_name: str):
     assembly: app.DocumentObject = request.getfixturevalue(assembly_fixture_name)

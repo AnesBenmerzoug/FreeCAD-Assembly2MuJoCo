@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -xeuo pipefail
+set -euo pipefail
 
 # Log helper that writes to stderr so it doesn't interfere with stdout data capture needed for CI
 log() { echo -e "$*" >&2; }

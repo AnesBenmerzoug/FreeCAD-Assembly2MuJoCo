@@ -36,6 +36,18 @@ def crank_and_slider_assembly(examples_dir: Path) -> app.DocumentObject:
     yield assemblies[0]
 
 
+@pytest.fixture(scope="session")
+def pan_tilt_assembly(examples_dir: Path) -> app.DocumentObject:
+    assembly_file = examples_dir / "pan_tilt" / "pan_tilt.FCStd"
+    assert assembly_file.is_file()
+    document = app.openDocument(os.fspath(assembly_file))
+    assemblies = list(
+        filter(lambda x: x.TypeId == "Assembly::AssemblyObject", document.Objects)
+    )
+    assert len(assemblies) == 1
+    yield assemblies[0]
+
+
 @pytest.fixture
 def new_document() -> app.Document:
     return app.newDocument()
