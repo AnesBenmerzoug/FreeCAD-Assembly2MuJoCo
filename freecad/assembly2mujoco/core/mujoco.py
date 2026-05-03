@@ -18,6 +18,7 @@ from freecad.assembly2mujoco.constants import (
     DEFAULT_MJCF_TIMESTEP,
     DEFAULT_MJCF_ARMATURE,
     DEFAULT_MJCF_DAMPING,
+    DEFAULT_MJCF_ADD_SITES,
     WORKBENCH_NAME,
 )
 from freecad.assembly2mujoco.core.assembly import (
@@ -62,6 +63,7 @@ class MuJoCoExporter:
         mjcf_timestep: float = DEFAULT_MJCF_TIMESTEP,
         mjcf_damping: float = DEFAULT_MJCF_DAMPING,
         mjcf_armature: float = DEFAULT_MJCF_ARMATURE,
+        mjcf_add_sites: bool = DEFAULT_MJCF_ADD_SITES,
     ) -> None:
         self.mesh_export_format = mesh_export_format
         self.stl_mesh_linear_deflection = stl_mesh_linear_deflection
@@ -74,6 +76,7 @@ class MuJoCoExporter:
         self.mjcf_timestep = mjcf_timestep
         self.mjcf_damping = mjcf_damping
         self.mjcf_armature = mjcf_armature
+        self.mjcf_add_sites = mjcf_add_sites
 
         self.mujoco = ET.Element("mujoco")
         self.option = ET.SubElement(
@@ -398,11 +401,17 @@ class MuJoCoExporter:
             contype="0",
             conaffinity="0",
         )
-        # Add invisible site to body for potential use in mounting sensors
-        pos, quat = node.absolute_position
-        ET.SubElement(
-            body, "site", name=f"{node.label} site", pos=pos, quat=quat, rgba="0 0 0 0"
-        )
+        if self.mjcf_add_sites:
+            # Add invisible site to body for potential use in mounting sensors
+            pos, quat = node.absolute_position
+            ET.SubElement(
+                body,
+                "site",
+                name=f"{node.label} site",
+                pos=pos,
+                quat=quat,
+                rgba="0 0 0 0",
+            )
         return body
 
     def add_free_joint_to_body(
