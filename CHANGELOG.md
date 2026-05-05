@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.4.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.4.0) - 2026-05-05
 
 ### Added
 
