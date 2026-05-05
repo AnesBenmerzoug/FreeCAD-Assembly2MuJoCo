@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## [0.4.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.4.0) - 2026-05-05
 
 ### Added
@@ -11,7 +19,6 @@
 ### Changed
 
 - Set `align="true"` property of MuJoCo [freejoint](https://mujoco.readthedocs.io/en/latest/XMLreference.html#body-freejoint) ([#15](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/15))
-
 
 ### Fixed
 
