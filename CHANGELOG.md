@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.4.0) - 2026-05-05
+
+### Added
+
+- Handle conversion of cylindrical and ball joints ([#14](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/14))
+- Add invisible [site](https://mujoco.readthedocs.io/en/latest/XMLreference.html#body-site) element to each exported body ([#17](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/17))
+- Allow users to disable adding sites to exported bodies ([#18](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/18))
+
+### Changed
+
+- Set `align="true"` property of MuJoCo [freejoint](https://mujoco.readthedocs.io/en/latest/XMLreference.html#body-freejoint) ([#15](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/15))
+
+
+### Fixed
+
+- Fix depth first traversal of graph ([#15](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/15))
+- Fix error with FreeCAD version 1.1 due to a breaking change in the Assembly workbench's `getMovingPart` function ([#16](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/pull/16))
+
+
 ## [0.3.0](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/releases/tag/v0.3.0) - 2025-11-18
 
 ### Added

@@ -21,7 +21,7 @@ env:
   GITHUB_BOT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
   PY_COLORS: 1
   PYTHON_VERSION: '3.11'
-  FREECAD_VERSION: '1.0.2'
+  PYTEST_ARGS: '--verbose --color=yes --tb=short'
 
 defaults:
   run:
@@ -32,23 +32,33 @@ jobs:
     name: Lint and format code
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
-    - name: Setup Environment
-      uses: ./.github/actions/environment
+    - uses: actions/checkout@v6
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v5
       with:
-        python_version: ${{ env.PYTHON_VERSION }}
-        freecad_version: ${{ env.FREECAD_VERSION }}
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install .[dev,tests]
+
     - name: Cache pre-commit environments
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.cache/pre-commit
         key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
         restore-keys: |
           pre-commit-${{ runner.os }}-
+
     - name: Run pre-commit
       run: pre-commit run --all-files --verbose --show-diff-on-failure
+
     - name: Add mypy PR annotator
       uses: pr-annotators/mypy-pr-annotator@v1.0.0
+
     - name: Run mypy
       run: mypy freecad/
       continue-on-error: true
@@ -56,14 +66,41 @@ jobs:
   tests:
     name: Run tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['1.0.2', '1.1.0', '1.1.1']
+
     steps:
-      - uses: actions/checkout@v5
-      - name: Setup Environment
-        uses: ./.github/actions/environment
-        with:
-          python_version: ${{ env.PYTHON_VERSION }}
-          freecad_version: ${{ env.FREECAD_VERSION }}
-      - name: Run pytest
-        id: pytest
+      - name: Set environment variables
         run: |
-          pytest --verbose --color=yes --tb=short
+          FREECAD_VERSION="${{ matrix.version }}"
+          DOWNLOAD_DIR="freecad_versions"
+          EXTRACT_DIR="${DOWNLOAD_DIR}/FreeCAD_${FREECAD_VERSION}"
+          PYTHON_BIN="${EXTRACT_DIR}/usr/bin/python"
+          PATH_TO_FREECAD_LIBDIR="${EXTRACT_DIR}/usr/lib"
+
+          echo "FREECAD_VERSION=${FREECAD_VERSION}" >> $GITHUB_ENV
+          echo "DOWNLOAD_DIR=${DOWNLOAD_DIR}" >> $GITHUB_ENV
+          echo "EXTRACT_DIR=${EXTRACT_DIR}" >> $GITHUB_ENV
+          echo "PYTHON_BIN=${PYTHON_BIN}" >> $GITHUB_ENV
+          echo "PATH_TO_FREECAD_LIBDIR=${PATH_TO_FREECAD_LIBDIR}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v6
+
+      - name: Cache FreeCAD
+        id: cache-freecad
+        uses: actions/cache@v5
+        with:
+          path: freecad_versions/FreeCAD_${{ matrix.version }}
+          key: freecad-${{ runner.os }}-${{ matrix.version }}
+          restore-keys: |
+            freecad-${{ runner.os }}-
+
+      - name: Download and extract FreeCAD
+        run: bash scripts/01_download_and_extract.sh
+
+      - name: Setup environment and install dependenciess
+        run: bash scripts/02_setup_env.sh
+
+      - name: Run tests
+        run: bash scripts/03_run_tests.sh

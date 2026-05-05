@@ -1,3 +1,4 @@
+import inspect
 import math
 from ast import literal_eval
 from collections import defaultdict
@@ -18,6 +19,23 @@ from freecad.assembly2mujoco.utils.types import AppearanceDict
 __all__ = ["AssemblyGraph", "AssemblyGraphNode", "AssemblyGraphEdge"]
 
 
+def get_moving_part(assembly, ref):
+    """Wrapper for the builtin Assembly's getMovingPart function.
+
+    In versions priori to 1.1, it expects 2 arguments: assembly, ref
+    and in version 1.1, it expects only 1 argument: ref
+    """
+    signature = inspect.signature(UtilsAssembly.getMovingPart)
+    if len(signature.parameters) == 1:
+        return UtilsAssembly.getMovingPart(ref)
+    elif len(signature.parameters) == 2:
+        return UtilsAssembly.getMovingPart(assembly, ref)
+    else:
+        raise RuntimeError(
+            f"Unexpected number of arguments, {len(signature.parameters)}, for getMovingPart()"
+        )
+
+
 class AssemblyGraphNode:
     def __init__(self, part: App.DocumentObject, *, is_grounded: bool = False) -> None:
         if not isinstance(part, App.DocumentObject):
@@ -27,8 +45,24 @@ class AssemblyGraphNode:
         super().__init__()
         self.part = part
         self.is_grounded = is_grounded
+        # We position the node in MuJoCo at the origin.
+        # The corresponding exported mesh will have the actual position information.
         self.pos = "0 0 0"
         self.quat = "1.0 0.0 0.0 0.0"
+
+    @property
+    def absolute_position(self) -> tuple[str, str]:
+        """Get absolute position of body.
+
+        This is used for position MuJoCo site tags.
+        """
+        # Use global position and orientation
+        pos = self.part.Placement.Base
+        quat = self.part.Placement.Rotation.Q
+        # Convert mm to m and convert both vectors to strings
+        pos = f"{pos.x / 1000} {pos.y / 1000} {pos.z / 1000}"
+        quat = f"{quat[0]} {quat[1]} {quat[2]} {quat[3]}"
+        return pos, quat
 
     @property
     def body_appearance(self) -> AppearanceDict:
@@ -131,6 +165,20 @@ class AssemblyGraphEdge:
             # You may need to adjust this based on your FreeCAD assembly convention:
             # axis_vector = global_plc.Rotation.multVec(App.Vector(1, 0, 0))
 
+        elif self.is_cylindrical:
+            # Cylindrical joint combines rotation and translation along the same axis
+            # The Z-axis of the placement is the axis for both rotation and translation
+            pos_vector = global_plc.Base
+            axis_vector = global_plc.Rotation.multVec(App.Vector(0, 0, 1))
+
+        elif self.is_ball:
+            # Ball joint has 3-DOF rotation around a single point
+            # Only position is needed; no axis required
+            pos_vector = global_plc.Base
+            # Ball joints don't have a single axis in MuJoCo
+            # Return zero vector as placeholder
+            axis_vector = App.Vector(0, 0, 0)
+
         else:
             raise NotImplementedError(
                 f"{WORKBENCH_NAME}: Getting joint axis not implemented for joint type: {self.joint.JointType}"
@@ -138,9 +186,20 @@ class AssemblyGraphEdge:
 
         # Convert mm to m
         pos_vector = pos_vector / 1000
-        # Normalize axis
-        axis_vector = axis_vector.normalize()
+        # Normalize axis (skip for Ball joints which have zero axis)
+        if axis_vector.Length > 1e-10:
+            axis_vector = axis_vector.normalize()
         return pos_vector, axis_vector
+
+    @property
+    def is_cylindrical(self) -> bool:
+        """Check if this is a cylindrical joint"""
+        return self.joint.JointType == "Cylindrical"
+
+    @property
+    def is_ball(self) -> bool:
+        """Check if this is a ball joint"""
+        return self.joint.JointType == "Ball"
 
     @property
     def joint_range(self) -> str | None:
@@ -214,18 +273,19 @@ class AssemblyGraph:
                 graph.add_node(node)
                 continue
 
-            part1 = UtilsAssembly.getMovingPart(assembly, joint.Reference1)
-            part2 = UtilsAssembly.getMovingPart(assembly, joint.Reference2)
+            part1 = get_moving_part(assembly, joint.Reference1)
+            part2 = get_moving_part(assembly, joint.Reference2)
             node1 = AssemblyGraphNode(part1, is_grounded=assembly.isPartGrounded(part1))
             node2 = AssemblyGraphNode(part2, is_grounded=assembly.isPartGrounded(part2))
-            # Assign weights to prioritize which joints to keep in the tree                 ..
-            # Higher weight are more likely to be excluded from tree                        ..
+            # Assign weights to prioritize which joints to keep in the tree
+            # Higher weight are more likely to be excluded from tree
             weight = joint_type_weights.get(joint.JointType, 100.0)
             edge = AssemblyGraphEdge(joint=joint, weight=weight)
             graph.add_edge(edge=edge, parent_node=node1, child_node=node2)
 
         # Then get all disconnected parts that are still part of the assembly
         for object in assembly.OutList:
+            # TODO: Handle other cases
             if object.TypeId == "PartDesign::Body" or UtilsAssembly.isLink(object):
                 node = AssemblyGraphNode(
                     object, is_grounded=assembly.isPartGrounded(object)

@@ -11,9 +11,7 @@
 
 A [FreeCAD](https://www.freecad.org/) workbench to export an Assembly made with the builtin [Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) for simulation in [MuJoCo](https://mujoco.org/).
 
-| FreeCAD | MuJoCo |
-|---|---|
-| ![Export of universal joint assembly to MuJoCo](examples/universal_joint/universal_joint_freecad.gif) | ![Simulation of universal joint assembly in MuJoCo](examples/universal_joint/universal_joint_mujoco.gif) |
+![View of universal joint assembly in FreeCAD and MuJoCo](examples/universal_joint/universal_joint.gif)
 
 If you find any bugs while using the macro, please feel free to open an [issue](https://github.com/AnesBenmerzoug/FreeCAD-Assembly2MuJoCo/issues).
 
@@ -104,9 +102,9 @@ Here are some of the planned developments for this Workbench:
   - [X] Grounded
   - [X] Fixed
   - [X] Revolute
-  - [ ] Cylindrical
+  - [X] Cylindrical
   - [X] Slider
-  - [ ] Ball
+  - [X] Ball *(uses native MuJoCo ball joint type)*
   - [ ] Distance
   - [ ] Parallel
   - [ ] Perpendicular

@@ -40,20 +40,27 @@
     <!--Assembly-->
     <body name="BaseLink" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
       <geom type="mesh" name="BaseLink geom" mesh="BaseLink" material="BaseLink" contype="0" conaffinity="0" />
+      <site name="BaseLink site" pos="0.0 0.0 0.0" quat="0.0 0.0 0.9947063623559446 -0.10275822443291023" rgba="0 0 0 0" />
       <body name="ServoMotor 1 - Body Link" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
         <geom type="mesh" name="ServoMotor 1 - Body Link geom" mesh="ServoMotor 1 - Body Link" material="ServoMotor 1 - Body Link" contype="0" conaffinity="0" />
+        <site name="ServoMotor 1 - Body Link site" pos="-0.01378460789485966 0.017578259589190636 0.0020000000000000013" quat="0.0 0.0 -0.6307025767920914 0.7760246514304916" rgba="0 0 0 0" />
         <body name="ServoMotor 1 - Output Shaft Link" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
           <geom type="mesh" name="ServoMotor 1 - Output Shaft Link geom" mesh="ServoMotor 1 - Output Shaft Link" material="ServoMotor 1 - Output Shaft Link" contype="0" conaffinity="0" />
-          <joint type="hinge" name="Revolute" pos="-0.0021311673132399633 0.01020483958144261 0.04345000000000001" axis="-2.1535392881701405e-16 -4.497427423623918e-17 1.0" />
+          <site name="ServoMotor 1 - Output Shaft Link site" pos="-0.0021311673132399676 0.010204839581442601 0.03785000000000001" quat="0.0 -2.262001480584835e-16 -0.6307025767920911 0.7760246514304919" rgba="0 0 0 0" />
+          <joint type="hinge" name="Revolute" pos="-0.0021311673132399546 0.010204839581442594 0.04345000000000001" axis="0.0 0.0 1.0" />
           <body name="FirstJointLink" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
             <geom type="mesh" name="FirstJointLink geom" mesh="FirstJointLink" material="FirstJointLink" contype="0" conaffinity="0" />
+            <site name="FirstJointLink site" pos="-0.0021311673132399706 0.010204839581442603 0.04785000000000001" quat="0.0 0.0 0.10275822443291092 0.9947063623559445" rgba="0 0 0 0" />
             <body name="ServoMotor 2 - Body Link" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
               <geom type="mesh" name="ServoMotor 2 - Body Link geom" mesh="ServoMotor 2 - Body Link" material="ServoMotor 2 - Body Link" contype="0" conaffinity="0" />
+              <site name="ServoMotor 2 - Body Link site" pos="0.03383043558284749 -0.0027686320340169672 0.05095489396411068" quat="-0.07266103731920054 0.7033636141112917 0.7033636141112913 -0.07266103731920028" rgba="0 0 0 0" />
               <body name="ServoMotor 2 - Output Shaft Link" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
                 <geom type="mesh" name="ServoMotor 2 - Output Shaft Link geom" mesh="ServoMotor 2 - Output Shaft Link" material="ServoMotor 2 - Output Shaft Link" contype="0" conaffinity="0" />
-                <joint type="hinge" name="Revolute001" pos="0.013782052846487392 0.0372489922364371 0.060854893964110666" axis="-0.28451414240304984 0.9586718431103822 -5.447031714567174e-16" />
+                <site name="ServoMotor 2 - Output Shaft Link site" pos="0.017104410819154252 0.030361755763356015 0.060854893964110646" quat="-0.07266103731920087 0.7033636141112919 0.7033636141112911 -0.07266103731920004" rgba="0 0 0 0" />
+                <joint type="hinge" name="Revolute001" pos="0.015959611111322707 0.03584349213324365 0.060854893964110646" axis="-0.204428519255633 0.9788814946227911 -8.196568423990414e-16" />
                 <body name="SecondJointLink" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
                   <geom type="mesh" name="SecondJointLink geom" mesh="SecondJointLink" material="SecondJointLink" contype="0" conaffinity="0" />
+                  <site name="SecondJointLink site" pos="0.04443844745430291 0.02176812782002775 0.04885489396411068" quat="-4.934699936309187e-16 4.368578673845185e-16 0.9947063623559445 -0.10275822443291081" rgba="0 0 0 0" />
                 </body>
               </body>
             </body>

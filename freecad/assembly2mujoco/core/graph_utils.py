@@ -16,7 +16,9 @@ __all__ = ["depth_first_traversal", "get_disconnected_subgraphs"]
 def depth_first_traversal(
     graph: AssemblyGraph, *, root_node: AssemblyGraphNode
 ) -> Generator[
-    tuple[AssemblyGraphNode, AssemblyGraphNode, AssemblyGraphEdge], None, None
+    tuple[AssemblyGraphNode, AssemblyGraphNode | None, AssemblyGraphEdge | None],
+    None,
+    None,
 ]:
     seen_edges: set[AssemblyGraphEdge] = set()
     queue: Queue[AssemblyGraphNode] = Queue()
@@ -25,7 +27,12 @@ def depth_first_traversal(
     while not queue.empty():
         current_node = queue.get()
 
-        for next_node in graph.get_neighbors(current_node):
+        current_node_neighbors = graph.get_neighbors(current_node)
+        if len(current_node_neighbors) == 0:
+            yield current_node, None, None
+            continue
+
+        for next_node in current_node_neighbors:
             edge = graph.get_edge(current_node, next_node)
             if edge in seen_edges:
                 continue
@@ -56,10 +63,15 @@ def get_disconnected_subgraphs(graph: AssemblyGraph) -> list["AssemblyGraph"]:
         ):
             if current_node in remaining_nodes:
                 remaining_nodes.remove(current_node)
+            subgraph.add_node(current_node)
+
+            if next_node is None or edge is None:
+                continue
+
             if next_node in remaining_nodes:
                 remaining_nodes.remove(next_node)
-            subgraph.add_node(current_node)
             subgraph.add_node(next_node)
+
             subgraph.add_edge(edge=edge, parent_node=current_node, child_node=next_node)
 
         subgraphs.append(subgraph)
@@ -143,6 +155,9 @@ def convert_to_directed_tree(
         tree, root_node=root_node
     ):
         directed_tree.add_node(parent_node)
+        if child_node is None or edge is None:
+            continue
+
         directed_tree.add_node(child_node)
         directed_tree.add_edge(edge, parent_node=parent_node, child_node=child_node)
 

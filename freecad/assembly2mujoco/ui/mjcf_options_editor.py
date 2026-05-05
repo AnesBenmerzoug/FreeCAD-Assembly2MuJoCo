@@ -8,6 +8,7 @@ from freecad.assembly2mujoco.constants import (
     DEFAULT_MJCF_TIMESTEP,
     DEFAULT_MJCF_INTEGRATOR,
     DEFAULT_MJCF_SOLVER,
+    DEFAULT_MJCF_ADD_SITES,
 )
 
 __all__ = ["MJCFOptionsEditor"]
@@ -56,6 +57,16 @@ class MJCFOptionsEditor(QtWidgets.QWidget):
         self.solver_combo.addItems(solver_values)
         form_layout.addRow("Solver:", self.solver_combo)
 
+        # Sites
+        self.site_check = QtWidgets.QCheckBox()
+        self.site_check.setCheckState(
+            QtCore.Qt.CheckState.Checked
+            if DEFAULT_MJCF_ADD_SITES
+            else QtCore.Qt.CheckState.Unchecked
+        )
+        self.site_check.setToolTip("Add a site to each body")
+        form_layout.addRow("Sites:", self.site_check)
+
         # Reset button
         reset_button = QtWidgets.QPushButton("Reset to Defaults")
         reset_button.clicked.connect(self.reset_to_defaults)
@@ -68,6 +79,7 @@ class MJCFOptionsEditor(QtWidgets.QWidget):
             mjcf_armature=self.armature_spin.value(),
             mjcf_integrator=self.integrator_combo.currentText(),
             mjcf_solver=self.solver_combo.currentText(),
+            mjcf_add_sites=self.site_check.isChecked(),
         )
         return options
 
@@ -77,3 +89,8 @@ class MJCFOptionsEditor(QtWidgets.QWidget):
         self.armature_spin.setValue(DEFAULT_MJCF_ARMATURE)
         self.integrator_combo.setCurrentText(DEFAULT_MJCF_INTEGRATOR)
         self.solver_combo.setCurrentText(DEFAULT_MJCF_SOLVER)
+        self.site_check.setCheckState(
+            QtCore.Qt.CheckState.Checked
+            if DEFAULT_MJCF_ADD_SITES
+            else QtCore.Qt.CheckState.Unchecked
+        )

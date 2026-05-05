@@ -42,6 +42,7 @@ DEFAULT_MJCF_INTEGRATOR: Literal["Euler", "implicit", "implicitfast", "RK4"] = (
 DEFAULT_MJCF_SOLVER: Literal["PGS", "CG", "Newton"] = "Newton"
 DEFAULT_MJCF_SOLVER_MAX_ITERATIONS: float = 200
 DEFAULT_MJCF_SOLVER_TOLERANCE: float = 1e-10
+DEFAULT_MJCF_ADD_SITES: bool = True
 
 # Assign weights to prioritize which joints to keep in the tree
 # Higher weight are more likely to be excluded from tree
