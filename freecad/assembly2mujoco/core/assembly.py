@@ -277,8 +277,8 @@ class AssemblyGraph:
             part2 = get_moving_part(assembly, joint.Reference2)
             node1 = AssemblyGraphNode(part1, is_grounded=assembly.isPartGrounded(part1))
             node2 = AssemblyGraphNode(part2, is_grounded=assembly.isPartGrounded(part2))
-            # Assign weights to prioritize which joints to keep in the tree                 ..
-            # Higher weight are more likely to be excluded from tree                        ..
+            # Assign weights to prioritize which joints to keep in the tree
+            # Higher weight are more likely to be excluded from tree
             weight = joint_type_weights.get(joint.JointType, 100.0)
             edge = AssemblyGraphEdge(joint=joint, weight=weight)
             graph.add_edge(edge=edge, parent_node=node1, child_node=node2)

@@ -31,24 +31,28 @@
     <!--Assembly-->
     <body name="Base" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
       <geom type="mesh" name="Base geom" mesh="Base" material="Base" contype="0" conaffinity="0" />
+      <site name="Base site" pos="0.0 0.0 0.0" quat="0.0 0.0 0.0 1.0" rgba="0 0 0 0" />
       <body name="SliderRod" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
         <geom type="mesh" name="SliderRod geom" mesh="SliderRod" material="SliderRod" contype="0" conaffinity="0" />
-        <joint type="slide" name="Slider" pos="0.005212720478003966 0.0 0.01741657430572624" axis="-0.9997784669888635 0.0 0.02104796772608125" />
+        <site name="SliderRod site" pos="0.0800058231623206 0.0 0.009840653177673617" quat="0.0 0.01052456676392414 0.0 0.9999446152134785" rgba="0 0 0 0" />
+        <joint type="slide" name="Slider" pos="0.024144516817300732 0.0 0.017018010172267357" axis="-0.9997784669888635 0.0 0.02104796772608125" />
         <body name="ConnectingRod" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
           <geom type="mesh" name="ConnectingRod geom" mesh="ConnectingRod" material="ConnectingRod" contype="0" conaffinity="0" />
-          <joint type="hinge" name="Revolute002" pos="0.061326602435736774 -8.881784197001253e-18 0.022236558914998858" axis="0.021047967726081376 -8.673617379884035e-19 0.9997784669888635" />
+          <site name="ConnectingRod site" pos="0.1286272452532091 0.012298883861936814 0.016818816948340736" quat="0.010443413352834179 -0.0013044627668666886 0.9922341870081318 -0.12393769251823059" rgba="0 0 0 0" />
+          <joint type="hinge" name="Revolute002" pos="0.08025839877503359 0.0 0.021837994781539975" axis="0.02104796772608139 -4.336808689942018e-19 0.9997784669888634" />
         </body>
       </body>
       <body name="Crank" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
         <geom type="mesh" name="Crank geom" mesh="Crank" material="Crank" contype="0" conaffinity="0" />
-        <joint type="hinge" name="Revolute" pos="0.11999999999999998 -1.908195828859478e-17 0.014999999999999998" axis="0.02104796772608136 0.0 0.9997784669888634" />
+        <site name="Crank site" pos="0.11991580812909566 -1.1625481821426244e-17 0.011000886132044545" quat="-0.0031580225656117587 0.01003959157751866 -0.30004538239336653 0.9538668680685215" rgba="0 0 0 0" />
+        <joint type="hinge" name="Revolute" pos="0.12 2.0754979851800727e-21 0.015" axis="0.02104796772608139 -8.673617379884035e-19 0.9997784669888635" />
       </body>
     </body>
   </worldbody>
   <contact />
   <equality>
-    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_1" anchor="0.11006321641596123 0.011121587657231726 0.021210524936467814" />
-    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_2" anchor="0.11027369609322205 0.011121587657231726 0.031208309606356448" />
+    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_1" anchor="0.12871143712411343 0.012298883861936814 0.02081793081629619" />
+    <connect body1="ConnectingRod" body2="Crank" name="connect_hinge_Revolute001_2" anchor="0.12892191680137424 0.012298883861936814 0.030815715486184822" />
   </equality>
   <tendon />
   <actuator>

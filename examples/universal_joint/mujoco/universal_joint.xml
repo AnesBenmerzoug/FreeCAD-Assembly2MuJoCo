@@ -31,15 +31,19 @@
     <!--Assembly-->
     <body name="Base001" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
       <geom type="mesh" name="Base001 geom" mesh="Base001" material="Base001" contype="0" conaffinity="0" />
+      <site name="Base001 site" pos="0.0 0.0 0.0" quat="0.0 0.0 0.0 1.0" rgba="0 0 0 0" />
       <body name="Fork001" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
         <geom type="mesh" name="Fork001 geom" mesh="Fork001" material="Fork001" contype="0" conaffinity="0" />
+        <site name="Fork001 site" pos="-4.838377389001473e-18 -2.0939727293115306e-17 0.085" quat="-0.47532568357843136 0.5235126498287287 -0.47532568357843125 -0.5235126498287286" rgba="0 0 0 0" />
         <joint type="hinge" name="Revolute" pos="0.0 0.0 0.005" axis="0.0 0.0 1.0" />
         <body name="Cross001" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
           <geom type="mesh" name="Cross001 geom" mesh="Cross001" material="Cross001" contype="0" conaffinity="0" />
-          <joint type="hinge" name="Revolute001" pos="-5.315367944088437e-05 0.03999996468356397 0.08499999999999999" axis="0.0013288419860217964 -0.9999991170890984 3.33066907387547e-16" />
+          <site name="Cross001 site" pos="9.061630942733248e-18 -2.0867313428048794e-17 0.08499999999999999" quat="0.7108464156515756 -0.034293369702085845 -0.7016946555581709 -0.033851861261728775" rgba="0 0 0 0" />
+          <joint type="hinge" name="Revolute001" pos="0.0038504791249115147 0.03981424130268741 0.085" axis="-0.09626197812278817 -0.9953560325671855 -5.551115123125783e-17" />
           <body name="Fork002" pos="0 0 0" quat="1.0 0.0 0.0 0.0">
             <geom type="mesh" name="Fork002 geom" mesh="Fork002" material="Fork002" contype="0" conaffinity="0" />
-            <joint type="hinge" name="Revolute002" pos="0.039924162152154906 5.305294976556542e-05 0.08253860571363231" axis="-0.9981040538038725 -0.0013263237441388388 0.061534857159191866" />
+            <site name="Fork002 site" pos="8.127305743263869e-18 -2.1650268581842862e-17 0.08499999999999995" quat="0.03285181747343714 0.7017421864463297 -0.03530638677954942 0.710796821111905" rgba="0 0 0 0" />
+            <joint type="hinge" name="Revolute002" pos="0.03981089891136326 -0.0038501558785655 0.08551829294801729" axis="-0.9952724727840812 0.09625389696413694 -0.012957323700433067" />
           </body>
         </body>
       </body>
