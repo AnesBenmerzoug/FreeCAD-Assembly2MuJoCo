@@ -30,3 +30,21 @@ A pan tilt mechanism allows for the horizontal (pan) and vertical (tilt) movemen
 This example was created for another project but was deemed useful enough to be shared here as an example.
 
 ![View of pan tilt assembly in FreeCAD and MuJoCo](pan_tilt/pan_tilt.gif)
+
+## Vise
+
+A vise is a mechanical apparatus used to secure an object to allow work to be performed on it.
+
+Part of this example is taken from the vise example found in the
+[Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) page of the FreeCAD Wiki.
+
+![View of vise assembly in FreeCAD and MuJoCo](vise/vise.gif)
+
+## Shock Absorber
+
+A shock absorber is a mechanical device that dampens vibrations or oscillations, commonly used in vehicle suspensions.
+
+Part of this example is taken from the shock absorber example found in the
+[Assembly Workbench](https://wiki.freecad.org/Assembly_Workbench) page of the FreeCAD Wiki.
+
+![View of shock absorber assembly in FreeCAD and MuJoCo](shock_absorber/shock_absorber.gif)
