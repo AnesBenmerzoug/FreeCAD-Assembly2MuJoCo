@@ -209,12 +209,12 @@ class AssemblyGraphEdge:
         # Try to get limits from joint
         if self.joint.EnableAngleMin:
             # Convert degrees to radian
-            limits["lower"] = self.joint.AngleMin * math.pi / 180
+            limits["lower"] = math.radians(self.joint.AngleMin.Value)
         elif self.joint.EnableLengthMin:
             limits["lower"] = self.joint.LengthMin
 
         if self.joint.EnableAngleMax:
-            limits["upper"] = self.joint.AngleMax * math.pi / 180
+            limits["upper"] = math.radians(self.joint.AngleMax.Value)
         elif self.joint.EnableLengthMax:
             limits["upper"] = self.joint.LengthMax
 
